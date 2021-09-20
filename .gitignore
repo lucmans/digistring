@@ -1,32 +1,11 @@
-# Prerequisites
-*.d
+# The binary
+digistring
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Object files 
+/obj/
 
-# Precompiled Headers
-*.gch
-*.pch
+# Make dependency files
+/dep/
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Segfault dumps
+vgcore.*
