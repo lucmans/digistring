@@ -60,6 +60,27 @@ void parse_args(int argc, char *argv[]) {
         }
         else if(strcmp(argv[i], "-s") == 0) {
             settings.generate_sine = true;
+
+            if(argc > i + 1) {
+                if(argv[i + 1][0] == '-')
+                    continue;
+
+                double f;
+                try {
+                    f = std::stod(argv[i + 1]);
+                }
+                catch(...) {
+                    error("Failed to parse frequency '" + std::string(argv[i + 1]) + "'");
+                    exit(EXIT_FAILURE);
+                }
+                if(f < 1) {
+                    error("Frequency below 1 Hz (" + STR(f) + ")");
+                    exit(EXIT_FAILURE);
+                }
+                settings.generate_sine_freq = f;
+
+                i++;  // Advance extra argument
+            }
         }
         else {
             if(strcmp(argv[i], "-h") != 0 && strcmp(argv[i], "--help") != 0)
@@ -71,7 +92,7 @@ void parse_args(int argc, char *argv[]) {
                       << "  -p          - Play recorded audio back\n"
                       << "  -perf       - Output performance stats in stdout\n"
                       << "  -r <w> <h>  - Start GUI with given resolution\n"
-                      << "  -s          - Generate sine wave instead of using recording device\n"
+                      << "  -s [f]      - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
                       << std::endl;
             exit(EXIT_SUCCESS);
         }

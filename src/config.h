@@ -39,6 +39,7 @@ struct Settings {
 
     // Generate sine instead of using audio input
     bool generate_sine = false;
+    double generate_sine_freq = 1000.0;  // Hz
 };
 extern Settings settings;
 

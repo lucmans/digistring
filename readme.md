@@ -24,4 +24,4 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop the program.
 `p`: Play recorded audio back.  
 `perf`: Print performance stats to stdout.  
 `-r [w] [h]`: Run with given resolution.  
-`-s`: Generate sine wave as input instead of using the recording device.
+`-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.

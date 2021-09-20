@@ -1,6 +1,8 @@
 
 #include "window_func.h"
 
+#include <cmath>
+
 
 void hamming_window(double window[FRAME_SIZE]) {
     const double N = FRAME_SIZE;
