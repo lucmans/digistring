@@ -121,8 +121,8 @@ void print_config() {
 
 int main(int argc, char *argv[]) {
     // Init program
-    signal(SIGINT, signalHandler);
-    signal(SIGTERM, signalHandler);
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
     reset_quit();
 
     parse_args(argc, argv);

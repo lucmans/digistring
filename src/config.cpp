@@ -11,7 +11,7 @@ Settings settings;
 
 static volatile bool quit;
 
-void signalHandler(const int signum) {
+void signal_handler(const int signum) {
     if(quit) {
         info("Received signal 'SIG" + std::string(sigabbrev_np(signum)) + "' while quitting; will now force quit");
         exit(-2);

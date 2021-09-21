@@ -45,7 +45,7 @@ extern Settings settings;
 
 
 // Functions relating to signals and gracefully quitting through interrupt
-void signalHandler(const int signum);
+void signal_handler(const int signum);
 
 bool poll_quit();
 void set_quit();
