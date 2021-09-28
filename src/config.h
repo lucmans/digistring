@@ -21,6 +21,14 @@ const unsigned int SAMPLES_PER_BUFFER = 512;
 const int DEFAULT_RES[2] = {1024, 768};
 const int MIN_RES[2] = {800, 600};
 
+// Set to <=0 for full display
+constexpr const double MAX_DISPLAY_FREQ = 3000.0;
+
+const int MAX_HISTORY_DATAPOINTS = 2000;
+
+// Check if the maximum displayed frequency is lower than the maximum frequency from the Fourier transform
+static_assert(ceil(MAX_DISPLAY_FREQ / ((double)SAMPLE_RATE / (double)FRAME_SIZE)) < (FRAME_SIZE / 2) + 1, "MAX_DISPLAY_FREQ is too high; please set to <=0");
+
 
 // Struct with all settings that can be changed through CLI arguments
 struct Settings {

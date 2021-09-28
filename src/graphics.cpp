@@ -49,11 +49,13 @@ Graphics::Graphics() {
     SDL_RenderCopy(renderer, frame_buffer, NULL, NULL);
     SDL_RenderPresent(renderer);
 
-    plot_type = PlotType::spectrogram_log;
+    plot_type = PlotType::spectrogram;
 
     // Spectrogram plot data
     spectrogram_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, res_w, res_h);
     SDL_SetTextureBlendMode(spectrogram_buffer, SDL_BLENDMODE_BLEND);
+
+    waterfall_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, res_w, res_h);
 }
 
 Graphics::~Graphics() {
@@ -62,6 +64,20 @@ Graphics::~Graphics() {
     SDL_DestroyTexture(frame_buffer);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+}
+
+
+void Graphics::set_max_recorded_value(const double new_max) {
+    max_recorded_value = new_max;
+}
+
+void Graphics::set_max_recorded_value_if_larger(const double new_max) {
+    if(new_max > max_recorded_value)
+        max_recorded_value = new_max;
+}
+
+double Graphics::get_max_recorded_value_if_larger() const {
+    return max_recorded_value;
 }
 
 
@@ -96,13 +112,11 @@ bool Graphics::resize_window(const int w, const int h) {
 
 void Graphics::add_data_point(const double data[(FRAME_SIZE / 2) + 1]) {
     DataPoint dp;
-
     memcpy(dp.norms, data, ((FRAME_SIZE / 2) + 1) * sizeof(double));
-    for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
-        if(dp.norms[i] > max_recorded_value)
-            max_recorded_value = dp.norms[i];
-
     data_points.push_front(dp);
+
+    if(data_points.size() > MAX_HISTORY_DATAPOINTS)
+        data_points.pop_back();
 }
 
 
@@ -112,10 +126,6 @@ void Graphics::render_frame() {
     switch(plot_type) {
         case PlotType::spectrogram:
             render_spectrogram();
-            break;
-
-        case PlotType::spectrogram_log:
-            render_spectrogram_log();
             break;
 
         case PlotType::waterfall:
@@ -141,8 +151,12 @@ void Graphics::render_black_screen() {
 
 
 void Graphics::render_spectrogram() {
-    int n_data_points = (FRAME_SIZE / 2) + 1;
     double *data = (*(data_points.begin())).norms;
+    int n_bins;
+    if(MAX_DISPLAY_FREQ > 0)
+        n_bins = ceil(MAX_DISPLAY_FREQ / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+    else
+        n_bins = (FRAME_SIZE / 2) + 1;
 
     SDL_SetRenderTarget(renderer, spectrogram_buffer);
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
@@ -151,7 +165,7 @@ void Graphics::render_spectrogram() {
     // // Color found peaks
     // SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
     // for(unsigned int i = 0; i < peaks.size(); i++) {
-    //     if(peaks[i] >= n_data_points)
+    //     if(peaks[i] >= n_bins)
     //         continue;
     //     SDL_RenderDrawLine(renderer, peaks[i], 0, peaks[i], res_h);
     // }
@@ -159,7 +173,7 @@ void Graphics::render_spectrogram() {
     // // Plot envelope
     // SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
     // int prev_y = res_h - ((envelope[0] / max_recorded_value) * res_h);
-    // for(int i = 1; i < n_data_points; i++) {
+    // for(int i = 1; i < n_bins; i++) {
     //     int y = res_h - ((envelope[i] / max_recorded_value) * res_h);
     //     SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
     //     prev_y = y;
@@ -168,57 +182,52 @@ void Graphics::render_spectrogram() {
     // Plot line of spectrum
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
     int prev_y = res_h - ((data[0] / max_recorded_value) * res_h);
-    for(int i = 1; i < n_data_points; i++) {
+    for(int i = 1; i < n_bins; i++) {
         int y = res_h - ((data[i] / max_recorded_value) * res_h);
         SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
         prev_y = y;
     }
 
     SDL_SetRenderTarget(renderer, frame_buffer);
-    SDL_Rect src_spectrogram_buffer = {0, 0, n_data_points, res_h};
+    SDL_Rect src_spectrogram_buffer = {0, 0, n_bins, res_h};
     SDL_RenderCopy(renderer, spectrogram_buffer, &src_spectrogram_buffer, NULL);
 }
 
-void Graphics::render_spectrogram_log() {
-    int n_data_points = (FRAME_SIZE / 2) + 1;
-    double *data = (*(data_points.begin())).norms;
 
-    SDL_SetRenderTarget(renderer, spectrogram_buffer);
+uint32_t calc_color(const double data, const double max_value) {
+    uint32_t rgba = 0x000000ff;  // a
+    const double t = (data / max_value) * 0.8;
+
+    rgba |= (uint8_t)(9 * (1 - t) * t * t * t * 255) << 24;  // r
+    rgba |= (uint8_t)(15 * (1 - t) * (1 - t) * t * t * 255) << 16;  // g
+    rgba |= (uint8_t)(8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255) << 8;  // b
+
+    return rgba;
+}
+
+void Graphics::render_waterfall() {
+    int n_bins;
+    if(MAX_DISPLAY_FREQ > 0)
+        n_bins = ceil(MAX_DISPLAY_FREQ / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+    else
+        n_bins = (FRAME_SIZE / 2) + 1;
+
+    SDL_SetRenderTarget(renderer, waterfall_buffer);
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderFillRect(renderer, NULL);
 
-    // // Color found peaks
-    // SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
-    // for(unsigned int i = 0; i < peaks.size(); i++) {
-    //     if(peaks[i] >= n_data_points)
-    //         continue;
-    //     SDL_RenderDrawLine(renderer, peaks[i], 0, peaks[i], res_h);
-    // }
+    int n_lines = 0;
+    for(std::list<DataPoint>::iterator it = data_points.begin(); it != data_points.end(); ++it) {
+        for(int i = 0; i < n_bins; i++) {
+            // TODO
+        }
 
-    // // Plot envelope
-    // SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
-    // int prev_y = res_h - ((log10(envelope[0] + 1) / log10(max_recorded_value + 1)) * res_h);
-    // for(int i = 1; i < n_data_points; i++) {
-    //     int y = res_h - ((log10(envelope[i] + 1) / log10(max_recorded_value + 1)) * res_h);
-    //     SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
-    //     prev_y = y;
-    // }
-
-    // Plot line of spectrum
-    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    int prev_y = res_h - ((log10(data[0] + 1) / log10(max_recorded_value + 1)) * res_h);
-    for(int i = 1; i < n_data_points; i++) {
-        int y = res_h - ((log10(data[i] + 1) / log10(max_recorded_value + 1)) * res_h);
-        SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
-        prev_y = y;
+        n_lines++;
+        if(n_lines >= res_h)
+            break;
     }
 
     SDL_SetRenderTarget(renderer, frame_buffer);
-    SDL_Rect src_spectrogram_buffer = {0, 0, n_data_points, res_h};
-    SDL_RenderCopy(renderer, spectrogram_buffer, &src_spectrogram_buffer, NULL);
-}
-
-
-void Graphics::render_waterfall() {
-
+    SDL_Rect src_waterfall_buffer = {0, 0, n_bins, n_lines};
+    SDL_RenderCopy(renderer, waterfall_buffer, &src_waterfall_buffer, NULL);
 }

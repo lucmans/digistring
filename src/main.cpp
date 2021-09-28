@@ -116,6 +116,11 @@ void print_config() {
               << "Frame time: " << (FRAME_SIZE * 1000) / (double)SAMPLE_RATE << " ms" << std::endl
               << "Fourier bin size: " << SAMPLE_RATE / (double)FRAME_SIZE << "Hz" << std::endl
               << std::endl;
+
+    if(!settings.headless) {
+        std::cout << "Data history RAM size: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb" << std::endl
+                  << std::endl;
+    }
 }
 
 

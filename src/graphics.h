@@ -11,7 +11,7 @@
 
 
 enum class PlotType {
-    spectrogram, spectrogram_log, waterfall
+    spectrogram, waterfall
 };
 
 
@@ -24,6 +24,10 @@ class Graphics {
     public:
         Graphics();
         ~Graphics();
+
+        void set_max_recorded_value(const double new_max);
+        void set_max_recorded_value_if_larger(const double new_max);
+        double get_max_recorded_value_if_larger() const;
 
         // Returns if size was changed
         bool resize_window(const int w, const int h);
@@ -46,13 +50,13 @@ class Graphics {
         double max_recorded_value;
 
         SDL_Texture *spectrogram_buffer;
+        SDL_Texture *waterfall_buffer;
 
 
         // Render functions render to framebuffer
         void render_black_screen();
 
         void render_spectrogram();
-        void render_spectrogram_log();
         void render_waterfall();
 };
 

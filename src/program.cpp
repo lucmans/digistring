@@ -168,6 +168,7 @@ void Program::get_frame(float *const in) {
 }
 
 
+// Normalize results: http://fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html
 void calc_norms(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1]) {
     for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++)
         norms[i] = sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1]));
@@ -185,6 +186,26 @@ void calc_norms(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1]
             max_norm = norms[i];
     }
 }
+
+// dB ref: https://www.kvraudio.com/forum/viewtopic.php?t=276092
+void calc_norms_db(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1]) {
+    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++)
+        norms[i] = 20 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
+}
+
+void calc_norms_db(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, double &power) {
+    max_norm = -1.0;
+    power = 0.0;
+
+    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++) {
+        norms[i] = 20 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
+        power += norms[i];
+
+        if(norms[i] > max_norm)
+            max_norm = norms[i];
+    }
+}
+
 
 // TODO: Replace old code with new
 void Program::transcribe() {
@@ -210,6 +231,7 @@ void Program::transcribe() {
     perf.push_time_point("Norms calculated");
 
     if(!settings.headless) {
+        graphics->set_max_recorded_value_if_larger(max_norm);
         graphics->add_data_point(norms);
     }
 }
