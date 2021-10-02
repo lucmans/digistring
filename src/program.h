@@ -42,8 +42,10 @@ class Program {
 
         void handle_sdl_events();
 
-        void read_frame_audio_in(float *const in);
+        void read_frame_float32_audio_device(float *const in);
+        void read_frame_int32_audio_device(float *const in);
         void get_frame(float *const in);
+
         void transcribe();
 };
 

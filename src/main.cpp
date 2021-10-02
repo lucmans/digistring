@@ -14,6 +14,11 @@
 #include <string>  // std::stoi()
 
 
+void main_loop() {
+
+}
+
+
 void parse_args(int argc, char *argv[]) {
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-f") == 0) {
@@ -103,7 +108,7 @@ void parse_args(int argc, char *argv[]) {
 void print_audio_settings(SDL_AudioSpec &specs, bool input) {
     std::cout << "Audio " << (input ? "input" : "output") << " config:" << std::endl
               << "Sample rate: " << SAMPLE_RATE << " " << specs.freq << std::endl
-              << "Format: " << FORMAT << " " << specs.format << std::endl
+              << "Format: " << AUDIO_FORMAT << " " << specs.format << std::endl
               << "Channels: " << N_CHANNELS << " " << (int)specs.channels << std::endl
               << "Samples per buffer: " << SAMPLES_PER_BUFFER << " " << specs.samples << std::endl
               << "Buffer size:  -  " << specs.size << " bytes" << std::endl
@@ -111,16 +116,56 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
               << std::endl;
 }
 
-void print_config() {
+void print_program_config_info() {
     std::cout << "Frame size: " << FRAME_SIZE << std::endl
-              << "Frame time: " << (FRAME_SIZE * 1000) / (double)SAMPLE_RATE << " ms" << std::endl
-              << "Fourier bin size: " << SAMPLE_RATE / (double)FRAME_SIZE << "Hz" << std::endl
+              << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms" << std::endl
+              << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz" << std::endl
+              << "Maximum Fourier frequency: " << MAX_FOURIER_FREQUENCY << " Hz" << std::endl
               << std::endl;
 
     if(!settings.headless) {
         std::cout << "Data history RAM size: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb" << std::endl
                   << std::endl;
     }
+}
+
+
+void print_audio_devices() {
+    int count = SDL_GetNumAudioDevices(0);
+    std::cout << "Playback devices:" << std::endl;
+    for(int i = 0; i < count; i++)
+        std::cout << "  Audio device " << i << ": " << SDL_GetAudioDeviceName(i, 0) << std::endl;
+    std::cout << std::endl;
+
+    count = SDL_GetNumAudioDevices(1);
+    std::cout << "Recording devices:" << std::endl;
+    for(int i = 0; i < count; i++)
+        std::cout << "  Audio device " << i << ": " << SDL_GetAudioDeviceName(i, 0) << std::endl;
+    std::cout << std::endl;
+}
+
+void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev) {
+    SDL_AudioSpec want, have;
+    SDL_memset(&want, 0, sizeof(want));
+    want.freq = SAMPLE_RATE;
+    want.format = AUDIO_FORMAT;
+    want.channels = N_CHANNELS;
+    want.samples = SAMPLES_PER_BUFFER;
+    want.callback = NULL;
+
+    out_dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
+    if(out_dev == 0) {
+        error("Failed to open audio output\n" + STR(SDL_GetError()));
+        exit(EXIT_FAILURE);
+    }
+    print_audio_settings(have, false);
+
+    in_dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0/*SDL_AUDIO_ALLOW_ANY_CHANGE*/);
+    if(in_dev == 0) {
+        error("Failed to open audio input\n" + STR(SDL_GetError()));
+        exit(EXIT_FAILURE);
+    }
+    print_audio_settings(have, true);
 }
 
 
@@ -147,42 +192,11 @@ int main(int argc, char *argv[]) {
             graphics = new Graphics();
     }
 
-    // Init audio devices
-    int count = SDL_GetNumAudioDevices(0);
-    std::cout << "Playback devices:" << std::endl;
-    for(int i = 0; i < count; i++)
-        std::cout << "  Audio device " << i << ": " << SDL_GetAudioDeviceName(i, 0) << std::endl;
-    std::cout << std::endl;
+    SDL_AudioDeviceID in_dev, out_dev;
+    print_audio_devices();
+    init_audio_devices(in_dev, out_dev);
 
-    count = SDL_GetNumAudioDevices(1);
-    std::cout << "Recording devices:" << std::endl;
-    for(int i = 0; i < count; i++)
-        std::cout << "  Audio device " << i << ": " << SDL_GetAudioDeviceName(i, 0) << std::endl;
-    std::cout << std::endl;
-
-    SDL_AudioSpec want, have;
-    SDL_memset(&want, 0, sizeof(want));
-    want.freq = SAMPLE_RATE;
-    want.format = FORMAT;
-    want.channels = N_CHANNELS;
-    want.samples = SAMPLES_PER_BUFFER;
-    want.callback = NULL;
-
-    SDL_AudioDeviceID out_dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0/*SDL_AUDIO_ALLOW_ANY_CHANGE*/);
-    if(out_dev == 0) {
-        error("Failed to open audio output\n" + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
-    }
-    print_audio_settings(have, false);
-
-    SDL_AudioDeviceID in_dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0/*SDL_AUDIO_ALLOW_ANY_CHANGE*/);
-    if(in_dev == 0) {
-        error("Failed to open audio input\n" + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
-    }
-    print_audio_settings(have, true);
-
-    print_config();
+    print_program_config_info();
 
     // Init font rendering engine
     if(TTF_Init() != 0) {

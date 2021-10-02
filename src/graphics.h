@@ -11,12 +11,17 @@
 
 
 enum class PlotType {
-    spectrogram, waterfall
+    spectrogram, interpolated_spectrogram, waterfall
 };
 
 
 struct DataPoint {
     double norms[(FRAME_SIZE / 2) + 1];
+    SDL_Texture *waterfall_line_buffer = NULL;
+
+    ~DataPoint() {
+        SDL_DestroyTexture(waterfall_line_buffer);
+    };
 };
 
 
@@ -28,6 +33,12 @@ class Graphics {
         void set_max_recorded_value(const double new_max);
         void set_max_recorded_value_if_larger(const double new_max);
         double get_max_recorded_value_if_larger() const;
+
+        void add_max_display_frequency(const double d_f);
+        void set_max_display_frequency(const double f);
+        // double get_max_display_frequency();
+
+        void next_plot_type();
 
         // Returns if size was changed
         bool resize_window(const int w, const int h);
@@ -49,15 +60,24 @@ class Graphics {
         std::list<DataPoint> data_points;
         double max_recorded_value;
 
+        double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
+        int n_bins;  // Maximum bins to show; should only be set by *max_display_frequency() functions
+        // SDL_Texture *max_display_frequency_text;  // Rendered static text
+        // SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
+        SDL_Texture *max_display_frequency_text;  // Rendered text
+
+        // Used for non-interpolated spectrogram rendering
         SDL_Texture *spectrogram_buffer;
-        SDL_Texture *waterfall_buffer;
 
 
         // Render functions render to framebuffer
         void render_black_screen();
 
         void render_spectrogram();
+        void render_interpolated_spectrogram();
         void render_waterfall();
+
+        void render_max_displayed_frequency();
 };
 
 

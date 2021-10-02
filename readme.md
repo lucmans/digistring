@@ -1,5 +1,6 @@
 Digistring is a program that converts notes played on a guitar to a digital representation in real-time.
 
+
 # Build instructions
 ## Requirements
 Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.
@@ -11,6 +12,7 @@ On Arch Linux:
 Run `make` in the root directory of the project to build the binary.  
 This creates the binary `digistring` in the root of the project.  
 In case of failures, try running `make force`.
+
 
 # Usage instructions
 Digistring can be started by running the binary.
@@ -32,4 +34,15 @@ All command line arguments can also be printed by running digistring with `-h`.
 **Keyboard controls:**  
 `-`: Decrease the frequency of the generated sine wave.  
 `+`: Increase the frequency of the generated sine wave.  
+`p`: Change plot type.  
 `q`/`esc`: Quit digistring.
+
+
+# TODO
+Take main loop out of Program class.  
+Font rendering (GUI feedback).  
+Sleep till frame might be ready to read.
+
+
+# BUGS
+In render_spectrogram(): Fix n_bins to screen scaling.
