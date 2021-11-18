@@ -15,12 +15,13 @@ LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
 INC = -Ilib/include/
 CORES = 20
 
-SRC_FILES = src/*.h src/*.cpp
-BUILD_FOLDERS = obj/ dep/
+SRC_FILES = src/*.h src/*.cpp src/estimators/*.h src/estimators/*.cpp
+BUILD_FOLDERS = obj/ obj/estimators/ dep/ dep/estimators/
 
 BIN = digistring
-OBJ = obj/main.o obj/program.o obj/graphics.o obj/config.o obj/performance.o \
-	  obj/window_func.o
+OBJ = obj/main.o obj/program.o obj/graphics.o obj/config.o obj/performance.o obj/sample_getter.o \
+      obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
+	  obj/estimators/window_func.o
 
 .PHONY: all force clean valgrind lines debug todo trailing_spaces
 

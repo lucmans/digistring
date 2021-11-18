@@ -40,7 +40,7 @@ static_assert(DEFAULT_MAX_DISPLAY_FREQUENCY <= MAX_FOURIER_FREQUENCY, "DEFAULT_M
 
 // namespace UI {
 //     namespace max_display_frequency {
-//         const int padding = 
+//         const int padding =
 //     }
 // }
 

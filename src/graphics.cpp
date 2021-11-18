@@ -12,6 +12,12 @@
 
 
 Graphics::Graphics() {
+    // if(SDL_SetHintWithPriority("SDL_HINT_RENDER_SCALE_QUALITY", "2", SDL_HINT_OVERRIDE) == SDL_FALSE) {
+    //     debug("Scaling hint = 1");
+    //     if(SDL_SetHintWithPriority("SDL_HINT_RENDER_SCALE_QUALITY", "1", SDL_HINT_OVERRIDE) == SDL_FALSE)
+    //         warning("Failed to set scaling hint; using ugly pixelated nearest neighbor scaling");
+    // }
+
     res_w = settings.w;
     res_h = settings.h;
 
@@ -55,7 +61,7 @@ Graphics::Graphics() {
     n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
     // Spectrogram plot data
-    spectrogram_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, res_w, res_h);
+    spectrogram_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, (FRAME_SIZE / 2) + 1, res_h);
     SDL_SetTextureBlendMode(spectrogram_buffer, SDL_BLENDMODE_BLEND);
 
     // TODO: create font textures
@@ -283,9 +289,12 @@ void Graphics::render_spectrogram() {
     //     prev_y = y;
     // }
 
+    // info(STR(n_bins));
+
     // Plot line of spectrum
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    int prev_y = res_h - ((norms[0] / max_recorded_value) * res_h);
+    // int prev_y = res_h - ((norms[0] / max_recorded_value) * res_h);
+    int prev_y = res_h - ((0.0 / max_recorded_value) * res_h);
     for(int i = 1; i < n_bins; i++) {
         int y = res_h - ((norms[i] / max_recorded_value) * res_h);
         SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
@@ -312,7 +321,8 @@ void Graphics::render_interpolated_spectrogram() {
 
     // Plot line of spectrum
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    int prev_y = res_h - ((norms[0] / max_recorded_value) * res_h);
+    // int prev_y = res_h - ((norms[0] / max_recorded_value) * res_h);
+    int prev_y = res_h - ((0.0 / max_recorded_value) * res_h);
     for(int i = 1; i < n_bins; i++) {
         int y = res_h - ((norms[i] / max_recorded_value) * res_h);
         SDL_RenderDrawLine(renderer, (i - 1) * ((double)res_w / (double)n_bins), prev_y, i * ((double)res_w / (double)n_bins), y);
@@ -338,6 +348,6 @@ void Graphics::render_waterfall() {
 void Graphics::render_max_displayed_frequency() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
-    // SDL_Rect 
+    // SDL_Rect
     // SDL_RenderCopy(renderer, max_display_frequency_text, NULL, NULL);
 }

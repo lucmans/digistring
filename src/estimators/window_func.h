@@ -3,7 +3,7 @@
 #define WINDOW_FUNC
 
 
-#include "config.h"
+#include "../config.h"
 
 
 void hamming_window(double window[FRAME_SIZE]);

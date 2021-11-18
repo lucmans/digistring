@@ -1,13 +1,15 @@
 
 #include "program.h"
 
-#include "window_func.h"
 #include "graphics.h"
 #include "performance.h"
 #include "config.h"
 #include "error.h"
 
-#include <fftw3.h>
+#include "estimators/estimators.h"
+#include "sample_getter.h"
+
+#include <SDL2/SDL.h>
 
 #include <chrono>  // timing
 #include <thread>  // sleep
@@ -20,36 +22,30 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     in_dev = _in;
     out_dev = _out;
 
-    in = (float*)fftwf_malloc(FRAME_SIZE * sizeof(float));
-    out = (fftwf_complex*)fftwf_malloc(((FRAME_SIZE / 2) + 1) * sizeof(fftwf_complex));
-    p = fftwf_plan_dft_r2c_1d(FRAME_SIZE, in, out, FFTW_ESTIMATE);
-
-    // Pre-calculate window function
-    blackman_nuttall_window(window_func);
-
-    if(settings.generate_sine)
-        sound_source = SoundSource::generate_sine;
-    else
-        sound_source = SoundSource::audio_in;
-
-    generated_wave_freq = settings.generate_sine_freq;
+    sample_getter = new SampleGetter(in_dev);
 }
 
 Program::~Program() {
-    fftwf_free(in);
-    fftwf_free(out);
-    fftwf_destroy_plan(p);
+    delete sample_getter;
 }
 
 
 void Program::main_loop() {
+    Estimator *estimator = new HighRes();
+
+    // We let the estimator create the input buffer for optimal size and better alignment
+    float *input_buffer = estimator->get_input_buffer();
+
     // Unpause audio devices so that samples are collected/played
     SDL_PauseAudioDevice(*in_dev, 0);
     if(settings.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
-    // graphics->set_max_display_frequency(90000);
-    graphics->set_max_display_frequency(3000);
+    if(!settings.headless) {
+        // graphics->set_max_display_frequency(90000);
+        graphics->set_max_display_frequency(3000);
+    }
+
     while(!poll_quit()) {
         perf.clear_time_points();
         perf.push_time_point("Start");
@@ -57,8 +53,21 @@ void Program::main_loop() {
         handle_sdl_events();
         perf.push_time_point("Handled SDL events");
 
-        transcribe();
-        perf.push_time_point("Transcribed frame");
+        // Read a frame
+        sample_getter->get_frame(input_buffer, FRAME_SIZE);
+
+        // Play it back to the user if chosen
+        if(settings.playback)
+            SDL_QueueAudio(*out_dev, input_buffer, FRAME_SIZE * sizeof(float));
+
+        // Send frame to estimator
+        estimator->perform();
+
+        // Print estimation
+
+        // Get data from estimator for graphics
+        // if(!settings.headless) {
+        // }
 
 
         if(!settings.headless) {
@@ -69,6 +78,8 @@ void Program::main_loop() {
         if(settings.output_performance)
             std::cout << perf << std::endl;
     }
+
+    fftwf_free(input_buffer);
 }
 
 
@@ -95,11 +106,11 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_MINUS:
-                        generated_wave_freq -= 5.0;
+                        sample_getter->add_generated_wave_freq(-5.0);
                         break;
 
                     case SDLK_EQUALS:
-                        generated_wave_freq += 5.0;
+                        sample_getter->add_generated_wave_freq(+5.0);
                         break;
 
                     case SDLK_r:
@@ -149,98 +160,6 @@ void Program::handle_sdl_events() {
 }
 
 
-void Program::read_frame_float32_audio_device(float *const in) {
-    perf.push_time_point("Start waiting for frame");
-
-    uint32_t read = 0;
-    while(read < FRAME_SIZE * sizeof(float)) {
-        uint32_t ret = SDL_DequeueAudio(*in_dev, in + (read / sizeof(float)), (FRAME_SIZE * sizeof(float)) - read);
-        if(ret > (FRAME_SIZE * sizeof(float)) - read) {
-            error("Read too big");
-            exit(EXIT_FAILURE);
-        }
-        else if(ret % 4 != 0) {
-            error("Read part of a float32\n");
-            exit(EXIT_FAILURE);
-        }
-
-        // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
-        // Sleep to prevent 100% CPU usage
-        if(ret == 0)
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-        read += ret;
-    }
-
-    perf.push_time_point("Read FRAME_SIZE samples");
-}
-
-void Program::read_frame_int32_audio_device(float *const in) {
-    perf.push_time_point("Start waiting for frame");
-
-    uint32_t read = 0;
-    int32_t in_buf[FRAME_SIZE] = {};
-    while(read < FRAME_SIZE * sizeof(int32_t)) {
-        uint32_t ret = SDL_DequeueAudio(*in_dev, in_buf, (FRAME_SIZE * sizeof(int32_t)) - read);
-        if(ret > (FRAME_SIZE * sizeof(int32_t)) - read) {
-            error("Read too big");
-            exit(EXIT_FAILURE);
-        }
-        else if(ret % 4 != 0) {
-            error("Read part of a int32\n");
-            exit(EXIT_FAILURE);
-        }
-
-        // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
-        // Sleep to prevent 100% CPU usage
-        if(ret == 0)
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-        // Experiment: Comment this for extra performance
-        if(read + ret == FRAME_SIZE * sizeof(int32_t))
-            perf.push_time_point("Read FRAME_SIZE samples");
-
-        // Directly perform conversion to save on computation when frame is ready
-        // In other words, the only added latency is from casting the data from the last DequeueAudio call
-        for(unsigned int i = 0; i < ret / sizeof(int32_t); i++)
-            in[(read / sizeof(int32_t)) + i] = (float)in_buf[i];
-
-        read += ret;
-    }
-
-    perf.push_time_point("Frame converted from int32 to float32");
-}
-
-
-void Program::get_frame(float *const in) {
-    switch(sound_source) {
-        case SoundSource::audio_in:
-            if(AUDIO_FORMAT == AUDIO_F32SYS)
-                read_frame_float32_audio_device(in);
-            else if(AUDIO_FORMAT == AUDIO_S32SYS)
-                read_frame_int32_audio_device(in);
-            // else {  // Caught by static assert in config.h
-            //     error("Unknown ");
-            //     return;
-            // }
-            break;
-
-        case SoundSource::generate_sine:
-            for(int i = 0; i < FRAME_SIZE; i++)
-                in[i] = sinf((2.0 * M_PI * i * generated_wave_freq) / (float)SAMPLE_RATE);
-            break;
-
-        // case SoundSource::file:
-        //     if(!file_get_samples(in, FRAME_SIZE)) {
-        //         std::cout << "Finished playing file; quitting after this frame" << std::endl;
-        //         set_quit();
-        //     }
-        //     // SDL_Delay(1000.0 * (double)FRAME_SIZE / (double)SAMPLE_RATE);  // Real-time file playback
-        //     break;
-    }
-}
-
-
 // Normalize results: http://fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html
 void calc_norms(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1]) {
     for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++)
@@ -276,34 +195,5 @@ void calc_norms_db(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) +
 
         if(norms[i] > max_norm)
             max_norm = norms[i];
-    }
-}
-
-
-// TODO: Replace old code with new
-void Program::transcribe() {
-    // Start reading a window
-    // This will block until enough samples have been generated by capturing audio device
-    get_frame(in);
-    if(settings.playback)
-        SDL_QueueAudio(*out_dev, in, FRAME_SIZE * sizeof(float));
-
-    // Apply window function to minimize spectral leakage
-    for(int i = 0; i < FRAME_SIZE; i++)
-        in[i] *= (float)window_func[i];  // TODO: Have float versions of the window functions
-    perf.push_time_point("Applied window function");
-
-    // Do the actual transform
-    fftwf_execute(p);
-    perf.push_time_point("Fourier transformed");
-
-    double norms[(FRAME_SIZE / 2) + 1] = {};
-    double power, max_norm;
-    calc_norms(out, norms, max_norm, power);
-    perf.push_time_point("Norms calculated");
-
-    if(!settings.headless) {
-        graphics->set_max_recorded_value_if_larger(max_norm);
-        graphics->add_data_point(norms);
     }
 }
