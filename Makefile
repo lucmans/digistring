@@ -21,7 +21,7 @@ BUILD_FOLDERS = obj/ obj/estimators/ dep/ dep/estimators/
 BIN = digistring
 OBJ = obj/main.o obj/program.o obj/graphics.o obj/config.o obj/performance.o obj/sample_getter.o \
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
-	  obj/estimators/window_func.o
+	  obj/estimators/window_func.o obj/estimators/estimation_func.o
 
 .PHONY: all force clean valgrind lines debug todo trailing_spaces
 

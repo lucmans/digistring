@@ -11,10 +11,6 @@
 
 #include <SDL2/SDL.h>
 
-#include <chrono>  // timing
-#include <thread>  // sleep
-#include <cmath>
-
 
 Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) {
     graphics = _g;
@@ -31,10 +27,10 @@ Program::~Program() {
 
 
 void Program::main_loop() {
-    Estimator *estimator = new HighRes();
-
     // We let the estimator create the input buffer for optimal size and better alignment
-    float *input_buffer = estimator->get_input_buffer();
+    int input_buffer_size;
+    float *input_buffer = HighRes::create_input_buffer(input_buffer_size);
+    Estimator *estimator = new HighRes(input_buffer);
 
     // Unpause audio devices so that samples are collected/played
     SDL_PauseAudioDevice(*in_dev, 0);
@@ -54,14 +50,14 @@ void Program::main_loop() {
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
-        sample_getter->get_frame(input_buffer, FRAME_SIZE);
+        sample_getter->get_frame(input_buffer, input_buffer_size);
 
         // Play it back to the user if chosen
         if(settings.playback)
-            SDL_QueueAudio(*out_dev, input_buffer, FRAME_SIZE * sizeof(float));
+            SDL_QueueAudio(*out_dev, input_buffer, input_buffer_size * sizeof(float));
 
         // Send frame to estimator
-        estimator->perform();
+        estimator->perform(input_buffer);
 
         // Print estimation
 
@@ -79,6 +75,7 @@ void Program::main_loop() {
             std::cout << perf << std::endl;
     }
 
+    delete estimator;
     fftwf_free(input_buffer);
 }
 
@@ -156,44 +153,5 @@ void Program::handle_sdl_events() {
                 warning("Graphics had a mishap");
                 break;
         }
-    }
-}
-
-
-// Normalize results: http://fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html
-void calc_norms(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1]) {
-    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++)
-        norms[i] = sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1]));
-}
-
-void calc_norms(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, double &power) {
-    max_norm = -1.0;
-    power = 0.0;
-
-    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++) {
-        norms[i] = sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1]));
-        power += norms[i];
-
-        if(norms[i] > max_norm)
-            max_norm = norms[i];
-    }
-}
-
-// dB ref: https://www.kvraudio.com/forum/viewtopic.php?t=276092
-void calc_norms_db(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1]) {
-    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++)
-        norms[i] = 20 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
-}
-
-void calc_norms_db(const fftwf_complex values[], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, double &power) {
-    max_norm = -1.0;
-    power = 0.0;
-
-    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++) {
-        norms[i] = 20 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
-        power += norms[i];
-
-        if(norms[i] > max_norm)
-            max_norm = norms[i];
     }
 }

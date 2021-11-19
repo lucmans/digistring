@@ -7,7 +7,8 @@
 
 #include <SDL2/SDL.h>
 
-#include <thread>
+#include <chrono>  // timing
+#include <thread>  // sleep
 
 
 SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) {
