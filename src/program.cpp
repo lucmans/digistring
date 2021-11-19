@@ -12,8 +12,8 @@
 #include <SDL2/SDL.h>
 
 
-Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) {
-    graphics = _g;
+Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) : graphics(_g) {
+    // graphics = _g;
 
     in_dev = _in;
     out_dev = _out;

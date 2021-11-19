@@ -22,7 +22,7 @@ class Program {
 
 
     private:
-        Graphics *graphics;
+        Graphics *const graphics;
 
         SDL_AudioDeviceID *in_dev;
         SDL_AudioDeviceID *out_dev;

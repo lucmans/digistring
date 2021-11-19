@@ -7,12 +7,17 @@
 
 #include <SDL2/SDL.h>
 
+#include <forward_list>
 #include <list>
 
 
 enum class PlotType {
     spectrogram, interpolated_spectrogram, waterfall
 };
+
+// List of plot types to switch between
+// Graphics starts with first plot type in this list
+const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, PlotType::interpolated_spectrogram};
 
 
 struct DataPoint {

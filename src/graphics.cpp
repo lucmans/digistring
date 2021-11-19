@@ -9,6 +9,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include <cstring>
+#include <algorithm>
 
 
 Graphics::Graphics() {
@@ -55,7 +56,7 @@ Graphics::Graphics() {
     SDL_RenderCopy(renderer, frame_buffer, NULL, NULL);
     SDL_RenderPresent(renderer);
 
-    plot_type = PlotType::spectrogram;
+    plot_type = *(display_plot_type.begin());
     max_recorded_value = 0.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
     n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
@@ -139,20 +140,21 @@ void Graphics::set_max_display_frequency(const double f) {
 
 
 void Graphics::next_plot_type() {
-    switch(plot_type) {
-        case PlotType::spectrogram:
-            plot_type = PlotType::interpolated_spectrogram;
-            break;
-
-        case PlotType::interpolated_spectrogram:
-            // plot_type = PlotType::spectrogram;
-            plot_type = PlotType::waterfall;
-            break;
-
-        case PlotType::waterfall:
-            plot_type = PlotType::spectrogram;
-            break;
+    // Get to current plot type in the list of plot types to display
+    std::forward_list<PlotType>::const_iterator current_type = std::find(display_plot_type.begin(), display_plot_type.end(), plot_type);
+    if(current_type == display_plot_type.end()) {
+        warning("Current plot type not in list of plot types to display. Graphics was likely initialized with plot type not in the display_plot_type list.");
+        plot_type = *(display_plot_type.begin());
+        return;
     }
+
+    // Get next in list
+    std::forward_list<PlotType>::const_iterator next_type = ++current_type;
+    if(next_type == display_plot_type.end())  // Loop to start
+        next_type = display_plot_type.begin();
+
+    // Actually set the new plot type
+    plot_type = *next_type;
 }
 
 

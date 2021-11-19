@@ -12,11 +12,7 @@
 
 
 HighRes::HighRes(float *const input_buffer) {
-    // in = (float*)fftwf_malloc(FRAME_SIZE * sizeof(float));
-    // if(in == NULL) {
-    //     error("Failed to malloc input buffer");
-    //     exit(EXIT_FAILURE);
-    // }
+    // Input buffer is allocated by caller, as it is shared between multiple objects
 
     out = (fftwf_complex*)fftwf_malloc(((FRAME_SIZE / 2) + 1) * sizeof(fftwf_complex));
     if(out == NULL) {
