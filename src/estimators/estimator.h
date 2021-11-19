@@ -34,7 +34,7 @@ class Estimator {
         // The next function "forces" everyone to implement the static method
         virtual float *_create_input_buffer(int &buffer_size) const = 0;
 
-        void free_input_buffer(float *const input_buffer) const;
+        static void free_input_buffer(float *const input_buffer);
 
         double get_max_norm() const;
         void get_data_point(const double *&out_norms, int &norms_size) const;

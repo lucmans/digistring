@@ -73,6 +73,9 @@ Graphics::Graphics() {
 Graphics::~Graphics() {
     SDL_DestroyTexture(spectrogram_buffer);
 
+    for(auto &dp : data_points)
+        SDL_DestroyTexture(dp.waterfall_line_buffer);
+
     SDL_DestroyTexture(frame_buffer);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

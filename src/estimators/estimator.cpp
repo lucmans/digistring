@@ -20,7 +20,7 @@ Estimator::~Estimator() {
 }
 
 
-void Estimator::free_input_buffer(float *const input_buffer) const {
+/* static */ void Estimator::free_input_buffer(float *const input_buffer) {
     fftwf_free(input_buffer);
 }
 

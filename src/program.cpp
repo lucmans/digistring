@@ -59,13 +59,13 @@ void Program::main_loop() {
         // Send frame to estimator
         estimator->perform(input_buffer);
 
-        // Print estimation
+        // Print note estimation
 
         // Graphics
         if(!settings.headless) {
             // Get data from estimator for graphics
             graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
-    
+
             const double *norms;
             int norm_size;
             estimator->get_data_point(norms, norm_size);
@@ -81,7 +81,7 @@ void Program::main_loop() {
     }
 
     delete estimator;
-    fftwf_free(input_buffer);
+    Estimator::free_input_buffer(input_buffer);
 }
 
 

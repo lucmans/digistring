@@ -31,8 +31,9 @@ HighRes::HighRes(float *const input_buffer) {
 }
 
 HighRes::~HighRes() {
-    fftwf_free(out);
     fftwf_destroy_plan(p);
+    // fftwf_cleanup();
+    fftwf_free(out);
 }
 
 
@@ -78,9 +79,4 @@ void HighRes::perform(float *const input_buffer) {
     double power;
     calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
-
-    // if(!settings.headless) {
-    //     graphics->set_max_recorded_value_if_larger(max_norm);
-    //     graphics->add_data_point(norms);
-    // }
 }

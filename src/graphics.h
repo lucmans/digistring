@@ -19,9 +19,10 @@ struct DataPoint {
     double norms[(FRAME_SIZE / 2) + 1];
     SDL_Texture *waterfall_line_buffer = NULL;
 
-    ~DataPoint() {
-        SDL_DestroyTexture(waterfall_line_buffer);
-    };
+    // Destroyed in destructor of Graphics class, as destroying the renderer invalidates the texture pointer
+    // ~DataPoint() {
+    //     SDL_DestroyTexture(waterfall_line_buffer);
+    // };
 };
 
 
