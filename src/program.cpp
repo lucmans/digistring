@@ -37,7 +37,7 @@ void Program::main_loop() {
     if(settings.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
-    if(!settings.headless) {
+    if constexpr(!HEADLESS) {
         // graphics->set_max_display_frequency(90000);
         graphics->set_max_display_frequency(3000);
     }
@@ -62,7 +62,7 @@ void Program::main_loop() {
         // Print note estimation
 
         // Graphics
-        if(!settings.headless) {
+        if(!HEADLESS) {
             // Get data from estimator for graphics
             graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
 

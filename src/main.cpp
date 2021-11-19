@@ -24,9 +24,9 @@ void parse_args(int argc, char *argv[]) {
         if(strcmp(argv[i], "-f") == 0) {
             settings.fullscreen = true;
         }
-        else if(strcmp(argv[i], "-hl") == 0) {
-            settings.headless = true;
-        }
+        // else if(strcmp(argv[i], "-hl") == 0) {
+        //     settings.headless = true;
+        // }
         else if(strcmp(argv[i], "-p") == 0) {
             settings.playback = true;
         }
@@ -93,7 +93,7 @@ void parse_args(int argc, char *argv[]) {
 
             std::cout << "Flags:\n"
                       << "  -f          - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
-                      << "  -hl         - Run headless (no window with graphics)\n"
+                      // << "  -hl         - Run headless (no window with graphics)\n"
                       << "  -p          - Play recorded audio back\n"
                       << "  -perf       - Output performance stats in stdout\n"
                       << "  -r <w> <h>  - Start GUI with given resolution\n"
@@ -123,7 +123,7 @@ void print_program_config_info() {
               << "Maximum Fourier frequency: " << MAX_FOURIER_FREQUENCY << " Hz" << std::endl
               << std::endl;
 
-    if(!settings.headless) {
+    if constexpr(!HEADLESS) {
         std::cout << "Data history RAM size: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb" << std::endl
                   << std::endl;
     }
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
     info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
 
     Graphics *graphics = nullptr;
-    if(!settings.headless) {
+    if constexpr(!HEADLESS) {
         if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
             warning("SDL could not initialize video; running headless instead\nSDL Error: " + STR(SDL_GetError()));
         else

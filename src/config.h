@@ -22,6 +22,8 @@ static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Aud
 
 
 /* Graphics config */
+const bool HEADLESS = false;
+
 const int DEFAULT_RES[2] = {1024, 768};
 const int MIN_RES[2] = {800, 600};
 
@@ -56,8 +58,8 @@ struct Settings {
     int h = DEFAULT_RES[1];
     bool fullscreen = false;
 
-    // Run without window/graphics
-    bool headless = false;
+    // // Run without window/graphics
+    // bool headless = false;
 
     // Print performance measurements every frame
     bool output_performance = false;
