@@ -13,9 +13,6 @@ class Tuned : public Estimator {
 
         Estimators get_type() const override;
 
-        // float *get_input_buffer() const override;
-        // float *get_input_buffer(int &buffer_size) const override;
-
         // The input buffer has to be freed by caller using fftwf_free()
         static float *create_input_buffer(int &buffer_size);
         float *_create_input_buffer(int &buffer_size) const override;

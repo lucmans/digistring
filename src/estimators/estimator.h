@@ -19,6 +19,7 @@ enum class Estimators {
 extern const std::map<const Estimators, const std::string> EstimatorString;
 
 
+#include "../config.h"
 class Estimator {
     public:
         Estimator();
@@ -35,10 +36,16 @@ class Estimator {
 
         void free_input_buffer(float *const input_buffer) const;
 
+        double get_max_norm() const;
+        void get_data_point(const double *&out_norms, int &norms_size) const;
+
         virtual void perform(float *const input_buffer) = 0;
 
 
     protected:
+        // Graphics output related variables
+        double norms[(FRAME_SIZE / 2) + 1];
+        double max_norm;
 };
 
 

@@ -61,12 +61,17 @@ void Program::main_loop() {
 
         // Print estimation
 
-        // Get data from estimator for graphics
-        // if(!settings.headless) {
-        // }
-
-
+        // Graphics
         if(!settings.headless) {
+            // Get data from estimator for graphics
+            graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
+    
+            const double *norms;
+            int norm_size;
+            estimator->get_data_point(norms, norm_size);
+            graphics->add_data_point(norms);
+
+            // Render data
             graphics->render_frame();
             perf.push_time_point("Frame rendered");
         }

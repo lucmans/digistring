@@ -21,7 +21,7 @@ class HighRes : public Estimator {
         float *_create_input_buffer(int &buffer_size) const override;
 
         // Implemented by superclass
-        // void free_input_buffer(float *const input_buffer) const {
+        // void free_input_buffer(float *const input_buffer) const;
 
         void perform(float *const input_buffer) override;
 

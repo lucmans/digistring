@@ -12,7 +12,7 @@ WARNINGS = -Wall -Wextra #-Wfloat-conversion #-Wconversion -Warith-conversion
 # FLAGS = -DCOLORED
 OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
 LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
-INC = -Ilib/include/
+INCL = -Ilib/include/
 CORES = 20
 
 SRC_FILES = src/*.h src/*.cpp src/estimators/*.h src/estimators/*.cpp
@@ -47,7 +47,7 @@ $(BUILD_FOLDERS):
 
 # Object file rule. Also makes dependency files using $(DEPFLAGS)
 obj/%.o: src/%.cpp
-	$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INC) $(WARNINGS) $(FLAGS) $(OPTIMIZATIONS) -c $< -o $@
+	$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCL) $(WARNINGS) $(FLAGS) $(OPTIMIZATIONS) -c $< -o $@
 
 # Include the dependencies
 include $(wildcard $(patsubst obj/%.o, dep/%.d, $(OBJ)))
