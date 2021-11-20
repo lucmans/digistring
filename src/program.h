@@ -4,9 +4,8 @@
 
 
 #include "graphics.h"
-#include "config.h"
-
 #include "sample_getter.h"
+#include "config.h"
 
 #include <SDL2/SDL.h>
 

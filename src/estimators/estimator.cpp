@@ -1,6 +1,11 @@
 
 #include "estimator.h"
 
+#include "../config.h"
+#include "../error.h"
+
+#include "../spectrum.h"
+
 #include <fftw3.h>
 
 #include <map>
@@ -12,7 +17,7 @@ const std::map<const Estimators, const std::string> EstimatorString = {{Estimato
 
 
 Estimator::Estimator() {
-
+    max_norm = 0.0;
 }
 
 Estimator::~Estimator() {
@@ -26,11 +31,20 @@ Estimator::~Estimator() {
 
 
 double Estimator::get_max_norm() const {
+    if constexpr(HEADLESS) {
+        error("This call should never occur with headless mode");
+        exit(EXIT_FAILURE);
+    }
+
     return max_norm;
 }
 
-#include "../config.h"
-void Estimator::get_data_point(const double *&out_norms, int &norms_size) const {
-    out_norms = norms;
-    norms_size = (FRAME_SIZE / 2) + 1;
+const SpectrumData *Estimator::get_spectrum_data() {
+    if constexpr(HEADLESS) {
+        error("This call should never occur with headless mode");
+        exit(EXIT_FAILURE);
+    }
+
+    spectrum.sort();
+    return spectrum.get_data();
 }

@@ -3,7 +3,7 @@
 
 #include "error.h"
 
-#include <string>
+#include <string.h>  // sigabbrev_np()
 
 
 Settings settings;

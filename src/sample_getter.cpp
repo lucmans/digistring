@@ -9,6 +9,7 @@
 
 #include <chrono>  // timing
 #include <thread>  // sleep
+#include <cmath>
 
 
 SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) {

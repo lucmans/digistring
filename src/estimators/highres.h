@@ -3,8 +3,9 @@
 #define HIGHRES_H
 
 
-#include "estimator.h"
 #include "../config.h"
+
+#include "estimator.h"
 
 #include <fftw3.h>
 

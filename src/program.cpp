@@ -2,12 +2,12 @@
 #include "program.h"
 
 #include "graphics.h"
+#include "sample_getter.h"
 #include "performance.h"
 #include "config.h"
 #include "error.h"
 
 #include "estimators/estimators.h"
-#include "sample_getter.h"
 
 #include <SDL2/SDL.h>
 
@@ -66,10 +66,8 @@ void Program::main_loop() {
             // Get data from estimator for graphics
             graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
 
-            const double *norms;
-            int norm_size;
-            estimator->get_data_point(norms, norm_size);
-            graphics->add_data_point(norms);
+            graphics->add_data_point(estimator->get_spectrum_data());
+            perf.push_time_point("Graphics parsed data");
 
             // Render data
             graphics->render_frame();
@@ -88,7 +86,6 @@ void Program::main_loop() {
 void Program::resize(const int w, const int h) {
     graphics->resize_window(w, h);
 }
-
 
 
 void Program::handle_sdl_events() {

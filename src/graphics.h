@@ -5,10 +5,12 @@
 
 #include "config.h"
 
+#include "spectrum.h"
+
 #include <SDL2/SDL.h>
 
-#include <forward_list>
-#include <list>
+#include <forward_list>  // For display_plot_type
+#include <list>  // For Graphics.data_points
 
 
 enum class PlotType {
@@ -17,17 +19,12 @@ enum class PlotType {
 
 // List of plot types to switch between
 // Graphics starts with first plot type in this list
-const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, PlotType::interpolated_spectrogram};
+const std::forward_list<PlotType> display_plot_type = {PlotType::waterfall, PlotType::spectrogram, PlotType::interpolated_spectrogram};
 
 
-struct DataPoint {
-    double norms[(FRAME_SIZE / 2) + 1];
+struct DataCache {
+    SpectrumData spectrum_data;
     SDL_Texture *waterfall_line_buffer = NULL;
-
-    // Destroyed in destructor of Graphics class, as destroying the renderer invalidates the texture pointer
-    // ~DataPoint() {
-    //     SDL_DestroyTexture(waterfall_line_buffer);
-    // };
 };
 
 
@@ -49,7 +46,7 @@ class Graphics {
         // Returns if size was changed
         bool resize_window(const int w, const int h);
 
-        void add_data_point(const double data[(FRAME_SIZE / 2) + 1]);
+        void add_data_point(const SpectrumData *const data);
 
         // Render the frame to the framebuffer
         void render_frame();
@@ -63,7 +60,7 @@ class Graphics {
         SDL_Texture *frame_buffer;
 
         PlotType plot_type;
-        std::list<DataPoint> data_points;
+        std::list<DataCache> data_points;
         double max_recorded_value;
 
         double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions

@@ -5,11 +5,12 @@
 #include "config.h"
 #include "error.h"
 
+#include "spectrum.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#include <cstring>
-#include <algorithm>
+#include <algorithm>  // std::find()
 
 
 Graphics::Graphics() {
@@ -143,7 +144,7 @@ void Graphics::next_plot_type() {
     // Get to current plot type in the list of plot types to display
     std::forward_list<PlotType>::const_iterator current_type = std::find(display_plot_type.begin(), display_plot_type.end(), plot_type);
     if(current_type == display_plot_type.end()) {
-        warning("Current plot type not in list of plot types to display. Graphics was likely initialized with plot type not in the display_plot_type list.");
+        warning("Current plot type not in list of plot types to display. Graphics was likely initialized with a plot type not in the display_plot_type list.");
         plot_type = *(display_plot_type.begin());
         return;
     }
@@ -198,17 +199,17 @@ inline uint32_t calc_color(const double data, const double max_value) {
     return rgba;
 }
 
-void Graphics::add_data_point(const double data[(FRAME_SIZE / 2) + 1]) {
-    data_points.push_front(DataPoint());
-    DataPoint &dp = *(data_points.begin());
+void Graphics::add_data_point(const SpectrumData *const data) {
+    data_points.push_front(DataCache());
+    DataCache &dc = *(data_points.begin());
 
-    // Copy frequency domain data over
-    memcpy(dp.norms, data, ((FRAME_SIZE / 2) + 1) * sizeof(double));
+    // Make a copy of sp, as it data local to the estimator which will change
+    dc.spectrum_data = *data;
 
     // Make texture for waterfall plot
-    dp.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, (FRAME_SIZE / 2) + 1, 1);
-    // dp.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, (FRAME_SIZE / 2) + 1, 1);
-    if(dp.waterfall_line_buffer == NULL) {
+    dc.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, (FRAME_SIZE / 2) + 1, 1);
+    // dc.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, (FRAME_SIZE / 2) + 1, 1);
+    if(dc.waterfall_line_buffer == NULL) {
         error("Failed to create texture for line of waterfall buffer\nSDL error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
@@ -216,16 +217,16 @@ void Graphics::add_data_point(const double data[(FRAME_SIZE / 2) + 1]) {
     // Static texture (also set flag in SDL_CreateTexture above)
     uint32_t pixels[(FRAME_SIZE / 2) + 1];
     for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
-        pixels[i] = calc_color(data[i], max_recorded_value);
-    SDL_UpdateTexture(dp.waterfall_line_buffer, NULL, pixels, ((FRAME_SIZE / 2) + 1) * sizeof(uint32_t));
+        pixels[i] = calc_color(dc.spectrum_data[i].amp, max_recorded_value);
+    SDL_UpdateTexture(dc.waterfall_line_buffer, NULL, pixels, ((FRAME_SIZE / 2) + 1) * sizeof(uint32_t));
 
     // Dynamic texture (also set flag in SDL_CreateTexture above)
     // uint32_t *pixels;
     // int pitch;
-    // SDL_LockTexture(dp.waterfall_line_buffer, NULL, (void **)&pixels, &pitch);
+    // SDL_LockTexture(dc.waterfall_line_buffer, NULL, (void **)&pixels, &pitch);
     // for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
-    //     pixels[i] = calc_color(data[i], max_recorded_value);
-    // SDL_UnlockTexture(dp.waterfall_line_buffer);
+    //     pixels[i] = calc_color(dc.spectrum_data[i].amp, max_recorded_value);
+    // SDL_UnlockTexture(dc.waterfall_line_buffer);
 
     // Remove expired points
     if(data_points.size() > MAX_HISTORY_DATAPOINTS)
@@ -270,7 +271,7 @@ void Graphics::render_black_screen() {
 // TODO: Fix n_bins to screen scaling
 // 'Pixel' per bin
 void Graphics::render_spectrogram() {
-    double *norms = (*(data_points.begin())).norms;
+    SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
 
     // Clear spectrogram_buffer
     SDL_SetRenderTarget(renderer, spectrogram_buffer);
@@ -298,10 +299,10 @@ void Graphics::render_spectrogram() {
 
     // Plot line of spectrum
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    // int prev_y = res_h - ((norms[0] / max_recorded_value) * res_h);
+    // int prev_y = res_h - ((spectrum_data[0].amp / max_recorded_value) * res_h);
     int prev_y = res_h - ((0.0 / max_recorded_value) * res_h);
     for(int i = 1; i < n_bins; i++) {
-        int y = res_h - ((norms[i] / max_recorded_value) * res_h);
+        int y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
         SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
         prev_y = y;
     }
@@ -315,21 +316,18 @@ void Graphics::render_spectrogram() {
 
 // Prettier
 void Graphics::render_interpolated_spectrogram() {
-    double *norms = (*(data_points.begin())).norms;
+    SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
 
     SDL_SetRenderTarget(renderer, frame_buffer);
-
-    // Render grip
-    // for(int i = 0; i < n_bins; i++)
 
     // TODO: Envelope and peaks
 
     // Plot line of spectrum
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    // int prev_y = res_h - ((norms[0] / max_recorded_value) * res_h);
+    // int prev_y = res_h - ((spectrum_data[0].amp / max_recorded_value) * res_h);
     int prev_y = res_h - ((0.0 / max_recorded_value) * res_h);
     for(int i = 1; i < n_bins; i++) {
-        int y = res_h - ((norms[i] / max_recorded_value) * res_h);
+        int y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
         SDL_RenderDrawLine(renderer, (i - 1) * ((double)res_w / (double)n_bins), prev_y, i * ((double)res_w / (double)n_bins), y);
         prev_y = y;
     }
@@ -339,7 +337,7 @@ void Graphics::render_interpolated_spectrogram() {
 void Graphics::render_waterfall() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
-    std::list<DataPoint>::iterator it = data_points.begin();
+    std::list<DataCache>::iterator it = data_points.begin();
     int n_data_points = data_points.size();
     for(int i = 0; i < n_data_points && i < res_h; i++) {
         SDL_Rect src_rect = {0, 0, n_bins, 1};

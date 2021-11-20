@@ -1,6 +1,6 @@
 
-#include "graphics.h"
 #include "program.h"
+#include "graphics.h"
 #include "performance.h"
 #include "config.h"
 #include "error.h"

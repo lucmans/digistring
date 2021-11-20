@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include <utility>  // std::pair
 #include <string>
 #include <vector>
 #include <chrono>
@@ -18,7 +19,6 @@ const int DEFAULT_DATA_SIZE = 128;  // Largest a ring buffer can be
 const int N_FRAMES_FPS = 30;  // Number of frames the average FPS is calculated over
 
 
-// Frametime is in microseconds
 class Performance {
     public:
         Performance();

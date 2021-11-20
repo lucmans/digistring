@@ -69,10 +69,14 @@ void HighRes::perform(float *const input_buffer) {
     fftwf_execute(p);
     perf.push_time_point("Fourier transformed");
 
-    // double norms[(FRAME_SIZE / 2) + 1] = {};
-    // double power, max_norm;
-    norms[0] = 0.0;
+    double norms[(FRAME_SIZE / 2) + 1] = {};
     double power;
     calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
+
+    if constexpr(!HEADLESS) {
+        spectrum.clear();
+        for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
+            spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i]);
+    }
 }

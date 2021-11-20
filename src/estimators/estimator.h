@@ -3,6 +3,8 @@
 #define ESTIMATOR_H
 
 
+#include "../spectrum.h"
+
 #include <map>
 #include <string>
 
@@ -19,12 +21,12 @@ enum class Estimators {
 extern const std::map<const Estimators, const std::string> EstimatorString;
 
 
-#include "../config.h"
 class Estimator {
     public:
         Estimator();
         virtual ~Estimator();
 
+        // This function should only return its type as named in Estimators
         virtual Estimators get_type() const = 0;
 
         // Creates (SIMD) aligned input buffer of correct size
@@ -33,18 +35,23 @@ class Estimator {
         /* static float *HighRes::create_input_buffer(int &buffer_size); */
         // The next function "forces" everyone to implement the static method
         virtual float *_create_input_buffer(int &buffer_size) const = 0;
-
+        // And the function to free it
         static void free_input_buffer(float *const input_buffer);
 
+        // Functions for retrieving graphics related data
         double get_max_norm() const;
-        void get_data_point(const double *&out_norms, int &norms_size) const;
+        // The spectrum data pointer is valid till the next perform() call
+        // It also sorts the spectrum, as is needed for the graphics
+        const SpectrumData *get_spectrum_data();
 
+        // Actually performs the estimation
         virtual void perform(float *const input_buffer) = 0;
 
 
     protected:
-        // Graphics output related variables
-        double norms[(FRAME_SIZE / 2) + 1];
+        // Graphics output related variables, so only available in without headless mode
+        // These variables are set during perform, so relate to the last perform call
+        Spectrum spectrum;
         double max_norm;
 };
 

@@ -4,7 +4,6 @@
 #include "config.h"
 #include "error.h"
 
-#include <cstring>
 #include <string>
 #include <vector>
 #include <ostream>

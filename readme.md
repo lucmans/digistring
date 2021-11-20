@@ -41,7 +41,8 @@ All command line arguments can also be printed by running digistring with `-h`.
 # TODO
 Take main loop out of Program class.  
 Font rendering (GUI feedback).  
-Sleep till frame might be ready to read.
+Sleep till frame might be ready to read.  
+Use frequency information in SpectrumData for plot rendering.
 
 
 # BUGS

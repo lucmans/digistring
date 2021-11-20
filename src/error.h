@@ -1,3 +1,4 @@
+
 #ifndef ERROR_H
 #define ERROR_H
 
@@ -89,4 +90,4 @@ std::string __str(T x) {
 #define debug(msg)          __msg("Debug", BLUE, __FILE__, __LINE__, (msg))
 
 
-#endif //#ifndef ERROR_H
+#endif  // ERROR_H
