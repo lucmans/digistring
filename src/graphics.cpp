@@ -76,7 +76,8 @@ Graphics::~Graphics() {
     SDL_DestroyTexture(spectrogram_buffer);
 
     for(auto &dp : data_points)
-        SDL_DestroyTexture(dp.waterfall_line_buffer);
+        if(dp.waterfall_line_buffer != NULL)
+            SDL_DestroyTexture(dp.waterfall_line_buffer);
 
     SDL_DestroyTexture(frame_buffer);
     SDL_DestroyRenderer(renderer);
@@ -93,9 +94,10 @@ void Graphics::set_max_recorded_value_if_larger(const double new_max) {
         max_recorded_value = new_max;
 }
 
-double Graphics::get_max_recorded_value_if_larger() const {
+double Graphics::get_max_recorded_value() const {
     return max_recorded_value;
 }
+
 
 void Graphics::add_max_display_frequency(const double d_f) {
     if(max_display_frequency + d_f > MAX_FOURIER_FREQUENCY) {

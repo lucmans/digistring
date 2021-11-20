@@ -35,7 +35,7 @@ class Graphics {
 
         void set_max_recorded_value(const double new_max);
         void set_max_recorded_value_if_larger(const double new_max);
-        double get_max_recorded_value_if_larger() const;
+        double get_max_recorded_value() const;
 
         void add_max_display_frequency(const double d_f);
         void set_max_display_frequency(const double f);
