@@ -45,4 +45,4 @@ Sleep till frame might be ready to read.
 
 
 # BUGS
-In render_spectrogram(): Fix n_bins to screen scaling.
+...

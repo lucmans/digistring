@@ -25,6 +25,7 @@ const char BOLD[] = "\e[1m";
 const char RESET[] = "\e[0m";
 
 
+// Exception message
 inline std::string __ex_msg(const char *file, int line, const std::string &msg) {
     std::string out_msg = "";
     out_msg += RED;

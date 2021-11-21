@@ -77,8 +77,12 @@ void SampleGetter::read_frame_int32_audio_device(float *const in, const int n_sa
 
         // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
         // Sleep to prevent 100% CPU usage
-        if(ret == 0)
+        if(ret == 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // const int samples_left = n_samples - (read / sizeof(int32_t));
+            // const int sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
+            // std::this_thread::sleep_for(std::chrono::milliseconds(sample_left_time - 1));
+        }
 
         // // Experiment: Comment this for extra performance
         // if(read + ret == n_samples * sizeof(int32_t))
