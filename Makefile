@@ -19,7 +19,7 @@ SRC_FILES = src/*.h src/*.cpp src/estimators/*.h src/estimators/*.cpp
 BUILD_FOLDERS = obj/ obj/estimators/ dep/ dep/estimators/
 
 BIN = digistring
-OBJ = obj/main.o obj/program.o obj/graphics.o obj/sample_getter.o obj/performance.o obj/config.o \
+OBJ = obj/main.o obj/program.o obj/graphics.o obj/graphics_func.o obj/sample_getter.o obj/performance.o obj/config.o \
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
 	  obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o
 

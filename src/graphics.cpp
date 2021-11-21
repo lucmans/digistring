@@ -1,6 +1,7 @@
 
 #include "graphics.h"
 
+#include "graphics_func.h"
 #include "performance.h"
 #include "config.h"
 #include "error.h"
@@ -67,13 +68,22 @@ Graphics::Graphics() {
     // max_display_frequency_number = NULL;
     // max_display_frequency_text = NULL;
 
+    TTF_Font *freeze_font = TTF_OpenFont("rsc/font/DejaVuSans.ttf", 75);
+    if(freeze_font == NULL) {
+        error("Failed to load font '" + STR("rsc/font/DejaVuSans.ttf") + "'\nTTF error: " + TTF_GetError());
+        exit(EXIT_FAILURE);
+    }
     freeze = false;
+    freeze_txt_buffer = create_txt_texture(renderer, "Frozen", freeze_font, {0x00, 0xff, 0xff, 0xff});
+    TTF_CloseFont(freeze_font);
 }
 
 Graphics::~Graphics() {
     for(auto &dp : data_points)
         if(dp.waterfall_line_buffer != NULL)
             SDL_DestroyTexture(dp.waterfall_line_buffer);
+
+    SDL_DestroyTexture(freeze_txt_buffer);
 
     SDL_DestroyTexture(frame_buffer);
     SDL_DestroyRenderer(renderer);
@@ -257,6 +267,7 @@ void Graphics::render_frame() {
     }
 
     render_max_displayed_frequency();
+    render_freeze();
 
     // Render framebuffer to window
     SDL_SetRenderTarget(renderer, NULL);
@@ -357,4 +368,18 @@ void Graphics::render_max_displayed_frequency() {
 
     // SDL_Rect
     // SDL_RenderCopy(renderer, max_display_frequency_text, NULL, NULL);
+}
+
+
+void Graphics::render_freeze() {
+    if(!freeze)
+        return;
+
+    SDL_SetRenderTarget(renderer, frame_buffer);
+
+    int w, h;
+    SDL_QueryTexture(freeze_txt_buffer, NULL, NULL, &w, &h);
+
+    SDL_Rect dst = {res_w - w, 0, w, h};
+    SDL_RenderCopy(renderer, freeze_txt_buffer, NULL, &dst);
 }

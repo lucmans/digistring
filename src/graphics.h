@@ -75,6 +75,7 @@ class Graphics {
         // Graph freezing
         bool freeze;
         SpectrumData freeze_data;
+        SDL_Texture *freeze_txt_buffer;
 
 
         // Render functions render to framebuffer
@@ -85,6 +86,7 @@ class Graphics {
         void render_waterfall();
 
         void render_max_displayed_frequency();
+        void render_freeze();
 };
 
 

@@ -184,6 +184,12 @@ int main(int argc, char *argv[]) {
     }
     info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
 
+    // Init SDL's font rendering engine
+    if(TTF_Init() != 0) {
+        error("TTF rendering engine could not initialize\nTTF error: " + STR(TTF_GetError()));
+        exit(EXIT_FAILURE);
+    }
+
     Graphics *graphics = nullptr;
     if constexpr(!HEADLESS) {
         if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -197,12 +203,6 @@ int main(int argc, char *argv[]) {
     init_audio_devices(in_dev, out_dev);
 
     print_program_config_info();
-
-    // Init font rendering engine
-    if(TTF_Init() != 0) {
-        error("TTF rendering engine could not initialize\nTTF error: " + STR(TTF_GetError()));
-        exit(EXIT_FAILURE);
-    }
 
     // Disable SDL key/mouse events to minimize event overhead
     SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_DISABLE);
