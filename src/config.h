@@ -5,6 +5,8 @@
 
 #include <SDL2/SDL.h>
 
+#include <string>
+
 
 /* Audio config */
 // Transcribe config
@@ -61,6 +63,8 @@ struct Settings {
 
     // // Run without window/graphics
     // bool headless = false;
+
+    std::string rsc_dir = "rsc/";
 
     // Print performance measurements every frame
     bool output_performance = false;

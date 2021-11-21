@@ -15,7 +15,8 @@ In case of failures, try running `make force`.
 
 
 # Usage instructions
-Digistring can be started by running the binary.
+Digistring can be started by running the binary.  
+If the current directory is not the root of the project, set the resource directory using the `-rsc` flag.
 
 Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully shut down as soon as possible.  
 Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
@@ -26,6 +27,7 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
 `-p`: Play recorded audio back.  
 `-perf`: Print performance stats to stdout.  
 `-r [w] [h]`: Run digistring with given resolution.  
+`-rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.
 
 All command line arguments can also be printed by running digistring with `-h`.

@@ -68,9 +68,9 @@ Graphics::Graphics() {
     // max_display_frequency_number = NULL;
     // max_display_frequency_text = NULL;
 
-    TTF_Font *freeze_font = TTF_OpenFont("rsc/font/DejaVuSans.ttf", 75);
+    TTF_Font *freeze_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
     if(freeze_font == NULL) {
-        error("Failed to load font '" + STR("rsc/font/DejaVuSans.ttf") + "'\nTTF error: " + TTF_GetError());
+        error("Failed to load font '" + settings.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);
     }
     freeze = false;

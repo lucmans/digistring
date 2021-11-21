@@ -12,6 +12,8 @@
 #include <csignal>  // catching ctrl+c in terminal
 #include <cstring>  // strcmp()
 #include <string>  // std::stoi()
+#include <filesystem>  // is_directory
+#include <fstream>  // Reading rsc dir verification file
 
 
 void main_loop() {
@@ -63,6 +65,33 @@ void parse_args(int argc, char *argv[]) {
 
             i += 2;
         }
+        else if(strcmp(argv[i], "-rsc") == 0 && argc > i + 1) {
+            std::filesystem::path path(argv[i + 1]);
+            path = path.lexically_normal();
+
+            try {
+                path = std::filesystem::canonical(path);
+            }
+            catch(...) {
+                error("Path '" + std::string(argv[i + 1]) + "' doesn't exist");
+                exit(EXIT_FAILURE);
+            }
+
+            // Get last part of path
+            std::filesystem::path::iterator it = path.end();
+            --it;
+            if(*it == "")  // Is empty if path ends with a /
+                --it;
+
+            if(*it != "rsc") {
+                error("Last part of path is not named 'rsc'");
+                exit(EXIT_FAILURE);
+            }
+
+            settings.rsc_dir = argv[i + 1];
+
+            i += 1;
+        }
         else if(strcmp(argv[i], "-s") == 0) {
             settings.generate_sine = true;
 
@@ -97,6 +126,7 @@ void parse_args(int argc, char *argv[]) {
                       << "  -p          - Play recorded audio back\n"
                       << "  -perf       - Output performance stats in stdout\n"
                       << "  -r <w> <h>  - Start GUI with given resolution\n"
+                      << "  -rsc <path> - Set alternative resource directory location\n"
                       << "  -s [f]      - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
                       << std::endl;
             exit(EXIT_SUCCESS);
@@ -124,7 +154,7 @@ void print_program_config_info() {
               << std::endl;
 
     if constexpr(!HEADLESS) {
-        std::cout << "Data history RAM size: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb" << std::endl
+        std::cout << "Max data history RAM usage: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb" << std::endl
                   << std::endl;
     }
 }
@@ -169,6 +199,31 @@ void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev) {
 }
 
 
+bool verify_rsc_dir() {
+    if(!std::filesystem::is_directory(settings.rsc_dir)) {
+        error("Resource path is not a directory");
+        return false;
+    }
+
+    if(!std::filesystem::exists(settings.rsc_dir + "/verify")) {
+        error("Recourse directory verification file not present");
+        return false;
+    }
+
+    std::ifstream file(settings.rsc_dir + "/verify");
+    std::string line;
+    file >> line;
+    if(line != "4c3f666590eeb398f4606555d3756350") {
+        error("Resource directory verification failed");
+        file.close();
+        return false;
+    }
+    file.close();
+
+    return true;
+}
+
+
 int main(int argc, char *argv[]) {
     // Init program
     signal(SIGINT, signal_handler);
@@ -177,12 +232,16 @@ int main(int argc, char *argv[]) {
 
     parse_args(argc, argv);
 
+    if(!verify_rsc_dir()) {
+        info("You have to point to the resource directory if not running from project root using the '-rsc <path>' flag.");
+        exit(EXIT_FAILURE);
+    }
+
     // Init SDL
     if(SDL_Init(SDL_INIT_AUDIO) < 0) {
         error("SDL could not initialize\nSDL Error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
-    info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
 
     // Init SDL's font rendering engine
     if(TTF_Init() != 0) {
@@ -198,6 +257,7 @@ int main(int argc, char *argv[]) {
             graphics = new Graphics();
     }
 
+    info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
     SDL_AudioDeviceID in_dev, out_dev;
     print_audio_devices();
     init_audio_devices(in_dev, out_dev);
