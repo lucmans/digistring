@@ -10,7 +10,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#include <algorithm>  // std::find()
+#include <algorithm>  // std::find(), std::max()
 
 
 Graphics::Graphics() {
@@ -100,9 +100,9 @@ void Graphics::add_max_display_frequency(const double d_f) {
         n_bins = (FRAME_SIZE / 2) + 1;
     }
     else if(max_display_frequency + d_f < 2.0) {
-        warning("Can't set maximum displayed frequency lower than 2; showing " + STR(MAX_FOURIER_FREQUENCY) + " Hz instead");
-        max_display_frequency = 0.0;
-        n_bins = (FRAME_SIZE / 2) + 1;
+        warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
+        max_display_frequency = MIN_FOURIER_FREQUENCY;
+        n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
     else {
         max_display_frequency += d_f;
@@ -118,10 +118,10 @@ void Graphics::set_max_display_frequency(const double f) {
         max_display_frequency = MAX_FOURIER_FREQUENCY;
         n_bins = (FRAME_SIZE / 2) + 1;
     }
-    else if(f < 2.0) {
-        warning("Can't set maximum displayed frequency lower than 2; showing " + STR(MAX_FOURIER_FREQUENCY) + " Hz instead");
-        max_display_frequency = 0.0;
-        n_bins = (FRAME_SIZE / 2) + 1;
+    else if(f < MIN_FOURIER_FREQUENCY) {
+        warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
+        max_display_frequency = MIN_FOURIER_FREQUENCY;
+        n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
     else {
         max_display_frequency = f;
@@ -266,9 +266,30 @@ void Graphics::render_black_screen() {
 
 
 void Graphics::render_bins() {
-    // SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
+    SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
 
-    // TODO
+    SDL_SetRenderTarget(renderer, frame_buffer);
+
+    float x, y, bin_width;
+    unsigned int i;
+    SDL_SetRenderDrawColor(renderer, 0x1f, 0x77, 0xb4, 0xff);
+    for(i = 0; spectrum_data[i].freq + (spectrum_data[i].bin_size / 2.0) < max_display_frequency && i < spectrum_data.size(); i++) {
+        x = (spectrum_data[i].freq / max_display_frequency) * (float)res_w;
+        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * (float)res_h);
+        bin_width = (spectrum_data[i].bin_size / max_display_frequency) * (float)res_w;
+
+        SDL_FRect rect = {x - (bin_width / 2.0f), y, std::max(bin_width - 1.0f, 1.0f), (float)res_h};
+        SDL_RenderFillRectF(renderer, &rect);
+    }
+
+    if(i < spectrum_data.size()) {
+        x = (spectrum_data[i].freq / max_display_frequency) * (float)res_w;
+        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * (float)res_h);
+        bin_width = (spectrum_data[i].bin_size / max_display_frequency) * (float)res_w;
+
+        SDL_FRect rect = {x - (bin_width / 2.0f), y, std::max(bin_width - 1.0f, 1.0f), (float)res_h};
+        SDL_RenderFillRectF(renderer, &rect);
+    }
 }
 
 
@@ -294,9 +315,11 @@ void Graphics::render_spectrogram() {
     }
 
     // Plot one point behind screen so graph exits screen correctly
-    x = (spectrum_data[i].freq / max_display_frequency) * res_w;
-    y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
-    SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
+    if(i < spectrum_data.size()) {
+        x = (spectrum_data[i].freq / max_display_frequency) * res_w;
+        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
+        SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
+    }
 }
 
 

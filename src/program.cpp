@@ -38,8 +38,9 @@ void Program::main_loop() {
         SDL_PauseAudioDevice(*out_dev, 0);
 
     if constexpr(!HEADLESS) {
-        // graphics->set_max_display_frequency(90000);
-        graphics->set_max_display_frequency(3000);
+        // graphics->set_max_display_frequency(96001);
+        // graphics->set_max_display_frequency(3000);
+        // graphics->set_max_display_frequency(500);
     }
 
     while(!poll_quit()) {

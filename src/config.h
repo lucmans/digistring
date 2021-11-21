@@ -31,6 +31,7 @@ const int MIN_RES[2] = {800, 600};
 constexpr const double DEFAULT_MAX_DISPLAY_FREQUENCY = 3000.0;
 // constexpr const double DEFAULT_MAX_DISPLAY_FREQUENCY = -1.0;  // DEBUG
 constexpr const double MAX_FOURIER_FREQUENCY = (double)SAMPLE_RATE / 2.0;  // Hz
+constexpr const double MIN_FOURIER_FREQUENCY = 50.0;  // Hz
 
 // Maximum number of previous data point to save in RAM for graphics (not used in headless mode)
 const int MAX_HISTORY_DATAPOINTS = 2000;

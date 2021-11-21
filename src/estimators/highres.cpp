@@ -77,6 +77,6 @@ void HighRes::perform(float *const input_buffer) {
     if constexpr(!HEADLESS) {
         spectrum.clear();
         for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
-            spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i]);
+            spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i], (double)SAMPLE_RATE / (double)FRAME_SIZE);
     }
 }
