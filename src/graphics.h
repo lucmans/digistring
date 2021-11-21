@@ -14,12 +14,12 @@
 
 
 enum class PlotType {
-    spectrogram, interpolated_spectrogram, waterfall
+    spectrogram, bins, waterfall
 };
 
 // List of plot types to switch between
 // Graphics starts with first plot type in this list
-const std::forward_list<PlotType> display_plot_type = {PlotType::waterfall, PlotType::spectrogram, PlotType::interpolated_spectrogram};
+const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, PlotType::waterfall/*, PlotType::bins*/};
 
 
 struct DataCache {
@@ -46,6 +46,7 @@ class Graphics {
         // Returns if size was changed
         bool resize_window(const int w, const int h);
 
+        // The SpectrumData has to be sorted on ascending frequency
         void add_data_point(const SpectrumData *const data);
 
         // Render the frame to the framebuffer
@@ -69,15 +70,12 @@ class Graphics {
         // SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
         SDL_Texture *max_display_frequency_text;  // Rendered text
 
-        // Used for non-interpolated spectrogram rendering
-        SDL_Texture *spectrogram_buffer;
-
 
         // Render functions render to framebuffer
         void render_black_screen();
 
+        void render_bins();
         void render_spectrogram();
-        void render_interpolated_spectrogram();
         void render_waterfall();
 
         void render_max_displayed_frequency();

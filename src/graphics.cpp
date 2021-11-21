@@ -62,10 +62,6 @@ Graphics::Graphics() {
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
     n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
-    // Spectrogram plot data
-    spectrogram_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, (FRAME_SIZE / 2) + 1, res_h);
-    SDL_SetTextureBlendMode(spectrogram_buffer, SDL_BLENDMODE_BLEND);
-
     // TODO: create font textures
     // max_display_frequency_text = NULL;
     // max_display_frequency_number = NULL;
@@ -73,8 +69,6 @@ Graphics::Graphics() {
 }
 
 Graphics::~Graphics() {
-    SDL_DestroyTexture(spectrogram_buffer);
-
     for(auto &dp : data_points)
         if(dp.waterfall_line_buffer != NULL)
             SDL_DestroyTexture(dp.waterfall_line_buffer);
@@ -206,6 +200,7 @@ void Graphics::add_data_point(const SpectrumData *const data) {
     DataCache &dc = *(data_points.begin());
 
     // Make a copy of sp, as it data local to the estimator which will change
+    // This assignment calls the copy constructor of std::vector
     dc.spectrum_data = *data;
 
     // Make texture for waterfall plot
@@ -244,8 +239,8 @@ void Graphics::render_frame() {
             render_spectrogram();
             break;
 
-        case PlotType::interpolated_spectrogram:
-            render_interpolated_spectrogram();
+        case PlotType::bins:
+            render_bins();
             break;
 
         case PlotType::waterfall:
@@ -270,54 +265,14 @@ void Graphics::render_black_screen() {
 }
 
 
-// TODO: Fix n_bins to screen scaling
-// 'Pixel' per bin
-void Graphics::render_spectrogram() {
-    SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
+void Graphics::render_bins() {
+    // SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
 
-    // Clear spectrogram_buffer
-    SDL_SetRenderTarget(renderer, spectrogram_buffer);
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
-    SDL_RenderClear(renderer);
-
-    // // Color found peaks
-    // SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
-    // for(unsigned int i = 0; i < peaks.size(); i++) {
-    //     if(peaks[i] >= n_bins)
-    //         continue;
-    //     SDL_RenderDrawLine(renderer, peaks[i], 0, peaks[i], res_h);
-    // }
-
-    // // Plot envelope
-    // SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
-    // int prev_y = res_h - ((envelope[0] / max_recorded_value) * res_h);
-    // for(int i = 1; i < n_bins; i++) {
-    //     int y = res_h - ((envelope[i] / max_recorded_value) * res_h);
-    //     SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
-    //     prev_y = y;
-    // }
-
-    // info(STR(n_bins));
-
-    // Plot line of spectrum
-    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    // int prev_y = res_h - ((spectrum_data[0].amp / max_recorded_value) * res_h);
-    int prev_y = res_h - ((0.0 / max_recorded_value) * res_h);
-    for(int i = 1; i < n_bins; i++) {
-        int y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
-        SDL_RenderDrawLine(renderer, i - 1, prev_y, i, y);
-        prev_y = y;
-    }
-
-    // Render spectrogram_buffer to frame_buffer
-    SDL_SetRenderTarget(renderer, frame_buffer);
-    SDL_Rect src_spectrogram_buffer = {0, 0, n_bins, res_h};
-    SDL_RenderCopy(renderer, spectrogram_buffer, &src_spectrogram_buffer, NULL);
+    // TODO
 }
 
 
-// Prettier
-void Graphics::render_interpolated_spectrogram() {
+void Graphics::render_spectrogram() {
     SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
 
     SDL_SetRenderTarget(renderer, frame_buffer);
@@ -325,14 +280,23 @@ void Graphics::render_interpolated_spectrogram() {
     // TODO: Envelope and peaks
 
     // Plot line of spectrum
+    int prev_x = 0;
+    int prev_y = res_h - 1;
+    int x, y;
+    unsigned int i;
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    // int prev_y = res_h - ((spectrum_data[0].amp / max_recorded_value) * res_h);
-    int prev_y = res_h - ((0.0 / max_recorded_value) * res_h);
-    for(int i = 1; i < n_bins; i++) {
-        int y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
-        SDL_RenderDrawLine(renderer, (i - 1) * ((double)res_w / (double)n_bins), prev_y, i * ((double)res_w / (double)n_bins), y);
+    for(i = 1; spectrum_data[i].freq < max_display_frequency && i < spectrum_data.size(); i++) {
+        x = (spectrum_data[i].freq / max_display_frequency) * res_w;
+        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
+        SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
+        prev_x = x;
         prev_y = y;
     }
+
+    // Plot one point behind screen so graph exits screen correctly
+    x = (spectrum_data[i].freq / max_display_frequency) * res_w;
+    y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
+    SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
 }
 
 
@@ -342,7 +306,7 @@ void Graphics::render_waterfall() {
     std::list<DataCache>::iterator it = data_points.begin();
     int n_data_points = data_points.size();
     for(int i = 0; i < n_data_points && i < res_h; i++) {
-        SDL_Rect src_rect = {0, 0, n_bins, 1};
+        SDL_Rect src_rect = {0, 0, n_bins, 1};  // TODO: Calculate the number of points that should be used
         SDL_Rect dst_rect = {0, i, res_w, 1};
         SDL_RenderCopy(renderer, (*it).waterfall_line_buffer, &src_rect, &dst_rect);
         it++;
