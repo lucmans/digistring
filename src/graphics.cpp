@@ -66,6 +66,8 @@ Graphics::Graphics() {
     // max_display_frequency_text = NULL;
     // max_display_frequency_number = NULL;
     // max_display_frequency_text = NULL;
+
+    freeze = false;
 }
 
 Graphics::~Graphics() {
@@ -134,6 +136,12 @@ void Graphics::set_max_display_frequency(const double f) {
 // double Graphics::get_max_display_frequency() {
 //     return max_display_frequency;
 // }
+
+
+void Graphics::toggle_freeze_graph() {
+    freeze = !freeze;
+    freeze_data = (*(data_points.begin())).spectrum_data;
+}
 
 
 void Graphics::next_plot_type() {
@@ -266,7 +274,7 @@ void Graphics::render_black_screen() {
 
 
 void Graphics::render_bins() {
-    SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
+    SpectrumData spectrum_data = (freeze ? freeze_data : (*(data_points.begin())).spectrum_data);
 
     SDL_SetRenderTarget(renderer, frame_buffer);
 
@@ -294,7 +302,7 @@ void Graphics::render_bins() {
 
 
 void Graphics::render_spectrogram() {
-    SpectrumData &spectrum_data = (*(data_points.begin())).spectrum_data;
+    SpectrumData spectrum_data = (freeze ? freeze_data : (*(data_points.begin())).spectrum_data);
 
     SDL_SetRenderTarget(renderer, frame_buffer);
 
@@ -309,7 +317,14 @@ void Graphics::render_spectrogram() {
     for(i = 1; spectrum_data[i].freq < max_display_frequency && i < spectrum_data.size(); i++) {
         x = (spectrum_data[i].freq / max_display_frequency) * res_w;
         y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
+
+        // SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
         SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
+
+        // Draw actual measured points
+        // SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+        // SDL_RenderDrawPoint(renderer, prev_x, prev_y);
+
         prev_x = x;
         prev_y = y;
     }

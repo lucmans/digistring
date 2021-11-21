@@ -129,6 +129,10 @@ void Program::handle_sdl_events() {
                         graphics->add_max_display_frequency(1000.0);
                         break;
 
+                    case SDLK_f:
+                        graphics->toggle_freeze_graph();
+                        break;
+
                     // TODO: Switching sound source, and on switching call SDL_ClearQueuedAudio(*in_dev)
 
                     // // sleep

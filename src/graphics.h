@@ -41,6 +41,8 @@ class Graphics {
         void set_max_display_frequency(const double f);
         // double get_max_display_frequency();
 
+        void toggle_freeze_graph();
+
         void next_plot_type();
 
         // Returns if size was changed
@@ -69,6 +71,10 @@ class Graphics {
         // SDL_Texture *max_display_frequency_text;  // Rendered static text
         // SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
         SDL_Texture *max_display_frequency_text;  // Rendered text
+
+        // Graph freezing
+        bool freeze;
+        SpectrumData freeze_data;
 
 
         // Render functions render to framebuffer
