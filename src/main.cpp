@@ -5,6 +5,8 @@
 #include "config.h"
 #include "error.h"
 
+#include "note.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -14,10 +16,35 @@
 #include <string>  // std::stoi()
 #include <filesystem>  // is_directory
 #include <fstream>  // Reading rsc dir verification file
+#include <optional>  // Construct note without initializing it
 
 
 void main_loop() {
 
+}
+
+
+void print_overtones(std::string note_string, const int n_overtones) {
+    std::optional<Note> tmp_note;
+    try {
+        tmp_note = string_to_note(note_string);
+    }
+    catch(std::string what) {
+        error("Failed to parse note string: " + what);
+        exit(EXIT_FAILURE);
+    }
+
+    // Getting here implies tmp_note was successfully initialized
+    Note &note = *tmp_note;
+
+    // TODO: Better column printing
+    std::cout << std::right;
+    std::cout << std::setw(2) << "n" << std::setw(12) << "f_harmonic" << std::setw(14) << "closest note" << std::setw(11) <<  "f_closest" << std::setw(11) << "cent error" << std::endl;
+    for(int i = 1; i <= n_overtones; i++) {
+        Note overtone(note.freq * i, 0);
+        std::cout << std::fixed << std::setprecision(3) << std::setw(2) << i << std::setw(12) << note.freq * i << std::setw(13) << overtone << std::setw(11) << A4 * exp2(round(12.0 * log2((note.freq * i) / A4)) / 12.0) << std::setw(11) << overtone.error << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 
@@ -29,6 +56,23 @@ void parse_args(int argc, char *argv[]) {
         // else if(strcmp(argv[i], "-hl") == 0) {
         //     settings.headless = true;
         // }
+        else if(strcmp(argv[i], "-over") == 0 && argc > i + 1) {
+            int n = 5;
+            if(argc > i + 2) {
+                if(argv[i + 2][0] != '-') {
+                    try {
+                        n = std::stoi(argv[i + 2]);
+                    }
+                    catch(...) {
+                        error("Failed to parse n '" + std::string(argv[i + 2]) + "'");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
+
+            print_overtones(argv[i + 1], n);
+            exit(EXIT_SUCCESS);
+        }
         else if(strcmp(argv[i], "-p") == 0) {
             settings.playback = true;
         }
@@ -121,13 +165,14 @@ void parse_args(int argc, char *argv[]) {
                 std::cout << "Incorrect usage.\n" << std::endl;
 
             std::cout << "Flags:\n"
-                      << "  -f          - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
-                      // << "  -hl         - Run headless (no window with graphics)\n"
-                      << "  -p          - Play recorded audio back\n"
-                      << "  -perf       - Output performance stats in stdout\n"
-                      << "  -r <w> <h>  - Start GUI with given resolution\n"
-                      << "  -rsc <path> - Set alternative resource directory location\n"
-                      << "  -s [f]      - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
+                      << "  -f               - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
+                      // << "  -hl              - Run headless (no window with graphics)\n"
+                      << "  -over <note> [n] - Print n (default is 5) overtones of given note\n"
+                      << "  -p               - Play recorded audio back\n"
+                      << "  -perf            - Output performance stats in stdout\n"
+                      << "  -r <w> <h>       - Start GUI with given resolution\n"
+                      << "  -rsc <path>      - Set alternative resource directory location\n"
+                      << "  -s [f]           - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
                       << std::endl;
             exit(EXIT_SUCCESS);
         }

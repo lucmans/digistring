@@ -8,6 +8,9 @@
 #include <string>
 
 
+constexpr const double A4 = 440.0;  // Hz
+
+
 /* Audio config */
 // Transcribe config
 const int SAMPLE_RATE = 96000 * 2;

@@ -23,7 +23,7 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
 
 ## Command line arguments
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
-`-hl`: Run digistring headless. This means no window will be created and no graphics are shown.  
+`-over <note> [n]`: Print n (default is 5) overtones of given note.  
 `-p`: Play recorded audio back.  
 `-perf`: Print performance stats to stdout.  
 `-r [w] [h]`: Run digistring with given resolution.  
