@@ -8,6 +8,7 @@
 #include "spectrum.h"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <forward_list>  // For display_plot_type
 #include <list>  // For Graphics.data_points
@@ -68,9 +69,9 @@ class Graphics {
 
         double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
         int n_bins;  // Maximum bins to show; should only be set by *max_display_frequency() functions
-        // SDL_Texture *max_display_frequency_text;  // Rendered static text
-        // SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
-        SDL_Texture *max_display_frequency_text;  // Rendered text
+        TTF_Font *max_display_frequency_font;
+        SDL_Texture *max_display_frequency_text;  // Rendered static text
+        SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
 
         // Graph freezing
         bool freeze;

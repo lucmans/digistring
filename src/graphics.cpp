@@ -64,9 +64,13 @@ Graphics::Graphics() {
     n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
     // TODO: create font textures
-    // max_display_frequency_text = NULL;
-    // max_display_frequency_number = NULL;
-    // max_display_frequency_text = NULL;
+    max_display_frequency_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
+    if(max_display_frequency_font == NULL) {
+        error("Failed to load font '" + settings.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
+        exit(EXIT_FAILURE);
+    }
+    max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
+    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
 
     TTF_Font *freeze_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
     if(freeze_font == NULL) {
@@ -84,6 +88,10 @@ Graphics::~Graphics() {
             SDL_DestroyTexture(dp.waterfall_line_buffer);
 
     SDL_DestroyTexture(freeze_txt_buffer);
+
+    SDL_DestroyTexture(max_display_frequency_text);
+    SDL_DestroyTexture(max_display_frequency_number);
+    TTF_CloseFont(max_display_frequency_font);
 
     SDL_DestroyTexture(frame_buffer);
     SDL_DestroyRenderer(renderer);
@@ -121,7 +129,10 @@ void Graphics::add_max_display_frequency(const double d_f) {
         n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 
-    info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
+    SDL_DestroyTexture(max_display_frequency_number);
+    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
+
+    // info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
 }
 
 void Graphics::set_max_display_frequency(const double f) {
@@ -140,7 +151,10 @@ void Graphics::set_max_display_frequency(const double f) {
         n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 
-    info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
+    SDL_DestroyTexture(max_display_frequency_number);
+    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
+
+    // info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
 }
 
 // double Graphics::get_max_display_frequency() {
@@ -366,8 +380,15 @@ void Graphics::render_waterfall() {
 void Graphics::render_max_displayed_frequency() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
-    // SDL_Rect
-    // SDL_RenderCopy(renderer, max_display_frequency_text, NULL, NULL);
+    int w, h;
+    SDL_QueryTexture(max_display_frequency_text, NULL, NULL, &w, &h);
+    SDL_Rect dst = {0, 0, w, h};
+    SDL_RenderCopy(renderer, max_display_frequency_text, NULL, &dst);
+
+    int w2;
+    SDL_QueryTexture(max_display_frequency_number, NULL, NULL, &w2, &h);
+    dst = {w, 0, w2, h};
+    SDL_RenderCopy(renderer, max_display_frequency_number, NULL, &dst);
 }
 
 
