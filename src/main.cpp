@@ -270,6 +270,11 @@ void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev) {
 
 
 bool verify_rsc_dir() {
+    if(!std::filesystem::exists(settings.rsc_dir)) {
+        error("Resource path not found");
+        return false;
+    }
+
     if(!std::filesystem::is_directory(settings.rsc_dir)) {
         error("Resource path is not a directory");
         return false;
