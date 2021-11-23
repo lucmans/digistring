@@ -39,16 +39,13 @@ Note::Note(const double _freq, const double _amp) {
     amp = _amp;
 
     constexpr const double C0 = A4 * exp2(-57.0 / 12.0);
-    const double note_distance_decimal = (12.0 * log2(freq / C0)) + 0.5;  // Below inline if offsets doubles rounding up when converting to int
-    const int note_distance = (int)note_distance_decimal + (note_distance_decimal < 0 ? -1 : 0);
+    const int note_distance = (int)round(12.0 * log2(freq / C0));
 
     // First modulo to get a number within -12 < n < 12, then add 12 and another modulo to get 0 <= n < 12
     note = static_cast<Notes>(((note_distance % 12) + 12) % 12);
-    octave = note_distance / 12;
-    if(note_distance < 0 && note != Notes::C)  // Offset doubles rounding up when converting to int
-        octave--;
+    octave = floor((double)note_distance / 12.0);
 
-    const double tuned = C0 * exp2((double)octave + (double)((double)note / 12.0));
+    const double tuned = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
     error = 1200.0 * log2(freq / tuned);
 }
 
@@ -57,7 +54,7 @@ Note::Note(const Notes _note, const int _octave) {
     octave = _octave;
 
     constexpr const double C0 = A4 * exp2(-57.0 / 12.0);
-    freq = C0 * exp2((double)octave + (double)((double)note / 12.0));
+    freq = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
     amp = -1.0;
     error = 0.0;
 }

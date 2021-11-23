@@ -23,7 +23,7 @@ struct Note {
     double error;  // In cents, so between -50 and 50
 
     Note(const double freq, const double amp);
-    Note(const Notes note, const int octave);
+    Note(const Notes note, const int octave);  // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
 };
 
 std::ostream& operator<<(std::ostream &s, const Note &note);
