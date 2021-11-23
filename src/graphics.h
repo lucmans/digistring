@@ -68,7 +68,7 @@ class Graphics {
         double max_recorded_value;
 
         double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
-        int n_bins;  // Maximum bins to show; should only be set by *max_display_frequency() functions
+        int n_waterfall_pixels;  // Number of pixels from waterfall line buffer to write to screen
         TTF_Font *max_display_frequency_font;
         SDL_Texture *max_display_frequency_text;  // Rendered static text
         SDL_Texture *max_display_frequency_number;  // Rendered dynamic text

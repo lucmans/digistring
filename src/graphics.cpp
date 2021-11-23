@@ -61,7 +61,7 @@ Graphics::Graphics() {
     plot_type = *(display_plot_type.begin());
     max_recorded_value = 0.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
-    n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+    n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
     // TODO: create font textures
     max_display_frequency_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
@@ -117,16 +117,16 @@ void Graphics::add_max_display_frequency(const double d_f) {
     if(max_display_frequency + d_f > MAX_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency greater than " + STR(MAX_FOURIER_FREQUENCY) + " Hz; setting it to maximum");
         max_display_frequency = MAX_FOURIER_FREQUENCY;
-        n_bins = (FRAME_SIZE / 2) + 1;
+        n_waterfall_pixels = (FRAME_SIZE / 2) + 1;
     }
     else if(max_display_frequency + d_f < 2.0) {
         warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
         max_display_frequency = MIN_FOURIER_FREQUENCY;
-        n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
     else {
         max_display_frequency += d_f;
-        n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 
     SDL_DestroyTexture(max_display_frequency_number);
@@ -139,16 +139,16 @@ void Graphics::set_max_display_frequency(const double f) {
     if(f > MAX_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency greater than " + STR(MAX_FOURIER_FREQUENCY) + " Hz; setting it to maximum");
         max_display_frequency = MAX_FOURIER_FREQUENCY;
-        n_bins = (FRAME_SIZE / 2) + 1;
+        n_waterfall_pixels = (FRAME_SIZE / 2) + 1;
     }
     else if(f < MIN_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
         max_display_frequency = MIN_FOURIER_FREQUENCY;
-        n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
     else {
         max_display_frequency = f;
-        n_bins = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 
     SDL_DestroyTexture(max_display_frequency_number);
@@ -369,7 +369,7 @@ void Graphics::render_waterfall() {
     std::list<DataCache>::iterator it = data_points.begin();
     int n_data_points = data_points.size();
     for(int i = 0; i < n_data_points && i < res_h; i++) {
-        SDL_Rect src_rect = {0, 0, n_bins, 1};  // TODO: Calculate the number of points that should be used
+        SDL_Rect src_rect = {0, 0, n_waterfall_pixels, 1};  // TODO: Calculate the number of points that should be used
         SDL_Rect dst_rect = {0, i, res_w, 1};
         SDL_RenderCopy(renderer, (*it).waterfall_line_buffer, &src_rect, &dst_rect);
         it++;
