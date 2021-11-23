@@ -30,7 +30,7 @@ std::ostream& operator<<(std::ostream &s, const Note &note);
 
 
 // Throws std::string with error description on invalid strings
-// A valid note consists of a note name (A-G), with optional accidental ('#' or 'd' for sharp, 'b' for flat) and an integer denoting the octave
+// A valid note_string consists of a note name (A-G), with optional accidental ('#' or 'd' for sharp, 'b' for flat) and an integer denoting the octave
 Note string_to_note(const std::string &note_string);
 
 

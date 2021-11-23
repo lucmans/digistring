@@ -39,10 +39,14 @@ Note::Note(const double _freq, const double _amp) {
     amp = _amp;
 
     constexpr const double C0 = A4 * exp2(-57.0 / 12.0);
-    const int note_distance = (12.0 * log2(freq / C0)) + 0.5;
+    const double note_distance_decimal = (12.0 * log2(freq / C0)) + 0.5;  // Below inline if offsets doubles rounding up when converting to int
+    const int note_distance = (int)note_distance_decimal + (note_distance_decimal < 0 ? -1 : 0);
 
-    note = static_cast<Notes>((note_distance + 12) % 12);
+    // First modulo to get a number within -12 < n < 12, then add 12 and another modulo to get 0 <= n < 12
+    note = static_cast<Notes>(((note_distance % 12) + 12) % 12);
     octave = note_distance / 12;
+    if(note_distance < 0 && note != Notes::C)  // Offset doubles rounding up when converting to int
+        octave--;
 
     const double tuned = C0 * exp2((double)octave + (double)((double)note / 12.0));
     error = 1200.0 * log2(freq / tuned);
@@ -105,32 +109,32 @@ Note string_to_note(const std::string &note_string) {
     // }
 
     switch(note_string[0]) {
-        case 'b': case 'B':
-            note_distance = static_cast<int>(Notes::B);
-            break;
-
-        case 'a': case 'A':
-            note_distance = static_cast<int>(Notes::A);
-            break;
-
-        case 'g': case 'G':
-            note_distance = static_cast<int>(Notes::G);
-            break;
-
-        case 'f': case 'F':
-            note_distance = static_cast<int>(Notes::F);
-            break;
-
-        case 'e': case 'E':
-            note_distance = static_cast<int>(Notes::E);
+        case 'c': case 'C':
+            note_distance = static_cast<int>(Notes::C);
             break;
 
         case 'd': case 'D':
             note_distance = static_cast<int>(Notes::D);
             break;
 
-        case 'c': case 'C':
-            note_distance = static_cast<int>(Notes::C);
+        case 'e': case 'E':
+            note_distance = static_cast<int>(Notes::E);
+            break;
+
+        case 'f': case 'F':
+            note_distance = static_cast<int>(Notes::F);
+            break;
+
+        case 'g': case 'G':
+            note_distance = static_cast<int>(Notes::G);
+            break;
+
+        case 'a': case 'A':
+            note_distance = static_cast<int>(Notes::A);
+            break;
+
+        case 'b': case 'B':
+            note_distance = static_cast<int>(Notes::B);
             break;
 
         default:

@@ -37,12 +37,6 @@ void Program::main_loop() {
     if(settings.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
-    if constexpr(!HEADLESS) {
-        // graphics->set_max_display_frequency(96001);
-        // graphics->set_max_display_frequency(3000);
-        // graphics->set_max_display_frequency(500);
-    }
-
     while(!poll_quit()) {
         perf.clear_time_points();
         perf.push_time_point("Start");
