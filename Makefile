@@ -23,7 +23,7 @@ OBJ = obj/main.o obj/program.o obj/graphics.o obj/graphics_func.o obj/sample_get
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
 	  obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o
 
-.PHONY: all force clean valgrind lines debug todo trailing_spaces
+.PHONY: all force fresh clean valgrind lines debug todo trailing_spaces
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -33,6 +33,10 @@ all: | $(BUILD_FOLDERS)
 # Remake everything
 force:
 	make -B all
+
+fresh:
+	make clean
+	make all
 
 
 # Binary rule
