@@ -6,13 +6,13 @@
 #include "../config.h"
 
 
-void hamming_window(double window[FRAME_SIZE]);
-void hann_window(double window[FRAME_SIZE]);
-void blackman_window(double window[FRAME_SIZE]);
-void nuttall_window(double window[FRAME_SIZE]);
-void blackman_nuttall_window(double window[FRAME_SIZE]);
-void blackman_harris_window(double window[FRAME_SIZE]);
-void flat_top_window(double window[FRAME_SIZE]);
+void hamming_window(double window[], const int size);
+void hann_window(double window[], const int size);
+void blackman_window(double window[], const int size);
+void nuttall_window(double window[], const int size);
+void blackman_nuttall_window(double window[], const int size);
+void blackman_harris_window(double window[], const int size);
+void flat_top_window(double window[], const int size);
 
 
 #endif  // WINDOW_FUNC

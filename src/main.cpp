@@ -9,6 +9,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <fftw3.h>
 
 #include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
 #include <csignal>  // catching ctrl+c in terminal
@@ -17,11 +18,6 @@
 #include <filesystem>  // is_directory
 #include <fstream>  // Reading rsc dir verification file
 #include <optional>  // Construct note without initializing it
-
-
-void main_loop() {
-
-}
 
 
 int subscript_offset(const int subscript) {
@@ -299,7 +295,17 @@ bool verify_rsc_dir() {
 }
 
 
+// #include "estimators/estimators.h"
 int main(int argc, char *argv[]) {
+    // int buffer_size;
+    // float *input = Tuned::create_input_buffer(buffer_size);
+    // Tuned *tuned = new Tuned(input);
+
+    // Estimator::free_input_buffer(input);
+    // delete tuned;
+    // fftwf_cleanup();
+    // return 1;
+
     // Init program
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -368,6 +374,8 @@ int main(int argc, char *argv[]) {
 
     TTF_Quit();
     SDL_Quit();
+
+    fftwf_cleanup();
 
     std::cout << std::endl;
     return EXIT_SUCCESS;

@@ -3,6 +3,8 @@
 #define NOTE_H
 
 
+#include "config.h"
+
 #include <ostream>
 
 
@@ -22,8 +24,19 @@ struct Note {
     int octave;
     double error;  // In cents, so between -50 and 50
 
-    Note(const double freq, const double amp);
-    Note(const Notes note, const int octave);  // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
+    // constexpr Note(const double _freq, const double _amp) : freq(_freq),
+    //                                                         amp(_amp),
+    //                                                         note(static_cast<Notes>(((((int)round(12.0 * log2(freq / (A4 * exp2(-57.0 / 12.0))))) % 12) + 12) % 12)),
+    //                                                         octave(floor((double)((int)round(12.0 * log2(freq / (A4 * exp2(-57.0 / 12.0))))) / 12.0)),
+    //                                                         error(1200.0 * log2(freq / ((A4 * exp2(-57.0 / 12.0)) * exp2((double)octave + (static_cast<double>(note) / 12.0))))) {};
+    // constexpr Note(const Notes _note, const int _octave) : freq((A4 * exp2(-57.0 / 12.0)) * exp2((double)_octave + (static_cast<double>(_note) / 12.0))),
+    //                                                        amp(-1.0),
+    //                                                        note(_note),
+    //                                                        octave(_octave),
+    //                                                        error(0) {};
+
+    Note(const double _freq, const double _amp);
+    Note(const Notes _note, const int _octave);  // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
 };
 
 std::ostream& operator<<(std::ostream &s, const Note &note);

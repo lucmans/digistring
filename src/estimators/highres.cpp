@@ -20,10 +20,11 @@ HighRes::HighRes(float *const input_buffer) {
         exit(EXIT_FAILURE);
     }
 
+    // TODO: Exhaustive planner and graphics to show "optimizing planner"
     p = fftwf_plan_dft_r2c_1d(FRAME_SIZE, input_buffer, out, FFTW_ESTIMATE);
 
     // Pre-calculate window function
-    blackman_nuttall_window(window_func);
+    blackman_nuttall_window(window_func, FRAME_SIZE);
 }
 
 HighRes::~HighRes() {
@@ -74,6 +75,7 @@ void HighRes::perform(float *const input_buffer) {
     calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
 
+    // Graphics
     if constexpr(!HEADLESS) {
         spectrum.clear();
         for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)

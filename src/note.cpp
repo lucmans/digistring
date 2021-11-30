@@ -1,7 +1,7 @@
 
 #include "note.h"
 
-#include "config.h"
+// #include "config.h"
 #include "error.h"
 
 #include <cmath>

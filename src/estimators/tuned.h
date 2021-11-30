@@ -5,6 +5,13 @@
 
 #include "estimator.h"
 
+#include <fftw3.h>
+
+#include "../note.h"
+
+
+static const Note LOWEST_NOTE(Notes::E, 2);
+
 
 class Tuned : public Estimator {
     public:
@@ -24,7 +31,12 @@ class Tuned : public Estimator {
 
 
     private:
-        // float *in;  // Moved to super class
+        int buffer_sizes[12];
+        float *ins[12];
+        fftwf_complex *outs[12];
+        fftwf_plan plans[12];
+
+        double *window_funcs[12];
 };
 
 

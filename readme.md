@@ -41,7 +41,6 @@ All command line arguments can also be printed by running digistring with `-h`.
 
 
 # TODO
-Take main loop out of Program class.  
 Sleep till frame might be ready to read.
 
 
