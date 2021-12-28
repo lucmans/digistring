@@ -5,6 +5,8 @@
 #include "config.h"
 #include "error.h"
 
+#include "note.h"
+
 #include <SDL2/SDL.h>
 
 #include <chrono>  // timing
@@ -12,11 +14,11 @@
 #include <cmath>
 
 
-SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) {
+SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) : note(Notes::A, 4) {
     in_dev = _in;
 
     if(settings.generate_sine)
-        sound_source = SoundSource::generate_sine;
+        sound_source = SoundSource::generate_note;
     else
         sound_source = SoundSource::audio_in;
 
@@ -31,6 +33,30 @@ SampleGetter::~SampleGetter() {
 void SampleGetter::add_generated_wave_freq(const double d_freq) {
     generated_wave_freq += d_freq;
 }
+
+
+void SampleGetter::set_note(const Note &new_note) {
+    note = new_note;
+}
+
+void SampleGetter::note_up() {
+    if(note.note == Notes::B)
+        note = Note(Notes::C, note.octave + 1);
+    else
+        note = Note(static_cast<Notes>(static_cast<int>(note.note) + 1), note.octave);
+
+    std::cout << note << std::endl;
+}
+
+void SampleGetter::note_down() {
+    if(note.note == Notes::C)
+        note = Note(Notes::B, note.octave - 1);
+    else
+        note = Note(static_cast<Notes>(static_cast<int>(note.note) - 1), note.octave);
+
+    std::cout << note << std::endl;
+}
+
 
 
 void SampleGetter::read_frame_float32_audio_device(float *const in, const int n_samples) {
@@ -116,6 +142,11 @@ void SampleGetter::get_frame(float *const in, const int n_samples) {
         case SoundSource::generate_sine:
             for(int i = 0; i < n_samples; i++)
                 in[i] = sinf((2.0 * M_PI * i * generated_wave_freq) / (float)SAMPLE_RATE);
+            break;
+
+        case SoundSource::generate_note:
+            for(int i = 0; i < n_samples; i++)
+                in[i] = sinf((2.0 * M_PI * i * note.freq) / (float)SAMPLE_RATE);
             break;
 
         // case SoundSource::file:

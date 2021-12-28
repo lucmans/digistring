@@ -20,7 +20,7 @@ enum class PlotType {
 
 // List of plot types to switch between
 // Graphics starts with first plot type in this list
-const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, PlotType::waterfall, PlotType::bins};
+const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, /*PlotType::waterfall,*/ PlotType::bins};
 
 
 struct DataCache {

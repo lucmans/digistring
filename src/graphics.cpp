@@ -235,27 +235,28 @@ void Graphics::add_data_point(const SpectrumData *const data) {
     // This assignment calls the copy constructor of std::vector
     dc.spectrum_data = *data;
 
-    // Make texture for waterfall plot
-    dc.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, (FRAME_SIZE / 2) + 1, 1);
-    // dc.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, (FRAME_SIZE / 2) + 1, 1);
-    if(dc.waterfall_line_buffer == NULL) {
-        error("Failed to create texture for line of waterfall buffer\nSDL error: " + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
-    }
+    // TODO: Support for nonlinearly spaced frequencies
+    // // Make texture for waterfall plot
+    // dc.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, (FRAME_SIZE / 2) + 1, 1);
+    // // dc.waterfall_line_buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, (FRAME_SIZE / 2) + 1, 1);
+    // if(dc.waterfall_line_buffer == NULL) {
+    //     error("Failed to create texture for line of waterfall buffer\nSDL error: " + STR(SDL_GetError()));
+    //     exit(EXIT_FAILURE);
+    // }
 
-    // Static texture (also set flag in SDL_CreateTexture above)
-    uint32_t pixels[(FRAME_SIZE / 2) + 1];
-    for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
-        pixels[i] = calc_color(dc.spectrum_data[i].amp, max_recorded_value);
-    SDL_UpdateTexture(dc.waterfall_line_buffer, NULL, pixels, ((FRAME_SIZE / 2) + 1) * sizeof(uint32_t));
-
-    // Dynamic texture (also set flag in SDL_CreateTexture above)
-    // uint32_t *pixels;
-    // int pitch;
-    // SDL_LockTexture(dc.waterfall_line_buffer, NULL, (void **)&pixels, &pitch);
+    // // Static texture (also set flag in SDL_CreateTexture above)
+    // uint32_t pixels[(FRAME_SIZE / 2) + 1];
     // for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
     //     pixels[i] = calc_color(dc.spectrum_data[i].amp, max_recorded_value);
-    // SDL_UnlockTexture(dc.waterfall_line_buffer);
+    // SDL_UpdateTexture(dc.waterfall_line_buffer, NULL, pixels, ((FRAME_SIZE / 2) + 1) * sizeof(uint32_t));
+
+    // // Dynamic texture (also set flag in SDL_CreateTexture above)
+    // // uint32_t *pixels;
+    // // int pitch;
+    // // SDL_LockTexture(dc.waterfall_line_buffer, NULL, (void **)&pixels, &pitch);
+    // // for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
+    // //     pixels[i] = calc_color(dc.spectrum_data[i].amp, max_recorded_value);
+    // // SDL_UnlockTexture(dc.waterfall_line_buffer);
 
     // Remove expired points
     if(data_points.size() > MAX_HISTORY_DATAPOINTS)

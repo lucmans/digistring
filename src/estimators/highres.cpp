@@ -61,6 +61,8 @@ float *HighRes::_create_input_buffer(int &buffer_size) const {
 
 
 void HighRes::perform(float *const input_buffer) {
+    max_norm = 0.0;
+
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
         input_buffer[i] *= (float)window_func[i];  // TODO: Have float versions of the window functions
