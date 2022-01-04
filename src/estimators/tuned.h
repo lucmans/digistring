@@ -10,9 +10,6 @@
 #include "../note.h"
 
 
-static const Note LOWEST_NOTE(Notes::E, 2);
-
-
 class Tuned : public Estimator {
     public:
         Tuned(float *const input_buffer);
@@ -27,7 +24,7 @@ class Tuned : public Estimator {
         // Implemented by superclass
         // void free_input_buffer(float *const input_buffer) const {
 
-        void perform(float *const input_buffer) override;
+        void perform(float *const input_buffer, NoteSet &noteset) override;
 
 
     private:

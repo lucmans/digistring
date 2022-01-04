@@ -3,9 +3,9 @@
 #define HIGHRES_H
 
 
-#include "../config.h"
-
 #include "estimator.h"
+
+#include "../config.h"
 
 #include <fftw3.h>
 
@@ -24,7 +24,7 @@ class HighRes : public Estimator {
         // Implemented by superclass
         // void free_input_buffer(float *const input_buffer) const;
 
-        void perform(float *const input_buffer) override;
+        void perform(float *const input_buffer, NoteSet &noteset) override;
 
 
     private:

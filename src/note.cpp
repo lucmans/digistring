@@ -1,7 +1,7 @@
 
 #include "note.h"
 
-// #include "config.h"
+#include "config.h"
 #include "error.h"
 
 #include <cmath>
@@ -63,6 +63,18 @@ Note::Note(const Notes _note, const int _octave) {
 std::ostream& operator<<(std::ostream &s, const Note &note) {
     s << note_string[static_cast<int>(note.note)] << stringify_sub(note.octave);
     // s << note_string[static_cast<int>(note.note)] << stringify_sub(note.octave) << " " << note.freq << " " << note.error;
+    return s;
+}
+
+
+std::ostream& operator<<(std::ostream &s, const NoteSet &noteset) {
+    if(noteset.size() == 0)
+        return s;
+
+    std::cout << noteset[0];
+    for(unsigned int i = 1; i < noteset.size(); i++)
+        s << ' ' << noteset[i];
+
     return s;
 }
 

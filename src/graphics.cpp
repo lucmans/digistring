@@ -6,6 +6,7 @@
 #include "config.h"
 #include "error.h"
 
+#include "note.h"
 #include "spectrum.h"
 
 #include <SDL2/SDL.h>
@@ -331,6 +332,15 @@ void Graphics::render_spectrogram() {
     SpectrumData spectrum_data = (freeze ? freeze_data : (*(data_points.begin())).spectrum_data);
 
     SDL_SetRenderTarget(renderer, frame_buffer);
+
+    // Draw line for note location in graphics
+    if constexpr(DISPLAY_NOTES) {
+        for(double f = LOWEST_NOTE.freq; f < max_display_frequency; f *= exp2(1.0 / 12.0)) {
+            SDL_SetRenderDrawColor(renderer, 0x30, 0x70, 0x35, 0xff);
+            int x = (f / max_display_frequency) * res_w;
+            SDL_RenderDrawLine(renderer, x, 0, x, res_h);
+        }
+    }
 
     // TODO: Envelope and peaks
 

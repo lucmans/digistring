@@ -3,6 +3,7 @@
 #define ESTIMATOR_H
 
 
+#include "../note.h"
 #include "../spectrum.h"
 
 #include <map>
@@ -45,7 +46,7 @@ class Estimator {
         const SpectrumData *get_spectrum_data();
 
         // Actually performs the estimation
-        virtual void perform(float *const input_buffer) = 0;
+        virtual void perform(float *const input_buffer, NoteSet &noteset) = 0;
 
 
     protected:

@@ -2,6 +2,7 @@
 #include "tuned.h"
 
 #include "../performance.h"
+#include "../config.h"
 #include "../error.h"
 
 #include "estimation_func.h"
@@ -133,7 +134,7 @@ float *Tuned::_create_input_buffer(int &buffer_size) const {
 // }
 
 
-void Tuned::perform(float *const input_buffer) {
+void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
     // Note that ins[0] = input_buffer
     max_norm = 0.0;
 

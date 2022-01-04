@@ -3,12 +3,16 @@
 #define CONFIG_H
 
 
+#include "note.h"
+
 #include <SDL2/SDL.h>
 
 #include <string>
 
 
 constexpr const double A4 = 440.0;  // Hz
+
+const Note LOWEST_NOTE = Note(Notes::E, 2);
 
 
 /* Audio config */
@@ -28,6 +32,8 @@ static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Aud
 
 /* Graphics config */
 const bool HEADLESS = false;
+
+const bool DISPLAY_NOTES = false;
 
 const int DEFAULT_RES[2] = {1024, 768};
 const int MIN_RES[2] = {800, 600};

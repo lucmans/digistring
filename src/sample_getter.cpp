@@ -45,7 +45,7 @@ void SampleGetter::note_up() {
     else
         note = Note(static_cast<Notes>(static_cast<int>(note.note) + 1), note.octave);
 
-    std::cout << note << std::endl;
+    std::cout << "Playing note " << note << std::endl;
 }
 
 void SampleGetter::note_down() {
@@ -54,7 +54,7 @@ void SampleGetter::note_down() {
     else
         note = Note(static_cast<Notes>(static_cast<int>(note.note) - 1), note.octave);
 
-    std::cout << note << std::endl;
+    std::cout << "Playing note " << note << std::endl;
 }
 
 
@@ -127,6 +127,8 @@ void SampleGetter::read_frame_int32_audio_device(float *const in, const int n_sa
 
 
 void SampleGetter::get_frame(float *const in, const int n_samples) {
+    static int offset = 0;
+
     switch(sound_source) {
         case SoundSource::audio_in:
             if(AUDIO_FORMAT == AUDIO_F32SYS)
@@ -141,12 +143,14 @@ void SampleGetter::get_frame(float *const in, const int n_samples) {
 
         case SoundSource::generate_sine:
             for(int i = 0; i < n_samples; i++)
-                in[i] = sinf((2.0 * M_PI * i * generated_wave_freq) / (float)SAMPLE_RATE);
+                in[i] = sinf((2.0 * M_PI * (i + offset) * generated_wave_freq) / (float)SAMPLE_RATE);
+            offset += n_samples;
             break;
 
         case SoundSource::generate_note:
             for(int i = 0; i < n_samples; i++)
-                in[i] = sinf((2.0 * M_PI * i * note.freq) / (float)SAMPLE_RATE);
+                in[i] = sinf((2.0 * M_PI * (i + offset) * note.freq) / (float)SAMPLE_RATE);
+            offset += n_samples;
             break;
 
         // case SoundSource::file:

@@ -56,9 +56,11 @@ void Program::main_loop() {
             SDL_QueueAudio(*out_dev, input_buffer, input_buffer_size * sizeof(float));
 
         // Send frame to estimator
-        estimator->perform(input_buffer);
+        NoteSet noteset;
+        estimator->perform(input_buffer, noteset);
 
         // Print note estimation
+        std::cout << noteset << std::endl;
 
         // Graphics
         if constexpr(!HEADLESS) {
@@ -127,11 +129,11 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_k:
-                        graphics->add_max_display_frequency(-1000.0);
+                        graphics->add_max_display_frequency(-300.0);
                         break;
 
                     case SDLK_l:
-                        graphics->add_max_display_frequency(1000.0);
+                        graphics->add_max_display_frequency(300.0);
                         break;
 
                     case SDLK_f:

@@ -3,8 +3,7 @@
 #define NOTE_H
 
 
-#include "config.h"
-
+#include <vector>
 #include <ostream>
 
 
@@ -40,6 +39,11 @@ struct Note {
 };
 
 std::ostream& operator<<(std::ostream &s, const Note &note);
+
+
+typedef std::vector<Note> NoteSet;
+
+std::ostream& operator<<(std::ostream &s, const NoteSet &noteset);
 
 
 // Throws std::string with error description on invalid strings

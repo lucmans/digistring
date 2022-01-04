@@ -4,6 +4,7 @@
 #include "../config.h"
 #include "../error.h"
 #include "../performance.h"
+#include "../note.h"
 
 #include "window_func.h"
 #include "estimation_func.h"
@@ -60,7 +61,7 @@ float *HighRes::_create_input_buffer(int &buffer_size) const {
 // }
 
 
-void HighRes::perform(float *const input_buffer) {
+void HighRes::perform(float *const input_buffer, NoteSet &noteset) {
     max_norm = 0.0;
 
     // Apply window function to minimize spectral leakage
