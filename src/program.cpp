@@ -29,8 +29,8 @@ Program::~Program() {
 void Program::main_loop() {
     // We let the estimator create the input buffer for optimal size and better alignment
     int input_buffer_size;
-    float *input_buffer = Tuned::create_input_buffer(input_buffer_size);
-    Estimator *estimator = new Tuned(input_buffer);
+    float *input_buffer = HighRes::create_input_buffer(input_buffer_size);
+    Estimator *estimator = new HighRes(input_buffer);
 
     // Frame limiting
     std::chrono::steady_clock::time_point prev_frame = std::chrono::steady_clock::now();
@@ -50,17 +50,23 @@ void Program::main_loop() {
 
         // Read a frame
         sample_getter->get_frame(input_buffer, input_buffer_size);
+        perf.push_time_point("Got frame full of audio samples");
 
         // Play it back to the user if chosen
-        if(settings.playback)
+        if(settings.playback) {
             SDL_QueueAudio(*out_dev, input_buffer, input_buffer_size * sizeof(float));
+
+            // Wait till previous frame has played (needed when fetching samples is faster than playing)
+            while(SDL_GetQueuedAudioSize(*out_dev) > input_buffer_size * sizeof(float));
+        }
 
         // Send frame to estimator
         NoteSet noteset;
         estimator->perform(input_buffer, noteset);
+        perf.push_time_point("Performed estimation");
 
         // Print note estimation
-        std::cout << noteset << std::endl;
+        std::cout << noteset << "     \r" << std::flush;
 
         // Graphics
         if constexpr(!HEADLESS) {

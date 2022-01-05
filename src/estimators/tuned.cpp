@@ -40,17 +40,6 @@ Tuned::Tuned(float *const input_buffer) {
     for(int i = 1; i < 12; i++)
         ins[i] = (float*)fftwf_malloc(buffer_sizes[i] * sizeof(float));
 
-    /* Overlapping buffers; doesn't work as window function then have to be performed within fftw */
-    // // "Create" the transform buffers by taking the correct part of the input buffer
-    // // The transform buffer is shared with the input buffer, as it is read only
-    // ins[0] = input_buffer;
-    // for(int i = 1; i < 12; i++) {
-    //     ins[i] = input_buffer + (buffer_sizes[0] - buffer_sizes[i]);
-
-    //     // std::cout << ins[i] << std::endl;
-    // }
-    // // std::cout << std::endl;
-
     // DEBUG: Assign note letter to each buffer slot
     // for(int i = 0; i < 12; i++) {
     //     for(int j = 0; j < buffer_sizes[i]; j++) {

@@ -15,12 +15,17 @@ constexpr const double A4 = 440.0;  // Hz
 const Note LOWEST_NOTE = Note(Notes::E, 2);
 
 
-/* Audio config */
-// Transcribe config
+/* Transcribe config */
 const int SAMPLE_RATE = 96000 * 2;
-const int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
 
-// Audio driver config
+// High Res transcriber
+const int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
+const double POWER_THRESHOLD = 15.0;  // Threshold of channel power before finding peaks
+const double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
+const double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone
+
+
+/* Audio config */
 const SDL_AudioFormat AUDIO_FORMAT = AUDIO_F32SYS;  // 32 bit floats
 // const SDL_AudioFormat AUDIO_FORMAT = AUDIO_S32SYS;  // 32 bit ints
 const unsigned int N_CHANNELS = 1;

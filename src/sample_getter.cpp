@@ -127,7 +127,7 @@ void SampleGetter::read_frame_int32_audio_device(float *const in, const int n_sa
 
 
 void SampleGetter::get_frame(float *const in, const int n_samples) {
-    static int offset = 0;
+    static unsigned long offset = 0;
 
     switch(sound_source) {
         case SoundSource::audio_in:
