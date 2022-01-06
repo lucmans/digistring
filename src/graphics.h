@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include "note.h"
 #include "spectrum.h"
 
 #include <SDL2/SDL.h>
@@ -53,7 +54,7 @@ class Graphics {
         void add_data_point(const SpectrumData *const data);
 
         // Render the frame to the framebuffer
-        void render_frame();
+        void render_frame(const Note *const note);
 
 
     private:
@@ -67,9 +68,12 @@ class Graphics {
         std::list<DataCache> data_points;
         double max_recorded_value;
 
+        //
+        TTF_Font *info_font;
+        SDL_Texture *note_text, *note_freq_text, *note_error_text, *note_amp_text;
+
         double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
         int n_waterfall_pixels;  // Number of pixels from waterfall line buffer to write to screen
-        TTF_Font *max_display_frequency_font;
         SDL_Texture *max_display_frequency_text;  // Rendered static text
         SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
 
@@ -86,6 +90,7 @@ class Graphics {
         void render_spectrogram();
         void render_waterfall();
 
+        void render_current_note(const Note *const note);
         void render_max_displayed_frequency();
         void render_freeze();
 };

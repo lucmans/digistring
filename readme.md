@@ -35,7 +35,7 @@ All command line arguments can also be printed by running digistring with `-h`.
 
 ## GUI controls
 **Keyboard controls:**  
-`-`/`+`: Decrease/increase the frequency of the generated sine wave or note.  
+`-`/`+`: Decrease/increase the frequency of the generated sine wave or note. Note that frame containing samples representing the old frequency has to finish playing before new frame is played.  
 `[`/`]`: Decrease/increase the maximum displayed frequency.  
 `f`: Freeze current graph.  
 `p`: Change plot type.  

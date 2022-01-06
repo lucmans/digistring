@@ -346,17 +346,7 @@ bool verify_rsc_dir() {
 }
 
 
-// #include "estimators/estimators.h"
 int main(int argc, char *argv[]) {
-    // int buffer_size;
-    // float *input = Tuned::create_input_buffer(buffer_size);
-    // Tuned *tuned = new Tuned(input);
-
-    // Estimator::free_input_buffer(input);
-    // delete tuned;
-    // fftwf_cleanup();
-    // return 1;
-
     // Init program
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);

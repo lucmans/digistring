@@ -64,14 +64,19 @@ Graphics::Graphics() {
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
     n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
-    // TODO: create font textures
-    max_display_frequency_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
-    if(max_display_frequency_font == NULL) {
+    info_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
+    if(info_font == NULL) {
         error("Failed to load font '" + settings.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);
     }
-    max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
-    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
+
+    note_text = create_txt_texture(renderer, "Note: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    note_freq_text = create_txt_texture(renderer, "Freq: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    note_error_text = create_txt_texture(renderer, "Err: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    note_amp_text = create_txt_texture(renderer, "Amp: ", info_font, {0xff, 0xff, 0xff, 0xff});
+
+    max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), info_font, {0xff, 0xff, 0xff, 0xff});
 
     TTF_Font *freeze_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
     if(freeze_font == NULL) {
@@ -90,9 +95,14 @@ Graphics::~Graphics() {
 
     SDL_DestroyTexture(freeze_txt_buffer);
 
+    SDL_DestroyTexture(note_text);
+    SDL_DestroyTexture(note_freq_text);
+    SDL_DestroyTexture(note_error_text);
+    SDL_DestroyTexture(note_amp_text);
+
     SDL_DestroyTexture(max_display_frequency_text);
     SDL_DestroyTexture(max_display_frequency_number);
-    TTF_CloseFont(max_display_frequency_font);
+    TTF_CloseFont(info_font);
 
     SDL_DestroyTexture(frame_buffer);
     SDL_DestroyRenderer(renderer);
@@ -131,7 +141,7 @@ void Graphics::add_max_display_frequency(const double d_f) {
     }
 
     SDL_DestroyTexture(max_display_frequency_number);
-    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
+    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), info_font, {0xff, 0xff, 0xff, 0xff});
 
     // info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
 }
@@ -153,7 +163,7 @@ void Graphics::set_max_display_frequency(const double f) {
     }
 
     SDL_DestroyTexture(max_display_frequency_number);
-    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), max_display_frequency_font, {0xff, 0xff, 0xff, 0xff});
+    max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), info_font, {0xff, 0xff, 0xff, 0xff});
 
     // info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
 }
@@ -270,7 +280,7 @@ void Graphics::add_data_point(const SpectrumData *const data) {
 }
 
 
-void Graphics::render_frame() {
+void Graphics::render_frame(const Note *const note) {
     render_black_screen();  // Background video if loaded
 
     switch(plot_type) {
@@ -287,6 +297,7 @@ void Graphics::render_frame() {
             break;
     }
 
+    render_current_note(note);
     render_max_displayed_frequency();
     render_freeze();
 
@@ -415,17 +426,67 @@ void Graphics::render_waterfall() {
 }
 
 
+void Graphics::render_current_note(const Note *const note) {
+    SDL_SetRenderTarget(renderer, frame_buffer);
+
+    int w, h, w2;
+    SDL_QueryTexture(note_text, NULL, NULL, &w, &h);
+    SDL_Rect dst = {0, 0, w, h};
+    SDL_RenderCopy(renderer, note_text, NULL, &dst);
+    if(note != nullptr) {
+        SDL_Texture *note_number = create_txt_texture(renderer, note_to_string(*note), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_QueryTexture(note_number, NULL, NULL, &w2, &h);
+        dst = {w, 0, w2, h};
+        SDL_RenderCopy(renderer, note_number, NULL, &dst);
+        SDL_DestroyTexture(note_number);
+    }
+
+    SDL_QueryTexture(note_freq_text, NULL, NULL, &w, &h);
+    dst = {0, h, w, h};
+    SDL_RenderCopy(renderer, note_freq_text, NULL, &dst);
+    if(note != nullptr) {
+        SDL_Texture *note_freq_number = create_txt_texture(renderer, STR(note->freq), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_QueryTexture(note_freq_number, NULL, NULL, &w2, &h);
+        dst = {w, h, w2, h};
+        SDL_RenderCopy(renderer, note_freq_number, NULL, &dst);
+        SDL_DestroyTexture(note_freq_number);
+    }
+
+    SDL_QueryTexture(note_error_text, NULL, NULL, &w, &h);
+    dst = {0, 2 * h, w, h};
+    SDL_RenderCopy(renderer, note_error_text, NULL, &dst);
+    if(note != nullptr) {
+        SDL_Texture *note_error_number = create_txt_texture(renderer, STR(note->error), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_QueryTexture(note_error_number, NULL, NULL, &w2, &h);
+        dst = {w, 2 * h, w2, h};
+        SDL_RenderCopy(renderer, note_error_number, NULL, &dst);
+        SDL_DestroyTexture(note_error_number);
+    }
+
+    SDL_QueryTexture(note_amp_text, NULL, NULL, &w, &h);
+    dst = {0, 3 * h, w, h};
+    SDL_RenderCopy(renderer, note_amp_text, NULL, &dst);
+    if(note != nullptr) {
+        SDL_Texture *note_amp_number = create_txt_texture(renderer, STR(note->amp), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_QueryTexture(note_amp_number, NULL, NULL, &w2, &h);
+        dst = {w, 3 * h, w2, h};
+        SDL_RenderCopy(renderer, note_amp_number, NULL, &dst);
+        SDL_DestroyTexture(note_amp_number);
+    }
+}
+
+
 void Graphics::render_max_displayed_frequency() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
     int w, h;
     SDL_QueryTexture(max_display_frequency_text, NULL, NULL, &w, &h);
-    SDL_Rect dst = {0, 0, w, h};
-    SDL_RenderCopy(renderer, max_display_frequency_text, NULL, &dst);
-
     int w2;
     SDL_QueryTexture(max_display_frequency_number, NULL, NULL, &w2, &h);
-    dst = {w, 0, w2, h};
+    
+    SDL_Rect dst = {res_w - w - w2 - 1, 0, w, h};
+    SDL_RenderCopy(renderer, max_display_frequency_text, NULL, &dst);
+    dst = {res_w - w2 - 1, 0, w2, h};
     SDL_RenderCopy(renderer, max_display_frequency_number, NULL, &dst);
 }
 

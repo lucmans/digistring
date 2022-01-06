@@ -150,14 +150,14 @@ void SampleGetter::get_frame(float *const in, const int n_samples) {
 
     switch(sound_source) {
         case SoundSource::audio_in:
-            if(AUDIO_FORMAT == AUDIO_F32SYS)
+            if constexpr(AUDIO_FORMAT == AUDIO_F32SYS)
                 read_frame_float32_audio_device(in, n_samples);
-            else if(AUDIO_FORMAT == AUDIO_S32SYS)
+            else if constexpr(AUDIO_FORMAT == AUDIO_S32SYS)
                 read_frame_int32_audio_device(in, n_samples);
-            // else {  // Caught by static assert in config.h
-            //     error("Unknown ");
-            //     return;
-            // }
+            else {  // Caught by static assert in config.h
+                error("Unsupported audio format");
+                return;
+            }
             break;
 
         case SoundSource::generate_sine:
@@ -177,7 +177,9 @@ void SampleGetter::get_frame(float *const in, const int n_samples) {
             break;
 
         case SoundSource::file:
-            warning("Not yet implemented!");
+            std::cout << settings.play_file_name << std::endl;
+            error("Not yet implemented!");
+            exit(EXIT_FAILURE);
             break;
         //     if(!file_get_samples(in, n_samples)) {
         //         std::cout << "Finished playing file; quitting after this frame" << std::endl;

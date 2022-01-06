@@ -38,7 +38,9 @@ void Program::main_loop() {
     std::chrono::duration<double, std::milli> frame_time = std::chrono::duration<double>(0.0);
 
     // Unpause audio devices so that samples are collected/played
-    SDL_PauseAudioDevice(*in_dev, 0);
+    if(!(settings.generate_sine || settings.generate_note || settings.play_file))
+        SDL_PauseAudioDevice(*in_dev, 0);
+
     if(settings.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
@@ -55,10 +57,14 @@ void Program::main_loop() {
 
         // Play it back to the user if chosen
         if(settings.playback) {
-            SDL_QueueAudio(*out_dev, input_buffer, input_buffer_size * sizeof(float));
+            if(SDL_QueueAudio(*out_dev, input_buffer, input_buffer_size * sizeof(float))) {
+                error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
+                exit(EXIT_FAILURE);
+            }
 
             // Wait till previous frame has played (needed when fetching samples is faster than playing)
-            while(SDL_GetQueuedAudioSize(*out_dev) > input_buffer_size * sizeof(float));
+            while(SDL_GetQueuedAudioSize(*out_dev) > input_buffer_size * sizeof(float) && !poll_quit())
+                handle_sdl_events();
         }
 
         // Send frame to estimator
@@ -67,10 +73,8 @@ void Program::main_loop() {
         perf.push_time_point("Performed estimation");
 
         // Print note estimation
-        std::cout << noteset << "     \r" << std::flush;
-        // std::cout << "Guess: " << noteset << std::endl;
-        // std::cout << std::endl;
-        // std::this_thread::sleep_for(std::chrono::milliseconds(80));
+        // if(noteset.size() > 0)
+        //     std::cout << noteset[0] << "  (" << noteset[0].freq << " Hz, " << noteset[0].amp << " dB, " << noteset[0].error << " cent)" << "     \r" << std::flush;
 
         // Graphics
         if constexpr(!HEADLESS) {
@@ -84,7 +88,10 @@ void Program::main_loop() {
             // Render data
             frame_time = std::chrono::steady_clock::now() - prev_frame;
             if(frame_time.count() > 1000.0 / 15.0) {
-                graphics->render_frame();
+                if(noteset.size() > 0)
+                    graphics->render_frame(&noteset[0]);
+                else
+                    graphics->render_frame(nullptr);
                 perf.push_time_point("Frame rendered");
 
                 prev_frame = std::chrono::steady_clock::now();

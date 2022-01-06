@@ -17,6 +17,7 @@ const Note LOWEST_NOTE = Note(Notes::E, 2);
 
 /* Transcribe config */
 const int SAMPLE_RATE = 96000 * 2;
+// const int SAMPLE_RATE = 48000;
 
 // High Res transcriber
 const int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame

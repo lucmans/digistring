@@ -66,6 +66,10 @@ std::ostream& operator<<(std::ostream &s, const Note &note) {
     return s;
 }
 
+std::string note_to_string(const Note &note) {
+    return note_string[static_cast<int>(note.note)] + stringify_sub(note.octave);
+}
+
 
 std::ostream& operator<<(std::ostream &s, const NoteSet &noteset) {
     if(noteset.size() == 0)

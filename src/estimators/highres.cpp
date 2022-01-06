@@ -16,7 +16,7 @@
 #include <vector>
 
 
-// static double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
 //     const double a = log2(norms[max_idx - 1]),
 //                  b = log2(norms[max_idx]),
 //                  c = log2(norms[max_idx + 1]);
@@ -25,7 +25,7 @@
 //     return max_idx + p;
 // }
 
-static double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
+inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
     const double a = log2(norms[max_idx - 1]),
                  b = log2(norms[max_idx]),
                  c = log2(norms[max_idx + 1]);

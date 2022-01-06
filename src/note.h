@@ -39,6 +39,7 @@ struct Note {
 };
 
 std::ostream& operator<<(std::ostream &s, const Note &note);
+std::string note_to_string(const Note &note);
 
 
 typedef std::vector<Note> NoteSet;
