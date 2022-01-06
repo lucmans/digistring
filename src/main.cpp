@@ -77,7 +77,48 @@ void parse_args(int argc, char *argv[]) {
         // else if(strcmp(argv[i], "-hl") == 0) {
         //     settings.headless = true;
         // }
-        else if(strcmp(argv[i], "-over") == 0 && argc > i + 1) {
+        else if(strcmp(argv[i], "--file") == 0 && argc > i + 1) {
+            if(settings.generate_note) {
+                error("Can't play a file while generating a note");
+                exit(EXIT_FAILURE);
+            }
+            if(settings.generate_sine) {
+                error("Can't play a file while generating a sine wave");
+                exit(EXIT_FAILURE);
+            }
+
+            settings.play_file = true;
+            settings.play_file_name = argv[i + 1];
+
+            i++;  // Advance extra argument
+        }
+        else if(strcmp(argv[i], "-n") == 0) {
+            if(settings.play_file) {
+                error("Can't generate a note while playing a file");
+                exit(EXIT_FAILURE);
+            }
+            if(settings.generate_sine) {
+                error("Can't generate a note while generating a sine wave");
+                exit(EXIT_FAILURE);
+            }
+            settings.generate_note = true;
+
+            if(argc > i + 1) {
+                if(argv[i + 1][0] == '-')
+                    continue;
+
+                try {
+                    settings.generate_note_note = string_to_note(argv[i + 1]);
+                }
+                catch(std::string what) {
+                    error("Failed to parse note string: " + what);
+                    exit(EXIT_FAILURE);
+                }
+
+                i++;  // Advance extra argument
+            }
+        }
+        else if(strcmp(argv[i], "--over") == 0 && argc > i + 1) {
             int n = 5;
             if(argc > i + 2) {
                 if(argv[i + 2][0] != '-') {
@@ -97,7 +138,7 @@ void parse_args(int argc, char *argv[]) {
         else if(strcmp(argv[i], "-p") == 0) {
             settings.playback = true;
         }
-        else if(strcmp(argv[i], "-perf") == 0) {
+        else if(strcmp(argv[i], "--perf") == 0) {
             settings.output_performance = true;
         }
         else if(strcmp(argv[i], "-r") == 0 && argc > i + 2) {
@@ -130,7 +171,7 @@ void parse_args(int argc, char *argv[]) {
 
             i += 2;
         }
-        else if(strcmp(argv[i], "-rsc") == 0 && argc > i + 1) {
+        else if(strcmp(argv[i], "--rsc") == 0 && argc > i + 1) {
             std::filesystem::path path(argv[i + 1]);
             path = path.lexically_normal();
 
@@ -158,6 +199,14 @@ void parse_args(int argc, char *argv[]) {
             i += 1;
         }
         else if(strcmp(argv[i], "-s") == 0) {
+            if(settings.play_file) {
+                error("Can't generate sine wave while playing a file");
+                exit(EXIT_FAILURE);
+            }
+            if(settings.generate_note) {
+                error("Can't generate sine wave while generating a note");
+                exit(EXIT_FAILURE);
+            }
             settings.generate_sine = true;
 
             if(argc > i + 1) {
@@ -187,12 +236,14 @@ void parse_args(int argc, char *argv[]) {
 
             std::cout << "Flags:\n"
                       << "  -f               - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
+                      << "  --file <file>     - Play samples from given file\n"
                       // << "  -hl              - Run headless (no window with graphics)\n"
-                      << "  -over <note> [n] - Print n (default is 5) overtones of given note\n"
+                      << "  -n [note]        - Generate note (default is A4)\n"
+                      << "  --over <note> [n] - Print n (default is 5) overtones of given note\n"
                       << "  -p               - Play recorded audio back\n"
-                      << "  -perf            - Output performance stats in stdout\n"
+                      << "  --perf            - Output performance stats in stdout\n"
                       << "  -r <w> <h>       - Start GUI with given resolution\n"
-                      << "  -rsc <path>      - Set alternative resource directory location\n"
+                      << "  --rsc <path>      - Set alternative resource directory location\n"
                       << "  -s [f]           - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
                       << std::endl;
             exit(EXIT_SUCCESS);

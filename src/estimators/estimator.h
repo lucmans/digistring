@@ -43,7 +43,7 @@ class Estimator {
         double get_max_norm() const;
         // The spectrum data pointer is valid till the next perform() call
         // It also sorts the spectrum, as is needed for the graphics
-        const SpectrumData *get_spectrum_data();
+        const Spectrum *get_spectrum();
 
         // Actually performs the estimation
         virtual void perform(float *const input_buffer, NoteSet &noteset) = 0;

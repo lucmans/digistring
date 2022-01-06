@@ -232,9 +232,14 @@ void Graphics::add_data_point(const SpectrumData *const data) {
     data_points.push_front(DataCache());
     DataCache &dc = *(data_points.begin());
 
-    // Make a copy of sp, as it data local to the estimator which will change
+    // Make a copy of spectrum, as it is data local to the estimator which will change
     // This assignment calls the copy constructor of std::vector
     dc.spectrum_data = *data;
+
+    // if(env_data != nullptr)
+    //     dc.envelope_data = *env_data;
+    // else
+    //     dc.envelope_data = EnvelopeData();
 
     // TODO: Support for nonlinearly spaced frequencies
     // // Make texture for waterfall plot
@@ -343,14 +348,36 @@ void Graphics::render_spectrogram() {
     }
 
     // TODO: Envelope and peaks
+    // EnvelopeData env = (*(data_points.begin())).envelope_data;
+    // SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
+    // for(i = 0; i < env.size(); i++) {
+    //     if(env[i].freq > max_display_frequency)
+    //         break;
+
+    //     x = (env[i].freq / max_display_frequency) * res_w;
+    //     y = res_h - ((env[i].amp / max_recorded_value) * res_h);
+
+    //     // SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
+    //     SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
+
+    //     // Draw actual measured points
+    //     // SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+    //     // SDL_RenderDrawPoint(renderer, prev_x, prev_y);
+
+    //     prev_x = x;
+    //     prev_y = y;
+    // }
 
     // Plot line of spectrum
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
     int prev_x = 0;
     int prev_y = res_h - 1;
     int x, y;
     unsigned int i;
-    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    for(i = 1; spectrum_data[i].freq < max_display_frequency && i < spectrum_data.size(); i++) {
+    for(i = 1; i < spectrum_data.size(); i++) {
+        if(spectrum_data[i].freq > max_display_frequency)
+            break;
+
         x = (spectrum_data[i].freq / max_display_frequency) * res_w;
         y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
 

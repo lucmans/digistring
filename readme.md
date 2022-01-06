@@ -23,25 +23,30 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
 
 ## Command line arguments
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
-`-over <note> [n]`: Print n (default is 5) overtones of given note.  
+`-n [note]`: Generate note (default is A4).  
+`--over <note> [n]`: Print n (default is 5) overtones of given note.  
 `-p`: Play recorded audio back.  
-`-perf`: Print performance stats to stdout.  
+`--perf`: Print performance stats to stdout.  
 `-r [w] [h]`: Run digistring with given resolution.  
-`-rsc <path>`: Set alternative resource directory location.  
+`--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.
 
 All command line arguments can also be printed by running digistring with `-h`.
 
 ## GUI controls
 **Keyboard controls:**  
-`-`: Decrease the frequency of the generated sine wave.  
-`+`: Increase the frequency of the generated sine wave.  
+`-`/`+`: Decrease/increase the frequency of the generated sine wave or note.  
+`[`/`]`: Decrease/increase the maximum displayed frequency.  
+`f`: Freeze current graph.  
 `p`: Change plot type.  
+`r`: Reset loudest recorded value.  
+`t`: Clear SDL audio playback buffer (samples sent to OS are still played).  
 `q`/`esc`: Quit digistring.
 
 
 # TODO
-Sleep till frame might be ready to read.
+Sleep till frame might be ready to read.  
+Generic data passing structure from estimator to graphics.
 
 
 # BUGS

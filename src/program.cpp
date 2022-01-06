@@ -26,6 +26,7 @@ Program::~Program() {
 }
 
 
+// #include <thread>  // sleep
 void Program::main_loop() {
     // We let the estimator create the input buffer for optimal size and better alignment
     int input_buffer_size;
@@ -67,13 +68,17 @@ void Program::main_loop() {
 
         // Print note estimation
         std::cout << noteset << "     \r" << std::flush;
+        // std::cout << "Guess: " << noteset << std::endl;
+        // std::cout << std::endl;
+        // std::this_thread::sleep_for(std::chrono::milliseconds(80));
 
         // Graphics
         if constexpr(!HEADLESS) {
             // Get data from estimator for graphics
             graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
 
-            graphics->add_data_point(estimator->get_spectrum_data());
+            const Spectrum *spec = estimator->get_spectrum();
+            graphics->add_data_point(spec->get_data());
             perf.push_time_point("Graphics parsed data");
 
             // Render data
@@ -117,28 +122,42 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_MINUS:
-                        // sample_getter->add_generated_wave_freq(-5.0);
-                        sample_getter->note_down();
+                        {
+                            SoundSource source = sample_getter->get_sound_source();
+                            if(source == SoundSource::generate_sine)
+                                sample_getter->add_generated_wave_freq(-5.0);
+                            else if(source == SoundSource::generate_note)
+                                sample_getter->note_down();
+                        }
                         break;
 
                     case SDLK_EQUALS:
-                        // sample_getter->add_generated_wave_freq(+5.0);
-                        sample_getter->note_up();
+                        {
+                            SoundSource source = sample_getter->get_sound_source();
+                            if(source == SoundSource::generate_sine)
+                                sample_getter->add_generated_wave_freq(+5.0);
+                            else if(source == SoundSource::generate_note)
+                                sample_getter->note_up();
+                        }
                         break;
 
                     case SDLK_r:
                         graphics->set_max_recorded_value(0.0);
                         break;
 
+                    case SDLK_t:
+                        SDL_ClearQueuedAudio(*out_dev);
+                        break;
+
                     case SDLK_p:
                         graphics->next_plot_type();
                         break;
 
-                    case SDLK_k:
+                    case SDLK_LEFTBRACKET:
                         graphics->add_max_display_frequency(-300.0);
                         break;
 
-                    case SDLK_l:
+                    case SDLK_RIGHTBRACKET:
                         graphics->add_max_display_frequency(300.0);
                         break;
 

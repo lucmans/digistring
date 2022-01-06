@@ -19,6 +19,15 @@ void Spectrum::add_data(const double freq, const double amp, const double bin_si
 }
 
 
+// void Spectrum::add_envelope(const double freq, const double amp) {
+//     env.push_back(EnvData(freq, amp));
+// }
+
+// EnvelopeData *Spectrum::get_envelope() {
+//     return &env;
+// }
+
+
 const SpectrumData *Spectrum::get_data() const {
     return &spectrum;
 }
@@ -26,6 +35,10 @@ const SpectrumData *Spectrum::get_data() const {
 int Spectrum::get_size() const {
     return spectrum.size();
 }
+
+// const EnvelopeData *Spectrum::get_env() const {
+//     return &env;
+// }
 
 
 void Spectrum::clear() {
@@ -50,10 +63,10 @@ void Spectrum::sort() {
 //     return spectrum.end();
 // }
 
-SpectrumData::const_iterator Spectrum::cbegin() const {
-    return spectrum.cbegin();
-}
+// SpectrumData::const_iterator Spectrum::cbegin() const {
+//     return spectrum.cbegin();
+// }
 
-SpectrumData::const_iterator Spectrum::cend() const {
-    return spectrum.cend();
-}
+// SpectrumData::const_iterator Spectrum::cend() const {
+//     return spectrum.cend();
+// }

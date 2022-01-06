@@ -39,12 +39,12 @@ double Estimator::get_max_norm() const {
     return max_norm;
 }
 
-const SpectrumData *Estimator::get_spectrum_data() {
+const Spectrum *Estimator::get_spectrum() {
     if constexpr(HEADLESS) {
         error("This call should never occur with headless mode");
         exit(EXIT_FAILURE);
     }
 
     spectrum.sort();
-    return spectrum.get_data();
+    return &spectrum;
 }

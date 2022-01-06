@@ -17,8 +17,18 @@
 SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) : note(Notes::A, 4) {
     in_dev = _in;
 
-    if(settings.generate_sine)
+    if(settings.generate_sine) {
+        info("Playing generate_sine");
+        sound_source = SoundSource::generate_sine;
+    }
+    else if(settings.generate_note) {
+        info("Playing generate_note");
         sound_source = SoundSource::generate_note;
+    }
+    else if(settings.play_file) {
+        info("Playing play_file");
+        sound_source = SoundSource::file;
+    }
     else
         sound_source = SoundSource::audio_in;
 
@@ -30,13 +40,22 @@ SampleGetter::~SampleGetter() {
 }
 
 
+SoundSource SampleGetter::get_sound_source() const {
+    return sound_source;
+}
+
+
 void SampleGetter::add_generated_wave_freq(const double d_freq) {
     generated_wave_freq += d_freq;
+
+    std::cout << "Playing sine wave of " << generated_wave_freq << " Hz" << std::endl;
 }
 
 
 void SampleGetter::set_note(const Note &new_note) {
     note = new_note;
+
+    std::cout << "Playing note " << note << "  (" << note.freq << " Hz)" << std::endl;
 }
 
 void SampleGetter::note_up() {
@@ -45,7 +64,7 @@ void SampleGetter::note_up() {
     else
         note = Note(static_cast<Notes>(static_cast<int>(note.note) + 1), note.octave);
 
-    std::cout << "Playing note " << note << std::endl;
+    std::cout << "Playing note " << note << "  (" << note.freq << " Hz)" << std::endl;
 }
 
 void SampleGetter::note_down() {
@@ -54,7 +73,7 @@ void SampleGetter::note_down() {
     else
         note = Note(static_cast<Notes>(static_cast<int>(note.note) - 1), note.octave);
 
-    std::cout << "Playing note " << note << std::endl;
+    std::cout << "Playing note " << note << "  (" << note.freq << " Hz)" << std::endl;
 }
 
 
@@ -127,7 +146,7 @@ void SampleGetter::read_frame_int32_audio_device(float *const in, const int n_sa
 
 
 void SampleGetter::get_frame(float *const in, const int n_samples) {
-    static unsigned long offset = 0;
+    static double last_phase = 0.0;
 
     switch(sound_source) {
         case SoundSource::audio_in:
@@ -142,18 +161,24 @@ void SampleGetter::get_frame(float *const in, const int n_samples) {
             break;
 
         case SoundSource::generate_sine:
-            for(int i = 0; i < n_samples; i++)
-                in[i] = sinf((2.0 * M_PI * (i + offset) * generated_wave_freq) / (float)SAMPLE_RATE);
-            offset += n_samples;
+            for(int i = 0; i < n_samples; i++) {
+                const double offset = (last_phase * ((double)SAMPLE_RATE / generated_wave_freq));
+                in[i] = sinf((2.0 * M_PI * ((double)i + offset) * generated_wave_freq) / (double)SAMPLE_RATE);
+            }
+            last_phase = fmod(last_phase + (generated_wave_freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
             break;
 
         case SoundSource::generate_note:
-            for(int i = 0; i < n_samples; i++)
-                in[i] = sinf((2.0 * M_PI * (i + offset) * note.freq) / (float)SAMPLE_RATE);
-            offset += n_samples;
+            for(int i = 0; i < n_samples; i++) {
+                const double offset = (last_phase * ((double)SAMPLE_RATE / note.freq));
+                in[i] = sinf((2.0 * M_PI * ((double)i + offset) * note.freq) / (double)SAMPLE_RATE);
+            }
+            last_phase = fmod(last_phase + (note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
             break;
 
-        // case SoundSource::file:
+        case SoundSource::file:
+            warning("Not yet implemented!");
+            break;
         //     if(!file_get_samples(in, n_samples)) {
         //         std::cout << "Finished playing file; quitting after this frame" << std::endl;
         //         set_quit();

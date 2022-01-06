@@ -248,15 +248,17 @@ void HighRes::perform(float *const input_buffer, NoteSet &noteset) {
 
     // Extract played note from the peaks
     noteset.clear();
-    get_loudest_peak(noteset, candidate_notes);
+    // get_loudest_peak(noteset, candidate_notes);
     // get_lowest_peak(noteset, candidate_notes);
-    // get_likeliest_note(noteset, candidate_notes);
+    get_likeliest_note(noteset, candidate_notes);
 
 
     // Graphics
     if constexpr(!HEADLESS) {
         spectrum.clear();
-        for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
+        for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++) {
             spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i], (double)SAMPLE_RATE / (double)FRAME_SIZE);
+            // spectrum.add_envelope(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), envelope[i]);
+        }
     }
 }

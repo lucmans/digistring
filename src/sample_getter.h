@@ -9,7 +9,7 @@
 
 
 enum class SoundSource {
-    audio_in, generate_sine, generate_note//, file
+    audio_in, generate_sine, generate_note, file
 };
 
 
@@ -17,6 +17,8 @@ class SampleGetter {
     public:
         SampleGetter(SDL_AudioDeviceID *const _in);
         ~SampleGetter();
+
+        SoundSource get_sound_source() const;
 
         void add_generated_wave_freq(const double d_freq);
 

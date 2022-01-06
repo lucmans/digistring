@@ -89,6 +89,12 @@ struct Settings {
     // Generate sine instead of using audio input
     bool generate_sine = false;
     double generate_sine_freq = 1000.0;  // Hz
+
+    bool generate_note = false;
+    Note generate_note_note = Note(Notes::A, 4);
+
+    bool play_file = false;
+    std::string play_file_name;
 };
 extern Settings settings;
 
