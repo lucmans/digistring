@@ -1,4 +1,6 @@
-Digistring is a program that converts notes played on a guitar to a digital representation in real-time.
+Digistring is a program that converts notes played on a guitar to a digital representation in real-time.  
+Note that Digistring is still under heavy development and the head of master may not always be stable.  
+The thesis accompanying this project can be found in the thesis branch.
 
 
 # Build instructions
@@ -44,7 +46,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 `p`: Change plot type.  
 `r`: Reset loudest recorded value.  
 `t`: Clear SDL audio playback buffer (samples sent to OS are still played).  
-`q`/`esc`: Quit digistring.
+`q`/`esc`: Quit Digistring.
 
 
 # TODO
