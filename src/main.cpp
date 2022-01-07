@@ -387,11 +387,7 @@ int main(int argc, char *argv[]) {
     print_program_config_info();
 
     // Disable SDL key/mouse events to minimize event overhead
-    SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_DISABLE);
-    SDL_EventState(SDL_MOUSEBUTTONUP, SDL_DISABLE);
-    SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
     SDL_EventState(SDL_MOUSEWHEEL, SDL_DISABLE);
-    // SDL_EventState(SDL_KEYDOWN, SDL_DISABLE);
     SDL_EventState(SDL_KEYUP, SDL_DISABLE);
 
     // Init program logic

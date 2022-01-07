@@ -78,6 +78,9 @@ Graphics::Graphics() {
     max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
     max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), info_font, {0xff, 0xff, 0xff, 0xff});
 
+    mouse_x = -1;
+    clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
+
     TTF_Font *freeze_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
     if(freeze_font == NULL) {
         error("Failed to load font '" + settings.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
@@ -171,6 +174,12 @@ void Graphics::set_max_display_frequency(const double f) {
 // double Graphics::get_max_display_frequency() {
 //     return max_display_frequency;
 // }
+
+
+void Graphics::set_clicked(const int x, const int y) {
+    mouse_x = x;
+    mouse_y = y;
+}
 
 
 void Graphics::toggle_freeze_graph() {
@@ -299,6 +308,7 @@ void Graphics::render_frame(const Note *const note) {
 
     render_current_note(note);
     render_max_displayed_frequency();
+    render_clicked_frequency();
     render_freeze();
 
     // Render framebuffer to window
@@ -483,11 +493,32 @@ void Graphics::render_max_displayed_frequency() {
     SDL_QueryTexture(max_display_frequency_text, NULL, NULL, &w, &h);
     int w2;
     SDL_QueryTexture(max_display_frequency_number, NULL, NULL, &w2, &h);
-    
+
     SDL_Rect dst = {res_w - w - w2 - 1, 0, w, h};
     SDL_RenderCopy(renderer, max_display_frequency_text, NULL, &dst);
     dst = {res_w - w2 - 1, 0, w2, h};
     SDL_RenderCopy(renderer, max_display_frequency_number, NULL, &dst);
+}
+
+
+void Graphics::render_clicked_frequency() {
+    if(mouse_x == -1)
+        return;
+
+    int clicked_freq = round(((double)mouse_x / (double)res_w) * max_display_frequency);
+    SDL_Texture *clicked_freq_number = create_txt_texture(renderer, STR(clicked_freq), info_font, {0xff, 0xff, 0xff, 0xff});
+
+    int w, h;
+    SDL_QueryTexture(clicked_freq_text, NULL, NULL, &w, &h);
+    int w2;
+    SDL_QueryTexture(clicked_freq_number, NULL, NULL, &w2, &h);
+
+    SDL_Rect dst = {res_w - w - w2 - 1, h, w, h};
+    SDL_RenderCopy(renderer, clicked_freq_text, NULL, &dst);
+    dst = {res_w - w2 - 1, h, w2, h};
+    SDL_RenderCopy(renderer, clicked_freq_number, NULL, &dst);
+
+    SDL_DestroyTexture(clicked_freq_number);
 }
 
 

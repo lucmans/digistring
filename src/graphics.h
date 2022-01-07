@@ -43,6 +43,8 @@ class Graphics {
         void set_max_display_frequency(const double f);
         // double get_max_display_frequency();
 
+        void set_clicked(const int x, const int y);
+
         void toggle_freeze_graph();
 
         void next_plot_type();
@@ -77,6 +79,9 @@ class Graphics {
         SDL_Texture *max_display_frequency_text;  // Rendered static text
         SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
 
+        int mouse_x, mouse_y;
+        SDL_Texture *clicked_freq_text;
+
         // Graph freezing
         bool freeze;
         SpectrumData freeze_data;
@@ -92,6 +97,7 @@ class Graphics {
 
         void render_current_note(const Note *const note);
         void render_max_displayed_frequency();
+        void render_clicked_frequency();
         void render_freeze();
 };
 

@@ -28,6 +28,9 @@ class Program {
 
         SampleGetter *sample_getter;
 
+        bool mouse_clicked;
+        int mouse_x, mouse_y;
+
 
         void handle_sdl_events();
 };

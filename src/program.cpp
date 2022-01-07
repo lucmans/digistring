@@ -19,6 +19,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     out_dev = _out;
 
     sample_getter = new SampleGetter(in_dev);
+
+    mouse_clicked = false;
 }
 
 Program::~Program() {
@@ -88,10 +90,13 @@ void Program::main_loop() {
             // Render data
             frame_time = std::chrono::steady_clock::now() - prev_frame;
             if(frame_time.count() > 1000.0 / 15.0) {
+                graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
+
                 if(noteset.size() > 0)
                     graphics->render_frame(&noteset[0]);
                 else
                     graphics->render_frame(nullptr);
+
                 perf.push_time_point("Frame rendered");
 
                 prev_frame = std::chrono::steady_clock::now();
@@ -182,6 +187,27 @@ void Program::handle_sdl_events() {
                 }
                 break;
 
+            case SDL_MOUSEBUTTONDOWN:
+                if(e.button.button == SDL_BUTTON_LEFT) {
+                    mouse_clicked = true;
+                    mouse_x = e.button.x;
+                    mouse_y = e.button.y;
+                }
+                break;
+
+            case SDL_MOUSEBUTTONUP:
+                if(e.button.button == SDL_BUTTON_LEFT)
+                    mouse_clicked = false;
+                break;
+
+            case SDL_MOUSEMOTION:
+                if(e.motion.state & SDL_BUTTON_LMASK) {
+                    mouse_clicked = true;
+                    mouse_x = e.motion.x;
+                    mouse_y = e.motion.y;
+                }
+                break;
+
             case SDL_WINDOWEVENT:
                 switch(e.window.event) {
                     case SDL_WINDOWEVENT_CLOSE:
@@ -190,6 +216,22 @@ void Program::handle_sdl_events() {
 
                     case SDL_WINDOWEVENT_SIZE_CHANGED:
                         resize(e.window.data1, e.window.data2);
+                        break;
+
+                    case SDL_WINDOWEVENT_ENTER:
+                        // debug((SDL_GetMouseState(&x, &y) & SDL_BUTTON_LMASK ? "yes" : "no"));
+                        int x, y;
+                        if(SDL_GetMouseState(&x, &y) & SDL_BUTTON_LMASK) {
+                            mouse_clicked = true;
+                            mouse_x = x;
+                            mouse_y = y;
+                        }
+                        else
+                            mouse_clicked = false;
+                        break;
+
+                    case SDL_WINDOWEVENT_LEAVE:
+                        mouse_clicked = false;
                         break;
                 }
                 break;
