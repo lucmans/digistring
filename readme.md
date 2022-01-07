@@ -6,7 +6,7 @@ Digistring is a program that converts notes played on a guitar to a digital repr
 Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.
 
 On Arch Linux:  
-`sudo pacman -S sdl2 fftw3`
+`sudo pacman -S sdl2 sdl2_ttf fftw3`
 
 ## Building
 Run `make` in the root directory of the project to build the binary.  
