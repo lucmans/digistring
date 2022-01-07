@@ -34,6 +34,9 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
 All command line arguments can also be printed by running digistring with `-h`.
 
 ## GUI controls
+**Mouse controls**  
+Left mouse button: Display the frequency corresponding to the cursor's location.
+
 **Keyboard controls:**  
 `-`/`+`: Decrease/increase the frequency of the generated sine wave or note. Note that frame containing samples representing the old frequency has to finish playing before new frame is played.  
 `[`/`]`: Decrease/increase the maximum displayed frequency.  
