@@ -13,6 +13,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include <algorithm>  // std::find(), std::max()
+#include <cmath>  // std::find(), std::max()
 
 
 Graphics::Graphics() {
@@ -290,7 +291,7 @@ void Graphics::add_data_point(const SpectrumData *const data) {
 
 
 void Graphics::render_frame(const Note *const note) {
-    render_black_screen();  // Background video if loaded
+    render_black_screen();
 
     switch(plot_type) {
         case PlotType::spectrogram:

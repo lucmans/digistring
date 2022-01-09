@@ -22,7 +22,7 @@ const double SIGMA = 1.2;  // Higher values of sigma make values close to kernel
 class HighRes : public Estimator {
     public:
         HighRes(float *const input_buffer);
-        ~HighRes();
+        ~HighRes() override;
 
         Estimators get_type() const override;
 

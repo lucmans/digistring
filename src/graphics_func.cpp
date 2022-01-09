@@ -10,23 +10,29 @@
 #include <string>
 
 
-void fit_center(SDL_Rect &src, const SDL_Rect &dst, const int padding = 0) {
+constexpr void fit_center(SDL_Rect &src, const SDL_Rect &dst, const int padding = 0) {
     const double src_ar = src.w / src.h,
                  dst_ar = dst.w / dst.h;
 
     // src is narrower
     if(src_ar < dst_ar) {
-        src.h = dst.h - (2 * padding);
         src.w = src.h * src_ar;
+        src.h = dst.h - (2 * padding);
         src.x = (double)(dst.w - (src.h * src_ar)) / 2.0;
         src.y = padding;
     }
     // src is wider
-    else {  //if(src_ar > dst_ar) {
+    else if(src_ar > dst_ar) {
         src.w = dst.w - (2 * padding);
         src.h = src.w / src_ar;
         src.x = padding;
         src.y = (double)(dst.h - (src.w / src_ar)) / 2.0;
+    }
+    else {  // src_ar == dst_ar
+        src.w = dst.w - (2 * padding);
+        src.h = dst.h - (2 * padding);
+        src.x = padding;
+        src.y = padding;
     }
 }
 

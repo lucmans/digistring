@@ -13,7 +13,7 @@
 class Tuned : public Estimator {
     public:
         Tuned(float *const input_buffer);
-        ~Tuned();
+        ~Tuned() override;
 
         Estimators get_type() const override;
 
