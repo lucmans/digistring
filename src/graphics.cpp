@@ -23,8 +23,8 @@ Graphics::Graphics() {
     //         warning("Failed to set scaling hint; using ugly pixelated nearest neighbor scaling");
     // }
 
-    res_w = settings.w;
-    res_h = settings.h;
+    res_w = settings.res_w;
+    res_h = settings.res_h;
 
     uint32_t window_flags;
     if(settings.fullscreen)

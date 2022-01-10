@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 #include <ostream>
+#include <iomanip>  // std::setw()
 
 
 const char *note_string[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
@@ -80,6 +81,43 @@ std::ostream& operator<<(std::ostream &s, const NoteSet &noteset) {
         s << ' ' << noteset[i];
 
     return s;
+}
+
+
+int subscript_offset(const int subscript) {
+    if(subscript == 0)
+        return 1;
+
+    else if(subscript < 0)
+        return log10(-subscript) + 2;
+
+    return log10(subscript) + 1;
+}
+
+void print_overtones(const Note &note, const int n_overtones) {
+    // Calculate column sizes
+    const int max_n_width = log10(n_overtones - 1) + 1;
+    const int max_harm_width = std::max((int)log10(note.freq * n_overtones) + 7, 12);
+    const int max_closest_width = std::max((int)log10(note.freq * n_overtones) + 7, 11);
+
+    // Print header
+    std::cout << std::right
+              << std::setw(max_n_width)  << "n"
+              << std::setw(max_harm_width) << "f_harmonic"
+              << std::setw(14) << "closest note"
+              << std::setw(max_closest_width) << "f_closest"
+              << std::setw(12) << "cent error" << std::endl;
+
+    for(int i = 1; i <= n_overtones; i++) {
+        Note overtone(note.freq * i, 0);
+        std::cout << std::fixed << std::setprecision(3)
+                  << std::setw(max_n_width) << i - 1
+                  << std::setw(max_harm_width) << note.freq * i
+                  << std::setw(14 - subscript_offset(overtone.octave)) << overtone
+                  << std::setw(max_closest_width) << A4 * exp2(round(12.0 * log2((note.freq * i) / A4)) / 12.0)
+                  << std::setw(12) << overtone.error << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 

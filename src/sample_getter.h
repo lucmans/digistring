@@ -34,7 +34,7 @@ class SampleGetter {
 
         SoundSource sound_source;
         double generated_wave_freq;
-        Note note;
+        Note generated_note;
 
 
         void read_frame_float32_audio_device(float *const in, const int n_samples);

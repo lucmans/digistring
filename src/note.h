@@ -25,9 +25,9 @@ struct Note {
 
     // constexpr Note(const double _freq, const double _amp) : freq(_freq),
     //                                                         amp(_amp),
-    //                                                         note(static_cast<Notes>(((((int)round(12.0 * log2(freq / (A4 * exp2(-57.0 / 12.0))))) % 12) + 12) % 12)),
-    //                                                         octave(floor((double)((int)round(12.0 * log2(freq / (A4 * exp2(-57.0 / 12.0))))) / 12.0)),
-    //                                                         error(1200.0 * log2(freq / ((A4 * exp2(-57.0 / 12.0)) * exp2((double)octave + (static_cast<double>(note) / 12.0))))) {};
+    //                                                         note(static_cast<Notes>(((((int)round(12.0 * log2(_freq / (A4 * exp2(-57.0 / 12.0))))) % 12) + 12) % 12)),
+    //                                                         octave(floor((double)((int)round(12.0 * log2(_freq / (A4 * exp2(-57.0 / 12.0))))) / 12.0)),
+    //                                                         error(1200.0 * log2(_freq / ((A4 * exp2(-57.0 / 12.0)) * exp2((double)octave + (static_cast<double>(note) / 12.0))))) {};
     // constexpr Note(const Notes _note, const int _octave) : freq((A4 * exp2(-57.0 / 12.0)) * exp2((double)_octave + (static_cast<double>(_note) / 12.0))),
     //                                                        amp(-1.0),
     //                                                        note(_note),
@@ -45,6 +45,9 @@ std::string note_to_string(const Note &note);
 typedef std::vector<Note> NoteSet;
 
 std::ostream& operator<<(std::ostream &s, const NoteSet &noteset);
+
+
+void print_overtones(const Note &note, const int n_overtones);
 
 
 // Throws std::string with error description on invalid strings

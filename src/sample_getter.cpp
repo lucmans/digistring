@@ -14,7 +14,7 @@
 #include <cmath>
 
 
-SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) : note(Notes::A, 4) {
+SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) : generated_note(settings.generate_note_note) {
     in_dev = _in;
 
     if(settings.generate_sine) {
@@ -26,7 +26,7 @@ SampleGetter::SampleGetter(SDL_AudioDeviceID *const _in) : note(Notes::A, 4) {
         sound_source = SoundSource::generate_note;
     }
     else if(settings.play_file) {
-        info("Playing play_file");
+        info("Playing '" + settings.play_file_name + "'");
         sound_source = SoundSource::file;
     }
     else
@@ -53,27 +53,27 @@ void SampleGetter::add_generated_wave_freq(const double d_freq) {
 
 
 void SampleGetter::set_note(const Note &new_note) {
-    note = new_note;
+    generated_note = new_note;
 
-    std::cout << "Playing note " << note << "  (" << note.freq << " Hz)" << std::endl;
+    std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
 }
 
 void SampleGetter::note_up() {
-    if(note.note == Notes::B)
-        note = Note(Notes::C, note.octave + 1);
+    if(generated_note.note == Notes::B)
+        generated_note = Note(Notes::C, generated_note.octave + 1);
     else
-        note = Note(static_cast<Notes>(static_cast<int>(note.note) + 1), note.octave);
+        generated_note = Note(static_cast<Notes>(static_cast<int>(generated_note.note) + 1), generated_note.octave);
 
-    std::cout << "Playing note " << note << "  (" << note.freq << " Hz)" << std::endl;
+    std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
 }
 
 void SampleGetter::note_down() {
-    if(note.note == Notes::C)
-        note = Note(Notes::B, note.octave - 1);
+    if(generated_note.note == Notes::C)
+        generated_note = Note(Notes::B, generated_note.octave - 1);
     else
-        note = Note(static_cast<Notes>(static_cast<int>(note.note) - 1), note.octave);
+        generated_note = Note(static_cast<Notes>(static_cast<int>(generated_note.note) - 1), generated_note.octave);
 
-    std::cout << "Playing note " << note << "  (" << note.freq << " Hz)" << std::endl;
+    std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
 }
 
 
@@ -170,10 +170,10 @@ void SampleGetter::get_frame(float *const in, const int n_samples) {
 
         case SoundSource::generate_note:
             for(int i = 0; i < n_samples; i++) {
-                const double offset = (last_phase * ((double)SAMPLE_RATE / note.freq));
-                in[i] = sinf((2.0 * M_PI * ((double)i + offset) * note.freq) / (double)SAMPLE_RATE);
+                const double offset = (last_phase * ((double)SAMPLE_RATE / generated_note.freq));
+                in[i] = sinf((2.0 * M_PI * ((double)i + offset) * generated_note.freq) / (double)SAMPLE_RATE);
             }
-            last_phase = fmod(last_phase + (note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
+            last_phase = fmod(last_phase + (generated_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
             break;
 
         case SoundSource::file:

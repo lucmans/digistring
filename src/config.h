@@ -58,26 +58,11 @@ const int MAX_HISTORY_DATAPOINTS = 2000;
 static_assert(DEFAULT_MAX_DISPLAY_FREQUENCY <= MAX_FOURIER_FREQUENCY, "DEFAULT_MAX_DISPLAY_FREQUENCY is too high; please set to <=0");
 
 
-// namespace UI {
-//     namespace max_display_frequency {
-//         const int padding =
-//     }
-// }
-
-
-// struct UI {
-
-// }
-
-
 // Struct with all settings that can be changed through CLI arguments
 struct Settings {
-    int w = DEFAULT_RES[0];
-    int h = DEFAULT_RES[1];
+    int res_w = DEFAULT_RES[0];
+    int res_h = DEFAULT_RES[1];
     bool fullscreen = false;
-
-    // // Run without window/graphics
-    // bool headless = false;
 
     std::string rsc_dir = "rsc/";
 
