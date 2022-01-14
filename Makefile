@@ -15,15 +15,16 @@ LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
 INCL = -Ilib/include/
 CORES = 20
 
-SRC_FILES = src/*.h src/*.cpp src/estimators/*.h src/estimators/*.cpp
-BUILD_FOLDERS = obj/ obj/estimators/ dep/ dep/estimators/
+SRC_FOLDER = src/ src/estimators/
+SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDER)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDER))
+BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDER)) $(patsubst src%/, dep%/, $(SRC_FOLDER))
 
 BIN = digistring
 OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func.o obj/sample_getter.o obj/performance.o obj/config.o \
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
       obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o
 
-.PHONY: all force fresh clean valgrind lines debug todo trailing_spaces
+.PHONY: all force fresh clean valgrind lines grep debug todo trailing_spaces
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -79,16 +80,21 @@ lines:
 	wc -l $(SRC_FILES)
 
 
+
+# Usage: make grep pat="pattern"
+grep:
+# 	@echo $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
+	@grep --color=auto -n "$(pat)" $(SRC_FILES) || echo -e "Pattern not found\n"
+
 debug:
-	grep -n DEBUG $(SRC_FILES) || echo -e "No debug code left!\n"
+	@grep --color=auto -n DEBUG $(SRC_FILES) || echo -e "No debug code left!\n"
 
 todo:
-	grep -n TODO $(SRC_FILES) || echo -e "Nothing left to do!\n"
-
+	@grep --color=auto -n TODO $(SRC_FILES) || echo -e "Nothing left to do!\n"
 
 # Note that when copy pasting the grep command, the extra $ has to be removed
 trailing_spaces:
-	@grep -n -r '[[:blank:]]$$' $(SRC_FILES) Makefile || echo -e "No trailing spaces in source!\n"
+	@grep --color=auto -n -r '[[:blank:]]$$' $(SRC_FILES) Makefile || echo -e "No trailing spaces in source!\n"
 
 
 clean:
