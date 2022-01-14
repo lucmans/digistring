@@ -15,14 +15,15 @@ LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
 INCL = -Ilib/include/
 CORES = 20
 
-SRC_FOLDER = src/ src/estimators/
+SRC_FOLDER = src/ src/estimators/ src/sample_getter/
 SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDER)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDER))
 BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDER)) $(patsubst src%/, dep%/, $(SRC_FOLDER))
 
 BIN = digistring
-OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func.o obj/sample_getter.o obj/performance.o obj/config.o \
+OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func.o obj/performance.o obj/config.o \
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
-      obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o
+      obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o \
+      obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o
 
 .PHONY: all force fresh clean valgrind lines grep debug todo trailing_spaces
 
@@ -78,7 +79,6 @@ valgrind: $(BIN)
 
 lines:
 	wc -l $(SRC_FILES)
-
 
 
 # Usage: make grep pat="pattern"

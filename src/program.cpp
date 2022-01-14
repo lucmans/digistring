@@ -2,12 +2,12 @@
 #include "program.h"
 
 #include "graphics.h"
-#include "sample_getter.h"
 #include "performance.h"
 #include "config.h"
 #include "error.h"
 
 #include "estimators/estimators.h"
+#include "sample_getter/sample_getters.h"
 
 #include <SDL2/SDL.h>
 
@@ -18,7 +18,22 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     in_dev = _in;
     out_dev = _out;
 
-    sample_getter = new SampleGetter(in_dev);
+    if(settings.generate_sine) {
+        // info("Playing generate_sine");
+        sample_getter = new WaveGenerator(settings.generate_sine_freq);
+    }
+    else if(settings.generate_note) {
+        // info("Playing generate_note");
+        sample_getter = new NoteGenerator(settings.generate_note_note);
+    }
+    else if(settings.play_file) {
+        // info("Playing '" + settings.play_file_name + "'");
+        sample_getter = new AudioFile();
+    }
+    else {
+        // info("Sourcing audio from computer audio input");
+        sample_getter = new AudioIn(in_dev);
+    }
 
     mouse_clicked = false;
 }
@@ -133,23 +148,11 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_MINUS:
-                        {
-                            SoundSource source = sample_getter->get_sound_source();
-                            if(source == SoundSource::generate_sine)
-                                sample_getter->add_generated_wave_freq(-5.0);
-                            else if(source == SoundSource::generate_note)
-                                sample_getter->note_down();
-                        }
+                        sample_getter->pitch_down();
                         break;
 
                     case SDLK_EQUALS:
-                        {
-                            SoundSource source = sample_getter->get_sound_source();
-                            if(source == SoundSource::generate_sine)
-                                sample_getter->add_generated_wave_freq(+5.0);
-                            else if(source == SoundSource::generate_note)
-                                sample_getter->note_up();
-                        }
+                        sample_getter->pitch_up();
                         break;
 
                     case SDLK_r:
