@@ -12,17 +12,10 @@
 
 class Tuned : public Estimator {
     public:
-        Tuned(float *const input_buffer);
+        Tuned(float *input_buffer, int &buffer_size);
         ~Tuned() override;
 
         Estimators get_type() const override;
-
-        // The input buffer has to be freed by caller using fftwf_free()
-        static float *create_input_buffer(int &buffer_size);
-        float *_create_input_buffer(int &buffer_size) const override;
-
-        // Implemented by superclass
-        // void free_input_buffer(float *const input_buffer) const {
 
         void perform(float *const input_buffer, NoteSet &noteset) override;
 

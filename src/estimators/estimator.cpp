@@ -25,11 +25,6 @@ Estimator::~Estimator() {
 }
 
 
-/* static */ void Estimator::free_input_buffer(float *const input_buffer) {
-    fftwf_free(input_buffer);
-}
-
-
 double Estimator::get_max_norm() const {
     if constexpr(HEADLESS) {
         error("This call should never occur with headless mode");

@@ -31,13 +31,13 @@ Program::~Program() {
 // #include <thread>  // sleep
 void Program::main_loop() {
     // We let the estimator create the input buffer for optimal size and better alignment
+    float *input_buffer = NULL;
     int input_buffer_size;
-    float *input_buffer = HighRes::create_input_buffer(input_buffer_size);
-    Estimator *estimator = new HighRes(input_buffer);
+    Estimator *estimator = new HighRes(input_buffer, input_buffer_size);
 
     // Frame limiting
+    std::chrono::duration<double, std::milli> frame_time;  // = std::chrono::duration<double>(0.0);
     std::chrono::steady_clock::time_point prev_frame = std::chrono::steady_clock::now();
-    std::chrono::duration<double, std::milli> frame_time = std::chrono::duration<double>(0.0);
 
     // Unpause audio devices so that samples are collected/played
     if(!(settings.generate_sine || settings.generate_note || settings.play_file))
@@ -108,7 +108,6 @@ void Program::main_loop() {
     }
 
     delete estimator;
-    Estimator::free_input_buffer(input_buffer);
 }
 
 

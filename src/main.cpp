@@ -14,6 +14,8 @@
 #include <csignal>  // catching ctrl+c in terminal
 #include <filesystem>  // is_directory, exists
 #include <fstream>  // Reading rsc dir verification file
+#include <string>
+#include <iostream>
 
 
 void print_audio_settings(SDL_AudioSpec &specs, bool input) {

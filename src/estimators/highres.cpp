@@ -37,12 +37,18 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
 }
 
 
-HighRes::HighRes(float *const input_buffer) {
-    // Input buffer is allocated by caller, as it is shared between multiple objects
+HighRes::HighRes(float *input_buffer, int &buffer_size) {
+    input_buffer = (float*)fftwf_malloc(FRAME_SIZE * sizeof(float));
+    if(input_buffer == NULL) {
+        error("Failed to malloc sample input buffer");
+        exit(EXIT_FAILURE);
+    }
+    buffer_size = FRAME_SIZE;
 
+    in = input_buffer;  // Share the sample input buffer with the Fourier input buffer
     out = (fftwf_complex*)fftwf_malloc(((FRAME_SIZE / 2) + 1) * sizeof(fftwf_complex));
     if(out == NULL) {
-        error("Failed to malloc output buffer");
+        error("Failed to malloc Fourier output buffer");
         exit(EXIT_FAILURE);
     }
 
@@ -59,35 +65,14 @@ HighRes::HighRes(float *const input_buffer) {
 
 HighRes::~HighRes() {
     fftwf_destroy_plan(p);
-    // fftwf_cleanup();
     fftwf_free(out);
+    fftwf_free(in);
 }
 
 
 Estimators HighRes::get_type() const {
     return Estimators::highres;
 }
-
-
-/*static*/ float *HighRes::create_input_buffer(int &buffer_size) {
-    float *input_buffer = (float*)fftwf_malloc(FRAME_SIZE * sizeof(float));
-    if(input_buffer == NULL) {
-        error("Failed to malloc input buffer");
-        exit(EXIT_FAILURE);
-    }
-
-    buffer_size = FRAME_SIZE;
-    return input_buffer;
-}
-
-float *HighRes::_create_input_buffer(int &buffer_size) const {
-    return HighRes::create_input_buffer(buffer_size);
-}
-
-// Implemented by superclass
-// void HighRes::free_input_buffer(float *const input_buffer) const {
-//     fftwf_free(input_buffer);
-// }
 
 
 void HighRes::calc_envelope(const double norms[(FRAME_SIZE / 2) + 1], double envelope[(FRAME_SIZE / 2) + 1]) {

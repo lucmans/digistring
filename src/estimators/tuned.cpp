@@ -20,8 +20,15 @@ inline constexpr int fourier_size(const Note &note) {
 }
 
 
-Tuned::Tuned(float *const input_buffer) {
-    // Input buffer is allocated by caller, as it is shared between multiple objects
+Tuned::Tuned(float *input_buffer, int &buffer_size) {
+    const int n_samples = fourier_size(LOWEST_NOTE);
+
+    input_buffer = (float*)fftwf_malloc(n_samples * sizeof(float));
+    if(input_buffer == NULL) {
+        error("Failed to malloc sample input buffer");
+        exit(EXIT_FAILURE);
+    }
+    buffer_size = n_samples;
 
     // Calculate the sizes of the transform buffers
     int o = 0;  // Octave offset
@@ -35,37 +42,35 @@ Tuned::Tuned(float *const input_buffer) {
     }
     // std::cout << std::endl;
 
-    // Create transform buffers
-    ins[0] = input_buffer;
-    for(int i = 1; i < 12; i++)
-        ins[i] = (float*)fftwf_malloc(buffer_sizes[i] * sizeof(float));
+    // Sanity check
+    if(buffer_size != buffer_sizes[0]) {
+        error("Input buffer size is not equal to the buffer size of the lowest note");
+        exit(EXIT_FAILURE);
+    }
 
-    // DEBUG: Assign note letter to each buffer slot
-    // for(int i = 0; i < 12; i++) {
-    //     for(int j = 0; j < buffer_sizes[i]; j++) {
-    //         ins[i][j] = i;
-    //     }
-    // }
-    // for(int i = 0; i < buffer_sizes[0]; i++)
-    //     std::cout << i << " " << ins[0][i] << std::endl;
+    // Create transform buffers
+    ins[0] = input_buffer;  // Share the sample input buffer with the Fourier input buffer
+    for(int i = 1; i < 12; i++) {
+        ins[i] = (float*)fftwf_malloc(buffer_sizes[i] * sizeof(float));
+        if(ins[i] == NULL) {
+            error("Failed to malloc " + STR(i) + "-th Fourier input buffer");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     // Create the output buffers
     for(int i = 0; i < 12; i++) {
         outs[i] = (fftwf_complex*)fftwf_malloc((((buffer_sizes[i]) / 2) + 1) * sizeof(fftwf_complex));
         if(outs[i] == NULL) {
-            error("Failed to malloc output buffer");
+            error("Failed to malloc " + STR(i) + "-th Fourier output buffer");
             exit(EXIT_FAILURE);
         }
     }
 
     // Create the planners which actually perform the Fourier transform
     // TODO: Exhaustive planner and graphics to show "optimizing planner"
-    for(int i = 0; i < 12; i++) {
-        // FFTW_PRESERVE_INPUT is important, as the input array is shared
-        plans[i] = fftwf_plan_dft_r2c_1d(buffer_sizes[i], ins[i], outs[i], FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
-
-        // std::cout << "Plan " << i << std::endl;
-    }
+    for(int i = 0; i < 12; i++)
+        plans[i] = fftwf_plan_dft_r2c_1d(buffer_sizes[i], ins[i], outs[i], FFTW_ESTIMATE);
 
     // Pre-calculate window functions
     for(int i = 0; i < 12; i++) {
@@ -83,8 +88,8 @@ Tuned::~Tuned() {
     for(int i = 0; i < 12; i++)
         fftwf_destroy_plan(plans[i]);
 
-    // Not from i = 0, as ins[0] is the input buffer managed by caller
-    for(int i = 1; i < 12; i++)
+    // i = 0 is the input buffer
+    for(int i = 0; i < 12; i++)
         fftwf_free(ins[i]);
 
     for(int i = 0; i < 12; i++)
@@ -98,29 +103,6 @@ Tuned::~Tuned() {
 Estimators Tuned::get_type() const {
     return Estimators::tuned;
 }
-
-
-/*static*/ float *Tuned::create_input_buffer(int &buffer_size) {
-    const int n_samples = fourier_size(LOWEST_NOTE);
-
-    float *input_buffer = (float*)fftwf_malloc(n_samples * sizeof(float));
-    if(input_buffer == NULL) {
-        error("Failed to malloc input buffer");
-        exit(EXIT_FAILURE);
-    }
-
-    buffer_size = n_samples;
-    return input_buffer;
-}
-
-float *Tuned::_create_input_buffer(int &buffer_size) const {
-    return Tuned::create_input_buffer(buffer_size);
-}
-
-// Implemented by superclass
-// void HighRes::free_input_buffer(float *const input_buffer) const {
-//     fftwf_free(input_buffer);
-// }
 
 
 void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
@@ -168,4 +150,6 @@ void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
     perf.push_time_point("Norms calculated");
 
     spectrum.sort();
+
+    noteset.clear();
 }
