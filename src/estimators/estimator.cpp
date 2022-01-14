@@ -12,10 +12,6 @@
 #include <string>
 
 
-const std::map<const Estimators, const std::string> EstimatorString = {{Estimators::highres, "highres"},
-                                                                       {Estimators::tuned, "tuned"}};
-
-
 Estimator::Estimator() {
     max_norm = 0.0;
 }

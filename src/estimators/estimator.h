@@ -19,7 +19,8 @@ enum class Estimators {
 
 // For printing enum
 // If a string isn't present in EstimatorString for every type, random crashes may happen
-extern const std::map<const Estimators, const std::string> EstimatorString;
+const std::map<const Estimators, const std::string> EstimatorString = {{Estimators::highres, "highres"},
+                                                                       {Estimators::tuned, "tuned"}};
 
 
 class Estimator {

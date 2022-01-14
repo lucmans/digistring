@@ -37,7 +37,7 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
 }
 
 
-HighRes::HighRes(float *input_buffer, int &buffer_size) {
+HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     input_buffer = (float*)fftwf_malloc(FRAME_SIZE * sizeof(float));
     if(input_buffer == NULL) {
         error("Failed to malloc sample input buffer");
