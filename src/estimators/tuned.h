@@ -26,7 +26,7 @@ class Tuned : public Estimator {
         fftwf_complex *outs[12];
         fftwf_plan plans[12];
 
-        double *window_funcs[12];
+        float *window_funcs[12];
 };
 
 

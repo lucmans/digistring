@@ -74,7 +74,7 @@ Tuned::Tuned(float *input_buffer, int &buffer_size) {
 
     // Pre-calculate window functions
     for(int i = 0; i < 12; i++) {
-        window_funcs[i] = (double*)malloc(buffer_sizes[i] * sizeof(double));
+        window_funcs[i] = (float*)malloc(buffer_sizes[i] * sizeof(float));
         if(window_funcs[i] == NULL) {
             error("Failed to allocate buffer for window function");
             exit(EXIT_FAILURE);
@@ -117,7 +117,7 @@ void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
     // Apply window functions to minimize spectral leakage
     for(int i = 0; i < 12; i++)
         for(int j = 0; j < buffer_sizes[j]; j++)
-            ins[i][j] *= (float)window_funcs[i][j];
+            ins[i][j] *= window_funcs[i][j];
     perf.push_time_point("Applied window functions");
 
     // Do the actual transform

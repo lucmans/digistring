@@ -34,7 +34,7 @@ class HighRes : public Estimator {
         fftwf_complex *out;
         fftwf_plan p;
 
-        double window_func[FRAME_SIZE];
+        float window_func[FRAME_SIZE];
         double gaussian[KERNEL_WIDTH];
 
 

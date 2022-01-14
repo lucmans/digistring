@@ -205,7 +205,7 @@ void HighRes::perform(float *const input_buffer, NoteSet &noteset) {
 
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
-        input_buffer[i] *= (float)window_func[i];  // TODO: Have float versions of the window functions
+        input_buffer[i] *= window_func[i];
     perf.push_time_point("Applied window function");
 
     // Do the actual transform
