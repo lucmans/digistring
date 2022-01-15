@@ -31,15 +31,19 @@ class SampleGetter {
         // This function should only return its type as named in SampleGetters
         virtual SampleGetters get_type() const = 0;
 
+        unsigned long get_played_samples() const;
+        double get_played_time() const;
+
         // These methods might not exist for all sample getter types
         virtual void pitch_up() {};
         virtual void pitch_down() {};
 
+        // Has to increment played_samples
         virtual void get_frame(float *const in, const int n_samples) = 0;
 
 
     protected:
-        //
+        unsigned long played_samples;
 };
 
 

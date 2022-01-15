@@ -43,4 +43,6 @@ void WaveGenerator::get_frame(float *const in, const int n_samples) {
         in[i] = sinf((2.0 * M_PI * ((double)i + offset) * generated_wave_freq) / (double)SAMPLE_RATE);
     }
     last_phase = fmod(last_phase + (generated_wave_freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
+
+    played_samples += n_samples;
 }

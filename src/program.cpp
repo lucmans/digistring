@@ -28,7 +28,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     }
     else if(settings.play_file) {
         // info("Playing '" + settings.play_file_name + "'");
-        sample_getter = new AudioFile();
+        sample_getter = new AudioFile(settings.play_file_name);
     }
     else {
         // info("Sourcing audio from computer audio input");

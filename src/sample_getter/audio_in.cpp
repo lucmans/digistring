@@ -48,6 +48,7 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
         read += ret;
     }
 
+    played_samples += n_samples;
     perf.push_time_point("Read " + STR(n_samples) + " samples");
 }
 
@@ -88,6 +89,7 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
         read += ret;
     }
 
+    played_samples += n_samples;
     perf.push_time_point("Read frame and converted from int32 to float32");
 }
 

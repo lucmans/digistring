@@ -26,15 +26,16 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
 
 ## Command line arguments
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
+`--file [file]`: Use file as input.  
 `-n [note]`: Generate note (default is A4).  
 `--over <note> [n]`: Print n (default is 5) overtones of given note.  
-`-p`: Play recorded audio back.  
+`-p`: Play input audio back.  
 `--perf`: Print performance stats to stdout.  
 `-r [w] [h]`: Run digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.
 
-All command line arguments can also be printed by running digistring with `-h`.
+All command line arguments can also be printed by running digistring with `-h`/`--help`.
 
 ## GUI controls
 **Mouse controls**  
