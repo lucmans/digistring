@@ -25,7 +25,7 @@ OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func
       obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o \
       obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o
 
-.PHONY: all force fresh clean valgrind lines grep debug todo trailing_spaces
+.PHONY: all force fresh clean valgrind lines grep debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -39,6 +39,13 @@ force:
 fresh:
 	make clean
 	make all
+
+clean:
+	rm -rf obj/
+	rm -rf dep/
+	rm -f $(BIN)
+	rm -f *.s
+	rm -f vgcore*
 
 
 # Binary rule
@@ -97,9 +104,15 @@ trailing_spaces:
 	@grep --color=auto -n -r '[[:blank:]]$$' $(SRC_FILES) Makefile || echo -e "No trailing spaces in source!\n"
 
 
-clean:
-	rm -rf obj/
-	rm -rf dep/
-	rm -f $(BIN)
-	rm -f *.s
-	rm -f vgcore*
+help:
+	@echo The default build target is \"all\", which builds the binary \"$(BIN)\".
+	@echo \"make clean\" removes all built files.
+	@echo \"make force\" forces all build targets to be rebuild.
+	@echo \"make fresh\" runs \"make clean\; make\", which may help with potential building problems after updating.
+	@echo
+	@echo Furthermore, some often used command are added to the makefile:
+	@echo \"make lines\" counts the number of lines in all source files.
+	@echo \"make grep pat=\'pattern\'\" searches for pattern in all source files.
+	@echo \"make debug\" searches for all debug comments in the source files.
+	@echo \"make todo\" searches for all todo comments in the source files.
+	@echo \"make trailing_spaces\" searches all source files for trailing whitespace characters \(whitespace characters before line end\).

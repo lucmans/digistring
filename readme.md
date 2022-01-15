@@ -13,7 +13,8 @@ On Arch Linux:
 ## Building
 Run `make` in the root directory of the project to build the binary.  
 This creates the binary `digistring` in the root of the project.  
-In case of failures, try running `make fresh`.
+In case of build failures after updating, try running `make fresh`.  
+Run `make help` for more information on all build targets and make scripts.
 
 
 # Usage instructions
