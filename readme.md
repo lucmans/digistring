@@ -52,9 +52,9 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
-Sleep till frame might be ready to read.  
-Generic data passing structure from estimator to graphics.  
-Test new argument parsing method (test all flags).
+Output JSON into output file.  
+Sleep till frame might be ready to read and overlapping transforms.  
+Generic data passing structure from estimator to graphics.
 
 
 # BUGS
