@@ -21,6 +21,8 @@ const std::map<std::string, void (ArgParser::*const)()> ArgParser::flag_to_func 
     {"-h", &ArgParser::parse_help},
     {"--help", &ArgParser::parse_help},
     {"-n", &ArgParser::parse_generate_note},
+    {"-o", &ArgParser::parse_output_file},
+    {"--output", &ArgParser::parse_output_file},
     {"--over", &ArgParser::parse_print_overtone},
     {"-p", &ArgParser::parse_playback},
     {"--perf", &ArgParser::parse_print_performance},
@@ -161,6 +163,25 @@ void ArgParser::parse_generate_note() {
         error("Failed to parse note string: " + what);
         exit(EXIT_FAILURE);
     }
+}
+
+void ArgParser::parse_output_file() {
+    const char *filename;
+    if(!fetch_opt(filename)) {
+        filename = "output.txt";
+        info("No file provided with output flag; using '" + STR(filename) + " instead");
+    }
+
+    const std::string o_filename = filename;  // Original filename as std::string instead of char[]
+    std::string g_filename = filename;  // Generated filename
+    for(int i = 2; std::filesystem::exists(g_filename); i++)
+        g_filename = o_filename + '_' + std::to_string(i);
+
+    if(g_filename != o_filename)
+        warning("File '" + o_filename + "' already exists; naming it '" + g_filename + "' instead");
+
+    settings.output_file = true;
+    settings.output_filename = g_filename;
 }
 
 void ArgParser::parse_print_overtone() {

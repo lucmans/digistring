@@ -11,6 +11,10 @@
 
 #include <SDL2/SDL.h>
 
+#include <iomanip>  // std::setw()
+#include <chrono>
+#include <thread>  // sleep
+
 
 Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) : graphics(_g) {
     // graphics = _g;
@@ -36,19 +40,34 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     }
 
     mouse_clicked = false;
+
+    if(settings.output_file) {
+        output_stream.open(settings.output_filename, std::fstream::out);
+        if(!output_stream.is_open()) {
+            error("Failed to create/open file '" + settings.output_filename + "'");
+            exit(EXIT_FAILURE);
+        }
+
+        output_stream << "Sample rate: " << SAMPLE_RATE << '\n'
+                      << "Frame size: " << FRAME_SIZE << '\n'
+                      << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms\n"
+                      << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz"
+                      << std::endl;
+    }
 }
 
 Program::~Program() {
+    output_stream.close();
+
     delete sample_getter;
 }
 
 
-// #include <thread>  // sleep
 void Program::main_loop() {
     // We let the estimator create the input buffer for optimal size and better alignment
     float *input_buffer = NULL;
-    int input_buffer_size;
-    Estimator *estimator = new HighRes(input_buffer, input_buffer_size);
+    int input_buffer_n_samples;
+    Estimator *estimator = new HighRes(input_buffer, input_buffer_n_samples);
 
     // Frame limiting
     std::chrono::duration<double, std::milli> frame_time;  // = std::chrono::duration<double>(0.0);
@@ -61,6 +80,9 @@ void Program::main_loop() {
     if(settings.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
+    if(settings.output_file)
+        output_stream << "\nplaytime (s), note, frequency (Hz), amplitude (dB), error (cent)" << std::endl;
+
     while(!poll_quit()) {
         perf.clear_time_points();
         perf.push_time_point("Start");
@@ -69,18 +91,18 @@ void Program::main_loop() {
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
-        sample_getter->get_frame(input_buffer, input_buffer_size);
+        sample_getter->get_frame(input_buffer, input_buffer_n_samples);
         perf.push_time_point("Got frame full of audio samples");
 
         // Play it back to the user if chosen
         if(settings.playback) {
-            if(SDL_QueueAudio(*out_dev, input_buffer, input_buffer_size * sizeof(float))) {
+            if(SDL_QueueAudio(*out_dev, input_buffer, input_buffer_n_samples * sizeof(float))) {
                 error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
                 exit(EXIT_FAILURE);
             }
 
             // Wait till previous frame has played (needed when fetching samples is faster than playing)
-            while(SDL_GetQueuedAudioSize(*out_dev) > input_buffer_size * sizeof(float) && !poll_quit())
+            while(SDL_GetQueuedAudioSize(*out_dev) > input_buffer_n_samples * sizeof(float) && !poll_quit())
                 handle_sdl_events();
         }
 
@@ -92,6 +114,14 @@ void Program::main_loop() {
         // Print note estimation
         // if(noteset.size() > 0)
         //     std::cout << noteset[0] << "  (" << noteset[0].freq << " Hz, " << noteset[0].amp << " dB, " << noteset[0].error << " cent)" << "     \r" << std::flush;
+
+        if(settings.output_file) {
+            if(noteset.size() > 0) {
+                const std::string note = note_to_string(noteset[0]);
+                output_stream << std::setw(12) << std::fixed << std::setprecision(4);
+                output_stream << sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0 << ", " << (note.size() == 4 ? " " : "") << note << ", " << noteset[0].freq << ", " << noteset[0].amp << ",  " << noteset[0].error << std::endl;
+            }
+        }
 
         // Graphics
         if constexpr(!HEADLESS) {

@@ -10,6 +10,8 @@
 
 #include <SDL2/SDL.h>
 
+#include <fstream>
+
 
 class Program {
     public:
@@ -31,6 +33,8 @@ class Program {
 
         bool mouse_clicked;
         int mouse_x, mouse_y;
+
+        std::fstream output_stream;
 
 
         void handle_sdl_events();

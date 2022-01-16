@@ -35,6 +35,7 @@ class ArgParser {
         void parse_file();
         void parse_help();
         void parse_generate_note();
+        void parse_output_file();
         void parse_print_overtone();
         void parse_playback();
         void parse_print_performance();

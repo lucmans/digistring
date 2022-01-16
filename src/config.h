@@ -82,6 +82,9 @@ struct Settings {
 
     bool play_file = false;
     std::string play_file_name;
+
+    bool output_file = false;
+    std::string output_filename;
 };
 extern Settings settings;
 

@@ -25,7 +25,7 @@ OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func
       obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o \
       obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o
 
-.PHONY: all force fresh clean valgrind lines grep debug todo trailing_spaces help
+.PHONY: all force fresh clean outputclean valgrind lines grep debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -46,6 +46,9 @@ clean:
 	rm -f $(BIN)
 	rm -f *.s
 	rm -f vgcore*
+
+outputclean:
+	rm -f output.txt*
 
 
 # Binary rule
@@ -107,6 +110,7 @@ trailing_spaces:
 help:
 	@echo The default build target is \"all\", which builds the binary \"$(BIN)\".
 	@echo \"make clean\" removes all built files.
+	@echo \"make outputclean\" removes the default named output files.
 	@echo \"make force\" forces all build targets to be rebuild.
 	@echo \"make fresh\" runs \"make clean\; make\", which may help with potential building problems after updating.
 	@echo
