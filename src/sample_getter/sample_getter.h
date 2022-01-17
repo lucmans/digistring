@@ -3,6 +3,8 @@
 #define SAMPLE_GETTER_H
 
 
+#include "../config.h"
+
 #include <map>
 #include <string>
 
@@ -11,16 +13,16 @@
 
 // Different sample getter types
 enum class SampleGetters {
-    audio_file, audio_in, wave_generator, note_generator
+    audio_file, audio_in, wave_generator, note_generator, increment
 };
 
 // For printing enum
 // If a string isn't present in SampleGetterString for every type, random crashes may happen
-// extern const std::map<const SampleGetters, const std::string> SampleGetterString;
 const std::map<const SampleGetters, const std::string> SampleGetterString = {{SampleGetters::audio_file, "audio file"},
                                                                              {SampleGetters::audio_in, "audio in"},
                                                                              {SampleGetters::wave_generator, "wave generator"},
-                                                                             {SampleGetters::note_generator, "note generator"}};
+                                                                             {SampleGetters::note_generator, "note generator"},
+                                                                             {SampleGetters::increment, "increment (debug)"}};
 
 
 class SampleGetter {
@@ -41,9 +43,21 @@ class SampleGetter {
         // Has to increment played_samples
         virtual void get_frame(float *const in, const int n_samples) = 0;
 
+        /* Overlap function
+         * Note that n_samples has to be the same every call for overlapping to work!
+         * Furthermore, n_samples < MAX_FRAME_SIZE should always hold */
+        // Pastes the overlapping part of previous frame and sets 'in' to new start and sets n_samples to remaining space
+        // By changing the passed arguments, the caller can continue working with in and n_samples as if nothing happened
+        void calc_and_paste_overlap(float *&in, int &n_samples) const;
+
+        // Copy the part of in that will overlap with the next frame (end) to the overlap_buffer
+        void copy_overlap(float *const in, const int n_samples);
+
 
     protected:
         unsigned long played_samples;
+
+        float overlap_buffer[MAX_FRAME_SIZE];
 };
 
 

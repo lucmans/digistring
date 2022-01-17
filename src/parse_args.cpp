@@ -15,7 +15,7 @@
 
 #include <map>
 
-const std::map<std::string, void (ArgParser::*const)()> ArgParser::flag_to_func = {
+const std::map<const std::string, void (ArgParser::*const)()> ArgParser::flag_to_func = {
     {"-f", &ArgParser::parse_fullscreen},
     {"--file", &ArgParser::parse_file},
     {"-h", &ArgParser::parse_help},
@@ -218,6 +218,20 @@ void ArgParser::parse_print_overtone() {
 
 void ArgParser::parse_playback() {
     settings.playback = true;
+
+    if constexpr(DO_OVERLAP) {
+        const char *overlap;
+        if(!fetch_opt(overlap)) {
+            error("Playing audio back while using overlapping frames will cause distorted audio.\n"
+                  "Pass 'overlap' to the '-p' flag to overwrite this warning or disable DO_OVERLAP in config.h.");
+            exit(EXIT_FAILURE);
+        }
+
+        if(strncmp(overlap, "overlap", 7) != 0) {
+            error("Unknown option '" + std::string(overlap) + "' for -p flag");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 void ArgParser::parse_print_performance() {

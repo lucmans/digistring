@@ -53,7 +53,8 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 # TODO
 Output JSON into output file.  
-Sleep till frame might be ready to read and overlapping transforms.  
+Sleep till frame might be ready to read and non-blocking overlapping transforms.  
+Display audio_in captured but not yet retrieved samples.  
 Generic data passing structure from estimator to graphics.
 
 

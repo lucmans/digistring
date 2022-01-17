@@ -99,6 +99,18 @@ SampleGetters AudioFile::get_type() const {
 
 
 void AudioFile::get_frame(float *const in, const int n_samples) {
+    // TODO: Buffer overlapping
+    if constexpr(DO_OVERLAP) {
+        error("Not yet implemented; please disable DO_OVERLAP when using files as input");
+        exit(EXIT_FAILURE);
+    }
+
+    // int overlap_n_samples = n_samples;
+    // float *overlap_in = in;
+    // if constexpr(DO_OVERLAP)
+    //     calc_and_paste_overlap(overlap_in, overlap_n_samples);
+
+
     static bool ended = false;
     if(ended) {
         // TODO: Quit or listen from audio in
@@ -119,4 +131,8 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
     }
 
     played_samples += n_write_samples;
+
+
+    // if constexpr(DO_OVERLAP)
+    //     copy_overlap(in, n_samples);
 }

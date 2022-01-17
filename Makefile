@@ -23,7 +23,7 @@ BIN = digistring
 OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func.o obj/performance.o obj/config.o \
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
       obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o \
-      obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o
+      obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o obj/sample_getter/increment.o
 
 .PHONY: all force fresh clean outputclean valgrind lines grep debug todo trailing_spaces help
 

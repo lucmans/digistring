@@ -21,7 +21,7 @@ inline constexpr int fourier_size(const Note &note) {
 
 
 Tuned::Tuned(float *&input_buffer, int &buffer_size) {
-    const int n_samples = fourier_size(LOWEST_NOTE);
+    constexpr int n_samples = fourier_size(LOWEST_NOTE);
 
     input_buffer = (float*)fftwf_malloc(n_samples * sizeof(float));
     if(input_buffer == NULL) {

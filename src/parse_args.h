@@ -43,7 +43,7 @@ class ArgParser {
         void parse_rsc_dir();
         void parse_generate_sine();
 
-        static const std::map<std::string, void (ArgParser::*const)()> flag_to_func;
+        static const std::map<const std::string, void (ArgParser::*const)()> flag_to_func;
 };
 
 

@@ -4,7 +4,13 @@
 
 
 #include <vector>
+#include <string>
 #include <ostream>
+#include <cmath>
+
+
+constexpr double A4 = 440.0;  // Hz
+constexpr static double C0 = A4 * exp2(-57.0 / 12.0);  // Used for constexpr constructor
 
 
 // 'd' denotes # (from diesis)
@@ -23,19 +29,27 @@ struct Note {
     int octave;
     double error;  // In cents, so between -50 and 50
 
-    // constexpr Note(const double _freq, const double _amp) : freq(_freq),
-    //                                                         amp(_amp),
-    //                                                         note(static_cast<Notes>(((((int)round(12.0 * log2(_freq / (A4 * exp2(-57.0 / 12.0))))) % 12) + 12) % 12)),
-    //                                                         octave(floor((double)((int)round(12.0 * log2(_freq / (A4 * exp2(-57.0 / 12.0))))) / 12.0)),
-    //                                                         error(1200.0 * log2(_freq / ((A4 * exp2(-57.0 / 12.0)) * exp2((double)octave + (static_cast<double>(note) / 12.0))))) {};
-    // constexpr Note(const Notes _note, const int _octave) : freq((A4 * exp2(-57.0 / 12.0)) * exp2((double)_octave + (static_cast<double>(_note) / 12.0))),
-    //                                                        amp(-1.0),
-    //                                                        note(_note),
-    //                                                        octave(_octave),
-    //                                                        error(0) {};
+    // Note(const double _freq, const double _amp);
+    // Note(const Notes _note, const int _octave);  // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
 
-    Note(const double _freq, const double _amp);
-    Note(const Notes _note, const int _octave);  // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
+    // See original, non constexpr, constructors for more readable version (only difference is local variable substitution)
+    constexpr Note(const double _freq, const double _amp) :
+            freq(_freq),
+            amp(_amp),
+            note(static_cast<Notes>(((((int)round(12.0 * log2(_freq / C0))) % 12) + 12) % 12)),
+            octave(floor((double)((int)round(12.0 * log2(_freq / C0))) / 12.0)),
+            error(1200.0 * log2(_freq / (C0 * exp2((double)octave + (static_cast<double>(note) / 12.0)))))
+        {};
+
+    // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
+    constexpr Note(const Notes _note, const int _octave) :
+            freq(C0 * exp2((double)_octave + (static_cast<double>(_note) / 12.0))),
+            amp(-1.0),
+            note(_note),
+            octave(_octave),
+            error(0.0) {
+        // static_assert(static_cast<int>(_note) >= 0 && static_cast<int>(_note) < 12);
+    };
 };
 
 std::ostream& operator<<(std::ostream &s, const Note &note);

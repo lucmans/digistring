@@ -10,51 +10,64 @@
 #include <string>
 
 
-constexpr const double A4 = 440.0;  // Hz
-
-const Note LOWEST_NOTE = Note(Notes::E, 2);
+// constexpr double A4 defined in note.h!
+constexpr Note LOWEST_NOTE = Note(Notes::E, 2);
 
 
 /* Transcribe config */
-const int SAMPLE_RATE = 96000 * 2;
-// const int SAMPLE_RATE = 48000;
-// const int SAMPLE_RATE = 44100;
+constexpr int SAMPLE_RATE = 96000 * 2;
+// constexpr int SAMPLE_RATE = 48000;
+// constexpr int SAMPLE_RATE = 44100;
 
 // High Res transcriber
-const int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
-const double POWER_THRESHOLD = 15.0;  // Threshold of channel power before finding peaks
-const double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
-const double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone
+constexpr int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
+constexpr double POWER_THRESHOLD = 15.0;  // Threshold of channel power before finding peaks
+constexpr double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
+constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone
+
+// Overlapping read buffers
+// Overlap is only supported if the same number of samples is requested every call to the SampleGetter
+constexpr bool DO_OVERLAP = false;
+// 0.0 < OVERLAP < 1.0: Ratio of old to new buffer, where higher numbers use more old buffer
+constexpr double OVERLAP_RATIO = 0.1;
+static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should be between 0.0 and 1.0");
+
+// When reading from audio in, instead of reading a fixed ratio, read as many samples as possible without blocking
+constexpr bool OVERLAP_NONBLOCK = false;
+static_assert(DO_OVERLAP || !OVERLAP_NONBLOCK, "DO_OVERLAP must be true when using OVERLAP_NONBLOCK");
+
+// TODO: Remove, as is checked run-time by Program constructor (where the estimator is created)
+constexpr int MAX_FRAME_SIZE = std::max(FRAME_SIZE, (int)round((double)SAMPLE_RATE / LOWEST_NOTE.freq));
 
 
 /* Audio in/out config */
-const SDL_AudioFormat AUDIO_FORMAT = AUDIO_F32SYS;  // 32 bit floats
-// const SDL_AudioFormat AUDIO_FORMAT = AUDIO_S32SYS;  // 32 bit ints
-const unsigned int N_CHANNELS = 1;
-const unsigned int SAMPLES_PER_BUFFER = 512;
+constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_F32SYS;  // 32 bit floats
+// constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_S32SYS;  // 32 bit ints
+constexpr unsigned int N_CHANNELS = 1;
+constexpr unsigned int SAMPLES_PER_BUFFER = 512;
 
 // Check if audio format can be converted to float32 (AUDIO_F32SYS)
 static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Audio format has to be either int32 or float32");
 
 
 /* Graphics config */
-const bool HEADLESS = false;
+constexpr bool HEADLESS = false;
 
-const double MAX_FPS = 30.0;
+constexpr double MAX_FPS = 30.0;
 
-const bool DISPLAY_NOTE_LINES = false;
+constexpr bool DISPLAY_NOTE_LINES = false;
 
-const int DEFAULT_RES[2] = {1024, 768};
-const int MIN_RES[2] = {800, 600};
+constexpr int DEFAULT_RES[2] = {1024, 768};
+constexpr int MIN_RES[2] = {800, 600};
 
 // Set to <=0 for full display
-constexpr const double DEFAULT_MAX_DISPLAY_FREQUENCY = 2000.0;
-// constexpr const double DEFAULT_MAX_DISPLAY_FREQUENCY = -1.0;  // DEBUG
-constexpr const double MAX_FOURIER_FREQUENCY = (double)SAMPLE_RATE / 2.0;  // Hz
-constexpr const double MIN_FOURIER_FREQUENCY = 50.0;  // Hz
+constexpr double DEFAULT_MAX_DISPLAY_FREQUENCY = 2000.0;
+// constexpr double DEFAULT_MAX_DISPLAY_FREQUENCY = -1.0;  // DEBUG
+constexpr double MAX_FOURIER_FREQUENCY = (double)SAMPLE_RATE / 2.0;  // Hz
+constexpr double MIN_FOURIER_FREQUENCY = 50.0;  // Hz
 
 // Maximum number of previous data point to save in RAM for graphics (not used in headless mode)
-const int MAX_HISTORY_DATAPOINTS = 2000;
+constexpr int MAX_HISTORY_DATAPOINTS = 2000;
 
 // Check if the maximum displayed frequency is lower than the maximum frequency from the Fourier transform
 // static_assert(ceil(DEFAULT_MAX_DISPLAY_FREQUENCY / ((double)SAMPLE_RATE / (double)FRAME_SIZE)) < (FRAME_SIZE / 2) + 1, "DEFAULT_MAX_DISPLAY_FREQUENCY is too high; please set to <=0");

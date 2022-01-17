@@ -8,6 +8,7 @@
 #include <string>
 #include <ostream>
 #include <iomanip>  // std::setw()
+#include <algorithm>  // std::max()
 
 
 const char *note_string[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
@@ -35,30 +36,30 @@ const std::string stringify_sub(int n) {
 }
 
 
-Note::Note(const double _freq, const double _amp) {
-    freq = _freq;
-    amp = _amp;
+// Note::Note(const double _freq, const double _amp) {
+//     freq = _freq;
+//     amp = _amp;
 
-    constexpr const double C0 = A4 * exp2(-57.0 / 12.0);
-    const int note_distance = (int)round(12.0 * log2(freq / C0));
+//     constexpr double C0 = A4 * exp2(-57.0 / 12.0);
+//     const int note_distance = (int)round(12.0 * log2(freq / C0));
 
-    // First modulo to get a number within -12 < n < 12, then add 12 and another modulo to get 0 <= n < 12
-    note = static_cast<Notes>(((note_distance % 12) + 12) % 12);
-    octave = floor((double)note_distance / 12.0);
+//     // First modulo to get a number within -12 < n < 12, then add 12 and another modulo to get 0 <= n < 12
+//     note = static_cast<Notes>(((note_distance % 12) + 12) % 12);
+//     octave = floor((double)note_distance / 12.0);
 
-    const double tuned = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
-    error = 1200.0 * log2(freq / tuned);
-}
+//     const double tuned = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
+//     error = 1200.0 * log2(freq / tuned);
+// }
 
-Note::Note(const Notes _note, const int _octave) {
-    note = _note;
-    octave = _octave;
+// Note::Note(const Notes _note, const int _octave) {
+//     note = _note;
+//     octave = _octave;
 
-    constexpr const double C0 = A4 * exp2(-57.0 / 12.0);
-    freq = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
-    amp = -1.0;
-    error = 0.0;
-}
+//     constexpr double C0 = A4 * exp2(-57.0 / 12.0);
+//     freq = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
+//     amp = -1.0;
+//     error = 0.0;
+// }
 
 
 std::ostream& operator<<(std::ostream &s, const Note &note) {

@@ -95,12 +95,28 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 
 
 void AudioIn::get_frame(float *const in, const int n_samples) {
+    // TODO: OVERLAP_NONBLOCK
+    if constexpr(OVERLAP_NONBLOCK) {
+        error("Not yet implemented; cannot use non-blocking maximal overlapping");
+        exit(EXIT_FAILURE);
+    }
+
+    int overlap_n_samples = n_samples;
+    float *overlap_in = in;
+    if constexpr(DO_OVERLAP)
+        calc_and_paste_overlap(overlap_in, overlap_n_samples);
+
+
     if constexpr(AUDIO_FORMAT == AUDIO_F32SYS)
-        read_frame_float32_audio_device(in, n_samples);
+        read_frame_float32_audio_device(overlap_in, overlap_n_samples);
     else if constexpr(AUDIO_FORMAT == AUDIO_S32SYS)
-        read_frame_int32_audio_device(in, n_samples);
+        read_frame_int32_audio_device(overlap_in, overlap_n_samples);
     else {  // Caught by static assert in config.h
         error("Unsupported audio format");
         exit(EXIT_FAILURE);
     }
+
+
+    if constexpr(DO_OVERLAP)
+        copy_overlap(in, n_samples);
 }

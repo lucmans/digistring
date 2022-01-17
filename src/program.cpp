@@ -17,10 +17,17 @@
 
 
 Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) : graphics(_g) {
-    // graphics = _g;
-
     in_dev = _in;
     out_dev = _out;
+
+    // We let the estimator create the input buffer for optimal size and better alignment
+    input_buffer = NULL;
+    // int input_buffer_n_samples;
+    estimator = new HighRes(input_buffer, input_buffer_n_samples);
+    if(input_buffer_n_samples > MAX_FRAME_SIZE) {
+        error("Read buffer is larger than maximum frame size");
+        exit(EXIT_FAILURE);
+    }
 
     if(settings.generate_sine) {
         // info("Playing generate_sine");
@@ -51,7 +58,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         output_stream << "Sample rate: " << SAMPLE_RATE << '\n'
                       << "Frame size: " << FRAME_SIZE << '\n'
                       << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms\n"
-                      << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz"
+                      << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << " Hz"
                       << std::endl;
     }
 }
@@ -60,15 +67,12 @@ Program::~Program() {
     output_stream.close();
 
     delete sample_getter;
+
+    delete estimator;
 }
 
 
 void Program::main_loop() {
-    // We let the estimator create the input buffer for optimal size and better alignment
-    float *input_buffer = NULL;
-    int input_buffer_n_samples;
-    Estimator *estimator = new HighRes(input_buffer, input_buffer_n_samples);
-
     // Frame limiting
     std::chrono::duration<double, std::milli> frame_time;  // = std::chrono::duration<double>(0.0);
     std::chrono::steady_clock::time_point prev_frame = std::chrono::steady_clock::now();
@@ -151,8 +155,6 @@ void Program::main_loop() {
         if(settings.output_performance)
             std::cout << perf << std::endl;
     }
-
-    delete estimator;
 }
 
 
@@ -213,8 +215,6 @@ void Program::handle_sdl_events() {
                         debug("Creating lag spike");
                         std::this_thread::sleep_for(std::chrono::milliseconds(250));
                         break;
-
-                    // TODO: Switching sound source, and on switching call SDL_ClearQueuedAudio(*in_dev)
                 }
                 break;
 
@@ -250,7 +250,6 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDL_WINDOWEVENT_ENTER:
-                        // debug((SDL_GetMouseState(&x, &y) & SDL_BUTTON_LMASK ? "yes" : "no"));
                         int x, y;
                         if(SDL_GetMouseState(&x, &y) & SDL_BUTTON_LMASK) {
                             mouse_clicked = true;

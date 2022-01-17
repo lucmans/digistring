@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "config.h"
 
+#include "estimators/estimators.h"
 #include "sample_getter/sample_getters.h"
 
 #include <SDL2/SDL.h>
@@ -28,6 +29,10 @@ class Program {
 
         SDL_AudioDeviceID *in_dev;
         SDL_AudioDeviceID *out_dev;
+
+        Estimator *estimator;
+        float *input_buffer;
+        int input_buffer_n_samples;
 
         SampleGetter *sample_getter;
 

@@ -12,5 +12,8 @@
 #include "wave_generator.h"
 #include "note_generator.h"
 
+// For debugging purposes
+#include "increment.h"
+
 
 #endif  // SAMPLE_GETTERS_H
