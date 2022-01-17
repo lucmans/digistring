@@ -134,7 +134,7 @@ void Program::main_loop() {
 
             // Render data
             frame_time = std::chrono::steady_clock::now() - prev_frame;
-            if(frame_time.count() > 1000.0 / 15.0) {
+            if(frame_time.count() > 1000.0 / MAX_FPS) {
                 graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
 
                 if(noteset.size() > 0)
@@ -209,13 +209,12 @@ void Program::handle_sdl_events() {
                         graphics->toggle_freeze_graph();
                         break;
 
+                    case SDLK_s:
+                        debug("Creating lag spike");
+                        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                        break;
+
                     // TODO: Switching sound source, and on switching call SDL_ClearQueuedAudio(*in_dev)
-
-                    // // sleep
-                    // case SDLK_s:  // DEBUG
-                    //     std::this_thread::sleep_for(std::chrono::seconds(1));
-                    //     break;
-
                 }
                 break;
 

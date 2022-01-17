@@ -40,7 +40,9 @@ static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Aud
 /* Graphics config */
 const bool HEADLESS = false;
 
-const bool DISPLAY_NOTES = false;
+const double MAX_FPS = 30.0;
+
+const bool DISPLAY_NOTE_LINES = false;
 
 const int DEFAULT_RES[2] = {1024, 768};
 const int MIN_RES[2] = {800, 600};

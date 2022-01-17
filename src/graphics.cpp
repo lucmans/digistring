@@ -361,7 +361,7 @@ void Graphics::render_spectrogram() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
     // Draw line for note location in graphics
-    if constexpr(DISPLAY_NOTES) {
+    if constexpr(DISPLAY_NOTE_LINES) {
         for(double f = LOWEST_NOTE.freq; f < max_display_frequency; f *= exp2(1.0 / 12.0)) {
             SDL_SetRenderDrawColor(renderer, 0x30, 0x70, 0x35, 0xff);
             int x = (f / max_display_frequency) * res_w;
