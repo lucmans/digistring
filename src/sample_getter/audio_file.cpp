@@ -99,18 +99,6 @@ SampleGetters AudioFile::get_type() const {
 
 
 void AudioFile::get_frame(float *const in, const int n_samples) {
-    // TODO: Buffer overlapping
-    if constexpr(DO_OVERLAP) {
-        error("Not yet implemented; please disable DO_OVERLAP when using files as input");
-        exit(EXIT_FAILURE);
-    }
-
-    // int overlap_n_samples = n_samples;
-    // float *overlap_in = in;
-    // if constexpr(DO_OVERLAP)
-    //     calc_and_paste_overlap(overlap_in, overlap_n_samples);
-
-
     static bool ended = false;
     if(ended) {
         // TODO: Quit or listen from audio in
@@ -118,21 +106,30 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
         return;
     }
 
+
+    int overlap_n_samples = n_samples;
+    float *overlap_in = in;
+    if constexpr(DO_OVERLAP)
+        calc_and_paste_overlap(overlap_in, overlap_n_samples);
+
     // If file end doesn't align with a frame, we need to read less then n_samples
-    const int n_write_samples = std::min(n_samples, (int)(wav_buffer_samples - played_samples));
-    memcpy(in, wav_buffer + played_samples, n_write_samples * sizeof(float));
+    const int n_read_samples = std::min(overlap_n_samples, (int)(wav_buffer_samples - played_samples));
+    memcpy(overlap_in, wav_buffer + played_samples, n_read_samples * sizeof(float));
 
     // Zero rest of buffer if file ended
-    if(n_write_samples < n_samples) {
-        memset(in + n_write_samples, 0, (n_samples - n_write_samples) * sizeof(float));
-        ended = true;
+    if(n_read_samples < overlap_n_samples)
+        memset(overlap_in + n_read_samples, 0, (overlap_n_samples - n_read_samples) * sizeof(float));
 
+    // Check if file has ended
+    if(n_read_samples == 0) {
         warning("File ended, continuing with silence...");
+        ended = true;
+        return;
     }
 
-    played_samples += n_write_samples;
+    played_samples += n_read_samples;
 
 
-    // if constexpr(DO_OVERLAP)
-    //     copy_overlap(in, n_samples);
+    if constexpr(DO_OVERLAP)
+        copy_overlap(in, n_samples);
 }

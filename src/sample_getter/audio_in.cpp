@@ -9,10 +9,13 @@
 
 #include <chrono>  // timing
 #include <thread>  // sleep
+#include <algorithm>  // std::clamp(), std::min()
 
 
 AudioIn::AudioIn(SDL_AudioDeviceID *const _in) {
     in_dev = _in;
+
+    // last_overlap_size = 0;
 }
 
 AudioIn::~AudioIn() {
@@ -42,8 +45,9 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
 
         // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
         // Sleep to prevent 100% CPU usage
-        if(ret == 0)
+        if(ret == 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
 
         read += ret;
     }
@@ -71,6 +75,7 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
         // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
         // Sleep to prevent 100% CPU usage
         if(ret == 0) {
+            // std::cout << "Sleeping" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             // const int samples_left = n_samples - (read / sizeof(int32_t));
             // const int sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
@@ -94,17 +99,38 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 }
 
 
-void AudioIn::get_frame(float *const in, const int n_samples) {
-    // TODO: OVERLAP_NONBLOCK
-    if constexpr(OVERLAP_NONBLOCK) {
-        error("Not yet implemented; cannot use non-blocking maximal overlapping");
-        exit(EXIT_FAILURE);
+void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, const int bytes_per_sample) {
+    // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
+    // Sleep to prevent 100% CPU usage
+    int samples_queued;
+    while((samples_queued = (SDL_GetQueuedAudioSize(*in_dev) / bytes_per_sample)) < MIN_OVERLAP_ADVANCE) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    // Clamp so at least one sample is overlapped or kept between frames
+    const int n_overlap = std::clamp(n_samples - samples_queued, 1, n_samples - 1);
+
+    // Paste the overlap to start of 'in'
+    memcpy(in, overlap_buffer, n_overlap * sizeof(float));
+
+    // Calculate the remainder of the buffer
+    in += n_overlap;
+    n_samples -= n_overlap;
+}
+
+void AudioIn::copy_nonblocking_overlap(float *const in, const int n_samples) {
+    // TODO: Copy less
+    memcpy(overlap_buffer, in, n_samples * sizeof(float));
+}
+
+
+void AudioIn::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
         calc_and_paste_overlap(overlap_in, overlap_n_samples);
+    else if constexpr(OVERLAP_NONBLOCK)
+        calc_and_paste_nonblocking_overlap(overlap_in, overlap_n_samples, SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8);
 
 
     if constexpr(AUDIO_FORMAT == AUDIO_F32SYS)
@@ -119,4 +145,6 @@ void AudioIn::get_frame(float *const in, const int n_samples) {
 
     if constexpr(DO_OVERLAP)
         copy_overlap(in, n_samples);
+    else if constexpr(OVERLAP_NONBLOCK)
+        copy_nonblocking_overlap(in, n_samples);
 }
