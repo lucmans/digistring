@@ -41,6 +41,8 @@ class Program {
 
         std::fstream output_stream;
 
+        int lag;  // ms
+
 
         void handle_sdl_events();
 };

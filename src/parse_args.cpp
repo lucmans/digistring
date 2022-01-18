@@ -219,7 +219,7 @@ void ArgParser::parse_print_overtone() {
 void ArgParser::parse_playback() {
     settings.playback = true;
 
-    if constexpr(DO_OVERLAP) {
+    if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
         const char *overlap;
         if(!fetch_opt(overlap)) {
             error("Playing audio back while using overlapping frames will cause distorted audio.\n"

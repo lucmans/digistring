@@ -129,7 +129,7 @@ void AudioIn::get_frame(float *const in, const int n_samples) {
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
         calc_and_paste_overlap(overlap_in, overlap_n_samples);
-    else if constexpr(OVERLAP_NONBLOCK)
+    else if constexpr(DO_OVERLAP_NONBLOCK)
         calc_and_paste_nonblocking_overlap(overlap_in, overlap_n_samples, SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8);
 
 
@@ -145,6 +145,6 @@ void AudioIn::get_frame(float *const in, const int n_samples) {
 
     if constexpr(DO_OVERLAP)
         copy_overlap(in, n_samples);
-    else if constexpr(OVERLAP_NONBLOCK)
+    else if constexpr(DO_OVERLAP_NONBLOCK)
         copy_nonblocking_overlap(in, n_samples);
 }

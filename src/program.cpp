@@ -61,6 +61,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
                       << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << " Hz"
                       << std::endl;
     }
+
+    lag = 0;
 }
 
 Program::~Program() {
@@ -92,6 +94,11 @@ void Program::main_loop() {
         perf.push_time_point("Start");
 
         handle_sdl_events();
+        if(lag != 0)
+            debug("Lagging for " + STR(lag) + " ms");
+        std::this_thread::sleep_for(std::chrono::milliseconds(lag));
+        lag = 0;
+
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
@@ -105,8 +112,17 @@ void Program::main_loop() {
                 exit(EXIT_FAILURE);
             }
 
-            // Wait till previous frame has played (needed when fetching samples is faster than playing)
-            while(SDL_GetQueuedAudioSize(*out_dev) > input_buffer_n_samples * sizeof(float) && !poll_quit())
+            if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
+                warning("Audio underrun; no audio left to play");
+
+            const bool playing_audio_in = !(settings.generate_sine || settings.generate_note || settings.play_file);
+            if(playing_audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+                warning("Audio overrun (too much audio to play); clearing buffer...");
+                SDL_ClearQueuedAudio(*out_dev);
+            }
+
+            // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
+            while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
                 handle_sdl_events();
         }
 
@@ -154,6 +170,7 @@ void Program::main_loop() {
 
         if(settings.output_performance)
             std::cout << perf << std::endl;
+        // debug("       ");
     }
 }
 
@@ -213,7 +230,7 @@ void Program::handle_sdl_events() {
 
                     case SDLK_s:
                         debug("Creating lag spike");
-                        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                        lag += 250;
                         break;
                 }
                 break;

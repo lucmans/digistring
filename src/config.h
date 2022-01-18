@@ -33,11 +33,11 @@ constexpr double OVERLAP_RATIO = 0.1;
 static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should be between 0.0 and 1.0");
 
 // When reading from audio in, instead of reading a fixed ratio, read as many samples as possible without blocking
-constexpr bool OVERLAP_NONBLOCK = true;
+constexpr bool DO_OVERLAP_NONBLOCK = false;
 // Minimum number of samples to overlap
 // Should not be more than the size of a frame!
 constexpr int MIN_OVERLAP_ADVANCE = 1024 * 14;  // samples
-static_assert(!(DO_OVERLAP && OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP and OVERLAP_NONBLOCK");
+static_assert(!(DO_OVERLAP && DO_OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP and DO_OVERLAP_NONBLOCK");
 
 // TODO: Remove, as is checked run-time by Program constructor (where the estimator is created)
 constexpr int MAX_FRAME_SIZE = std::max(FRAME_SIZE, (int)round((double)SAMPLE_RATE / LOWEST_NOTE.freq));
