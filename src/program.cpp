@@ -63,6 +63,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     }
 
     lag = 0;
+
+    note_change_time = std::chrono::duration<double>(NOTE_TIME + 1);
 }
 
 Program::~Program() {
@@ -76,7 +78,7 @@ Program::~Program() {
 
 void Program::main_loop() {
     // Frame limiting
-    std::chrono::duration<double, std::milli> frame_time;  // = std::chrono::duration<double>(0.0);
+    std::chrono::duration<double, std::milli> frame_time;
     std::chrono::steady_clock::time_point prev_frame = std::chrono::steady_clock::now();
 
     // Unpause audio devices so that samples are collected/played
@@ -170,7 +172,19 @@ void Program::main_loop() {
 
         if(settings.output_performance)
             std::cout << perf << std::endl;
-        // debug("       ");
+
+
+        if constexpr(ENABLE_ARPEGGIATOR) {
+            note_change_time = std::chrono::steady_clock::now() - prev_note_change;
+            if(note_change_time.count() > NOTE_TIME) {
+                if(!plus_held_down && minus_held_down)
+                    sample_getter->pitch_down();
+                else if(plus_held_down && !minus_held_down)
+                    sample_getter->pitch_up();
+
+                prev_note_change = std::chrono::steady_clock::now();
+            }
+        }
     }
 }
 
@@ -197,11 +211,17 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_MINUS:
-                        sample_getter->pitch_down();
+                        if constexpr(ENABLE_ARPEGGIATOR)
+                            minus_held_down = true;
+                        else
+                            sample_getter->pitch_down();
                         break;
 
                     case SDLK_EQUALS:
-                        sample_getter->pitch_up();
+                        if constexpr(ENABLE_ARPEGGIATOR)
+                            plus_held_down = true;
+                        else
+                            sample_getter->pitch_up();
                         break;
 
                     case SDLK_r:
@@ -232,6 +252,20 @@ void Program::handle_sdl_events() {
                         debug("Creating lag spike");
                         lag += 250;
                         break;
+                }
+                break;
+
+            case SDL_KEYUP:
+                if constexpr(ENABLE_ARPEGGIATOR) {
+                    switch(e.key.keysym.sym) {
+                        case SDLK_MINUS:
+                            minus_held_down = false;
+                            break;
+
+                        case SDLK_EQUALS:
+                            plus_held_down = false;
+                            break;
+                    }
                 }
                 break;
 

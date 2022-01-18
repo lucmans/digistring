@@ -12,6 +12,7 @@
 #include <SDL2/SDL.h>
 
 #include <fstream>
+#include <chrono>
 
 
 class Program {
@@ -42,6 +43,11 @@ class Program {
         std::fstream output_stream;
 
         int lag;  // ms
+
+        // Arpeggiator
+        bool plus_held_down, minus_held_down;
+        std::chrono::duration<double, std::milli> note_change_time;
+        std::chrono::steady_clock::time_point prev_note_change;
 
 
         void handle_sdl_events();
