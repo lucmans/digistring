@@ -36,7 +36,11 @@ static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should 
 constexpr bool DO_OVERLAP_NONBLOCK = false;
 // Minimum number of samples to overlap
 // Should not be more than the size of a frame!
-constexpr int MIN_OVERLAP_ADVANCE = 1024 * 14;  // samples
+constexpr int MIN_NEW_SAMPLES = 14 * 1024;  // samples
+constexpr int MAX_NEW_SAMPLES = (16 * 1024) - 1;  // samples
+// constexpr int MIN_NEW_SAMPLES = 14;  // samples
+// constexpr int MAX_NEW_SAMPLES = 90;  // samples
+// constexpr int MIN_OVERLAP_ADVANCE = 1024 * 14;  // samples
 static_assert(!(DO_OVERLAP && DO_OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP and DO_OVERLAP_NONBLOCK");
 
 // TODO: Remove, as is checked run-time by Program constructor (where the estimator is created)

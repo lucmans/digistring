@@ -59,4 +59,4 @@ Generic data passing structure from estimator to graphics.
 
 
 # BUGS
-...
+Program freezes when running through valgrind.

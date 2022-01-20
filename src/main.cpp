@@ -34,7 +34,7 @@ void print_program_config_info() {
               << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms" << std::endl
               << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz" << std::endl
               << "Maximum Fourier frequency: " << MAX_FOURIER_FREQUENCY << " Hz" << std::endl
-              << "Minimum frame advance (" << (DO_OVERLAP_NONBLOCK ? "on" : "off") << "): " << MIN_OVERLAP_ADVANCE << " samples  (" << ((double)MIN_OVERLAP_ADVANCE * 1000.0) / (double)SAMPLE_RATE << " ms)" << std::endl
+              << "Minimum frame advance (" << (DO_OVERLAP_NONBLOCK ? "on" : "off") << "): " << MIN_NEW_SAMPLES << " samples  (" << ((double)MIN_NEW_SAMPLES * 1000.0) / (double)SAMPLE_RATE << " ms)" << std::endl
               << std::endl;
 
     if constexpr(!HEADLESS) {

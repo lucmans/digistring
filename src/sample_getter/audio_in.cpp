@@ -28,6 +28,32 @@ SampleGetters AudioIn::get_type() const {
 }
 
 
+// DEBUG
+void AudioIn::read_increment(float *const in, const int n_samples) {
+    for(int i = 0; i < n_samples; i++)
+        in[i] = played_samples + i + 1;
+
+    played_samples += n_samples;
+
+    // wait as if performing a read
+    uint32_t read = 0;
+    while(read < n_samples * sizeof(float)) {
+        float ignore[n_samples];
+        uint32_t ret = SDL_DequeueAudio(*in_dev, ignore, (n_samples * sizeof(float)) - read);
+        if(ret > (n_samples * sizeof(float)) - read) {
+            error("Read too big");
+            exit(EXIT_FAILURE);
+        }
+        else if(ret % 4 != 0) {
+            error("Read part of a float32\n");
+            exit(EXIT_FAILURE);
+        }
+
+        read += ret;
+    }
+}
+
+
 void AudioIn::read_frame_float32_audio_device(float *const in, const int n_samples) {
     perf.push_time_point("Start waiting for frame");
 
@@ -100,18 +126,19 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 
 
 void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, const int bytes_per_sample) {
-    // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
-    // Sleep to prevent 100% CPU usage
-    int samples_queued;
-    while((samples_queued = (SDL_GetQueuedAudioSize(*in_dev) / bytes_per_sample)) < MIN_OVERLAP_ADVANCE) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    // DEBUG
+    if(MIN_NEW_SAMPLES > n_samples) {
+        debug("MIN_NEW_SAMPLES too large");
+        exit(EXIT_FAILURE);
     }
 
+    const int samples_queued = SDL_GetQueuedAudioSize(*in_dev) / bytes_per_sample;
+
     // Clamp so at least one sample is overlapped or kept between frames
-    const int n_overlap = std::clamp(n_samples - samples_queued, 1, n_samples - 1);
+    const int n_overlap = std::clamp(n_samples - samples_queued, n_samples - MAX_NEW_SAMPLES, n_samples - MIN_NEW_SAMPLES);
 
     // Paste the overlap to start of 'in'
-    memcpy(in, overlap_buffer, n_overlap * sizeof(float));
+    memcpy(in, overlap_buffer + (n_samples - n_overlap), n_overlap * sizeof(float));
 
     // Calculate the remainder of the buffer
     in += n_overlap;
@@ -132,7 +159,7 @@ void AudioIn::get_frame(float *const in, const int n_samples) {
     else if constexpr(DO_OVERLAP_NONBLOCK)
         calc_and_paste_nonblocking_overlap(overlap_in, overlap_n_samples, SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8);
 
-
+    // read_increment(overlap_in, overlap_n_samples);
     if constexpr(AUDIO_FORMAT == AUDIO_F32SYS)
         read_frame_float32_audio_device(overlap_in, overlap_n_samples);
     else if constexpr(AUDIO_FORMAT == AUDIO_S32SYS)

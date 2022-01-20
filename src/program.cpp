@@ -96,6 +96,7 @@ void Program::main_loop() {
         perf.push_time_point("Start");
 
         handle_sdl_events();
+        // DEBUG
         if(lag != 0)
             debug("Lagging for " + STR(lag) + " ms");
         std::this_thread::sleep_for(std::chrono::milliseconds(lag));

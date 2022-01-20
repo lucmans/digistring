@@ -15,6 +15,9 @@ class AudioIn : public SampleGetter {
 
         SampleGetters get_type() const override;
 
+        // DEBUG
+        void read_increment(float *const in, const int n_samples);
+
         void read_frame_float32_audio_device(float *const in, const int n_samples);
         void read_frame_int32_audio_device(float *const in, const int n_samples);
 
