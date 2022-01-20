@@ -6,7 +6,7 @@
 
 # General compiler flags
 CXX = g++
-CXXFLAGS = -std=c++17 -g  #-fsanitize=address
+CXXFLAGS = -std=c++17 -g
 DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
 WARNINGS = -Wall -Wextra #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
 # FLAGS = -DCOLORED
@@ -19,18 +19,24 @@ SRC_FOLDER = src/ src/estimators/ src/sample_getter/
 SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDER)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDER))
 BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDER)) $(patsubst src%/, dep%/, $(SRC_FOLDER))
 
+# Binary name
 BIN = digistring
+# Objects to compile
 OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func.o obj/performance.o obj/config.o \
       obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
       obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o \
       obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o obj/sample_getter/increment.o
 
-.PHONY: all force fresh clean outputclean valgrind lines grep debug todo trailing_spaces help
+.PHONY: all sanitize force fresh clean outputclean valgrind lines grep debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
 all: | $(BUILD_FOLDERS)
 	make -j $(CORES) $(BIN)
+
+# Don't forget to run make force to remove sanitize
+sanitize:
+	make force CXXFLAGS="$(CXXFLAGS) -fsanitize=address"
 
 # Remake everything
 force:
@@ -113,6 +119,7 @@ help:
 	@echo \"make outputclean\" removes the default named output files.
 	@echo \"make force\" forces all build targets to be rebuild.
 	@echo \"make fresh\" runs \"make clean\; make\", which may help with potential building problems after updating.
+	@echo \"make sanitize\" builds with -fsanitize=address. Do not forget to run \"make force\" to remove sanitize.
 	@echo
 	@echo Furthermore, some often used command are added to the makefile:
 	@echo \"make lines\" counts the number of lines in all source files.
