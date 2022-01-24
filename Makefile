@@ -54,7 +54,7 @@ clean:
 	rm -f vgcore*
 
 outputclean:
-	rm -f output.txt*
+	rm -f output*.txt
 
 
 # Binary rule

@@ -172,10 +172,22 @@ void ArgParser::parse_output_file() {
         info("No file provided with output flag; using '" + STR(filename) + " instead");
     }
 
-    const std::string o_filename = filename;  // Original filename as std::string instead of char[]
-    std::string g_filename = filename;  // Generated filename
+    // Original filename as std::string instead of char[]
+    const std::string o_filename = filename;
+
+    // Separate basename and extension for automatic numbering
+    std::string o_basename, o_extension;
+    const size_t pos = o_filename.find_last_of('.');
+    if(pos == std::string::npos || pos == 0)
+        o_basename = o_filename;
+    else {  // pos > 0
+        o_basename = o_filename.substr(0, pos);
+        o_extension = o_filename.substr(pos);
+    }
+
+    std::string g_filename = o_filename;  // Generated filename
     for(int i = 2; std::filesystem::exists(g_filename); i++)
-        g_filename = o_filename + '_' + std::to_string(i);
+        g_filename = o_basename + '_' + std::to_string(i) + o_extension;
 
     if(g_filename != o_filename)
         warning("File '" + o_filename + "' already exists; naming it '" + g_filename + "' instead");
