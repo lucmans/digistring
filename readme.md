@@ -59,5 +59,4 @@ Generic data passing structure from estimator to graphics.
 
 
 # BUGS
-Can't build project using "make digistring" directly due to build folder dependencies.  
-Program freezes when running through valgrind.
+Can't build project using "make digistring" directly due to build folder dependencies.
