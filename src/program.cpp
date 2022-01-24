@@ -20,6 +20,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     in_dev = _in;
     out_dev = _out;
 
+    prev_frame = std::chrono::steady_clock::now();
+
     // We let the estimator create the input buffer for optimal size and better alignment
     input_buffer = NULL;
     // int input_buffer_n_samples;
@@ -77,10 +79,6 @@ Program::~Program() {
 
 
 void Program::main_loop() {
-    // Frame limiting
-    std::chrono::duration<double, std::milli> frame_time;
-    std::chrono::steady_clock::time_point prev_frame = std::chrono::steady_clock::now();
-
     // Unpause audio devices so that samples are collected/played
     if(!(settings.generate_sine || settings.generate_note || settings.play_file))
         SDL_PauseAudioDevice(*in_dev, 0);
@@ -95,12 +93,15 @@ void Program::main_loop() {
         perf.clear_time_points();
         perf.push_time_point("Start");
 
+        // Check for keyboard/mouse/window/OS events
         handle_sdl_events();
+
         // DEBUG
-        if(lag != 0)
+        if(lag != 0) {  // Lag might have been increased by in handle_sdl_events()
             debug("Lagging for " + STR(lag) + " ms");
-        std::this_thread::sleep_for(std::chrono::milliseconds(lag));
-        lag = 0;
+            std::this_thread::sleep_for(std::chrono::milliseconds(lag));
+            lag = 0;
+        }
 
         perf.push_time_point("Handled SDL events");
 
@@ -109,25 +110,8 @@ void Program::main_loop() {
         perf.push_time_point("Got frame full of audio samples");
 
         // Play it back to the user if chosen
-        if(settings.playback) {
-            if(SDL_QueueAudio(*out_dev, input_buffer, input_buffer_n_samples * sizeof(float))) {
-                error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
-                exit(EXIT_FAILURE);
-            }
-
-            if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
-                warning("Audio underrun; no audio left to play");
-
-            const bool playing_audio_in = !(settings.generate_sine || settings.generate_note || settings.play_file);
-            if(playing_audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
-                warning("Audio overrun (too much audio to play); clearing buffer...");
-                SDL_ClearQueuedAudio(*out_dev);
-            }
-
-            // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
-            while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
-                handle_sdl_events();
-        }
+        if(settings.playback)
+            playback_audio();
 
         // Send frame to estimator
         NoteSet noteset;
@@ -135,63 +119,114 @@ void Program::main_loop() {
         perf.push_time_point("Performed estimation");
 
         // Print note estimation
-        // if(noteset.size() > 0)
-        //     std::cout << noteset[0] << "  (" << noteset[0].freq << " Hz, " << noteset[0].amp << " dB, " << noteset[0].error << " cent)" << "     \r" << std::flush;
+        // print_results(noteset);
 
-        if(settings.output_file) {
-            if(noteset.size() > 0) {
-                const std::string note = note_to_string(noteset[0]);
-                output_stream << std::setw(12) << std::fixed << std::setprecision(4);
-                output_stream << sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0 << ", " << (note.size() == 4 ? " " : "") << note << ", " << noteset[0].freq << ", " << noteset[0].amp << ",  " << noteset[0].error << std::endl;
-            }
-        }
+        // Write estimation to output file
+        if(settings.output_file)
+            write_results(noteset);
 
         // Graphics
-        if constexpr(!HEADLESS) {
-            // Get data from estimator for graphics
-            graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
+        if constexpr(!HEADLESS)
+            update_graphics(noteset);
 
-            const Spectrum *spec = estimator->get_spectrum();
-            graphics->add_data_point(spec->get_data());
-            perf.push_time_point("Graphics parsed data");
-
-            // Render data
-            frame_time = std::chrono::steady_clock::now() - prev_frame;
-            if(frame_time.count() > 1000.0 / MAX_FPS) {
-                graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
-
-                if(noteset.size() > 0)
-                    graphics->render_frame(&noteset[0]);
-                else
-                    graphics->render_frame(nullptr);
-
-                perf.push_time_point("Frame rendered");
-
-                prev_frame = std::chrono::steady_clock::now();
-            }
-        }
-
+        // Print performance information to CLI
         if(settings.output_performance)
             std::cout << perf << std::endl;
 
-
-        if constexpr(ENABLE_ARPEGGIATOR) {
-            note_change_time = std::chrono::steady_clock::now() - prev_note_change;
-            if(note_change_time.count() > NOTE_TIME) {
-                if(!plus_held_down && minus_held_down)
-                    sample_getter->pitch_down();
-                else if(plus_held_down && !minus_held_down)
-                    sample_getter->pitch_up();
-
-                prev_note_change = std::chrono::steady_clock::now();
-            }
-        }
+        // Arpeggiator easter egg
+        if constexpr(ENABLE_ARPEGGIATOR)
+            arpeggiate();
     }
 }
 
 
 void Program::resize(const int w, const int h) {
     graphics->resize_window(w, h);
+}
+
+
+void Program::playback_audio() {
+    if constexpr(DISPLAY_AUDIO_UNDERRUNS)
+        if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
+            warning("Audio underrun; no audio left to play");
+
+    if(SDL_QueueAudio(*out_dev, input_buffer, input_buffer_n_samples * sizeof(float))) {
+        error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
+        exit(EXIT_FAILURE);
+    }
+
+    // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
+    const bool playing_audio_in = !(settings.generate_sine || settings.generate_note || settings.play_file);
+    if(playing_audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+        warning("Audio overrun (too much audio to play); clearing buffer...");
+        SDL_ClearQueuedAudio(*out_dev);
+    }
+
+    // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
+    while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
+        handle_sdl_events();
+}
+
+
+void Program::write_results(const NoteSet &noteset) {
+    const int n_notes = noteset.size();
+    if(n_notes == 0)
+        return;
+
+    else if(n_notes == 1) {
+        const std::string note = note_to_string(noteset[0]);
+        output_stream << std::setw(12) << std::fixed << std::setprecision(4);
+        output_stream << sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0 << ", " << (note.size() == 4 ? " " : "") << note << ", " << noteset[0].freq << ", " << noteset[0].amp << ",  " << noteset[0].error << std::endl;
+    }
+
+    else  // n_notes > 1
+        warning("Polyphonic output is not yet supported");  // TODO: Support
+}
+
+void Program::print_results(const NoteSet &noteset) {
+    if(noteset.size() > 0)
+        std::cout << noteset[0] << "  (" << noteset[0].freq << " Hz, " << noteset[0].amp << " dB, " << noteset[0].error << " cent)" << "     \r" << std::flush;
+}
+
+
+void Program::update_graphics(const NoteSet &noteset) {
+    // Get data from estimator for graphics
+    graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
+
+    const Spectrum *spec = estimator->get_spectrum();
+    graphics->add_data_point(spec->get_data());
+    perf.push_time_point("Graphics parsed data");
+
+    // Render data
+    frame_time = std::chrono::steady_clock::now() - prev_frame;
+    if(frame_time.count() > 1000.0 / MAX_FPS) {
+        graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
+
+        const int n_notes = noteset.size();
+        if(n_notes == 0)
+            graphics->render_frame(nullptr);
+        else if(n_notes == 1)
+            graphics->render_frame(&noteset[0]);
+        else  // n_notes > 1
+            warning("Polyphonic graphics not yet supported");  // TODO: Support
+
+        perf.push_time_point("Frame rendered");
+
+        prev_frame = std::chrono::steady_clock::now();
+    }
+}
+
+
+void Program::arpeggiate() {
+    note_change_time = std::chrono::steady_clock::now() - prev_note_change;
+    if(note_change_time.count() > NOTE_TIME) {
+        if(!plus_held_down && minus_held_down)
+            sample_getter->pitch_down();
+        else if(plus_held_down && !minus_held_down)
+            sample_getter->pitch_up();
+
+        prev_note_change = std::chrono::steady_clock::now();
+    }
 }
 
 

@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "config.h"
 
+#include "note.h"
 #include "estimators/estimators.h"
 #include "sample_getter/sample_getters.h"
 
@@ -37,18 +38,34 @@ class Program {
 
         SampleGetter *sample_getter;
 
+        // Frame limiting (graphics)
+        std::chrono::duration<double, std::milli> frame_time;
+        std::chrono::steady_clock::time_point prev_frame;
+
+        // Printing clicked location info (graphics)
         bool mouse_clicked;
         int mouse_x, mouse_y;
 
+        // Output results file
         std::fstream output_stream;
 
+        // DEBUG
         int lag;  // ms
 
-        // Arpeggiator
+        // Arpeggiator (easter egg)
         bool plus_held_down, minus_held_down;
         std::chrono::duration<double, std::milli> note_change_time;
         std::chrono::steady_clock::time_point prev_note_change;
 
+
+        void playback_audio();
+
+        void write_results(const NoteSet &noteset);
+        void print_results(const NoteSet &noteset);
+
+        void update_graphics(const NoteSet &noteset);
+
+        void arpeggiate();
 
         void handle_sdl_events();
 };

@@ -81,10 +81,14 @@ constexpr int MAX_HISTORY_DATAPOINTS = 2000;
 // static_assert(ceil(DEFAULT_MAX_DISPLAY_FREQUENCY / ((double)SAMPLE_RATE / (double)FRAME_SIZE)) < (FRAME_SIZE / 2) + 1, "DEFAULT_MAX_DISPLAY_FREQUENCY is too high; please set to <=0");
 static_assert(DEFAULT_MAX_DISPLAY_FREQUENCY <= MAX_FOURIER_FREQUENCY, "DEFAULT_MAX_DISPLAY_FREQUENCY is too high; please set to <=0");
 
+
 // Easter egg constant time arpeggiator
 // Don't forget to use a low frame size, as audio is played per frame
 constexpr bool ENABLE_ARPEGGIATOR = false;
 constexpr double NOTE_TIME = 100.0;  // ms
+
+
+constexpr bool DISPLAY_AUDIO_UNDERRUNS = false;
 
 
 // Struct with all settings that can be changed through CLI arguments
