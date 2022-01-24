@@ -4,6 +4,11 @@
 #include <cmath>
 
 
+void rectangle_window(double window[], const int size) {
+    for(int i = 0; i < size; i++)
+        window[i] = 1.0;
+}
+
 void hamming_window(double window[], const int size) {
     const double a0 = 25.0 / 46.0;
 
@@ -104,7 +109,21 @@ void flat_top_window(double window[], const int size) {
     }
 }
 
+void welch_window(double window[], const int size) {
+    const double N = size;
+    const double hN = (double)size / 2.0;
+    for(int i = 0; i < N; i++) {
+        const double t = (i - hN) / hN;
+        window[i] = 1 - (t * t);
+    }
+}
 
+
+
+void rectangle_window(float window[], const int size) {
+    for(int i = 0; i < size; i++)
+        window[i] = 1.0;
+}
 
 void hamming_window(float window[], const int size) {
     const double a0 = 25.0 / 46.0;
@@ -203,5 +222,14 @@ void flat_top_window(float window[], const int size) {
                        + (a2 * cos((4.0 * x) / N))
                        - (a3 * cos((6.0 * x) / N))
                        + (a4 * cos((8.0 * x) / N));
+    }
+}
+
+void welch_window(float window[], const int size) {
+    const double N = size;
+    const double hN = (double)size / 2.0;
+    for(int i = 0; i < N; i++) {
+        const double t = (i - hN) / hN;
+        window[i] = 1 - (t * t);
     }
 }
