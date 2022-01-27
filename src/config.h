@@ -36,8 +36,8 @@ static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should 
 constexpr bool DO_OVERLAP_NONBLOCK = false;
 // Minimum number of samples to overlap
 // Should not be more than the size of a frame!
-constexpr int MIN_NEW_SAMPLES = 14 * 1024;  // samples
-constexpr int MAX_NEW_SAMPLES = (16 * 1024) - 1;  // samples
+constexpr int MIN_NEW_SAMPLES_NONBLOCK = 14 * 1024;  // samples
+constexpr int MAX_NEW_SAMPLES_NONBLOCK = (16 * 1024) - 1;  // samples
 // constexpr int MIN_NEW_SAMPLES = 14;  // samples
 // constexpr int MAX_NEW_SAMPLES = 90;  // samples
 // constexpr int MIN_OVERLAP_ADVANCE = 1024 * 14;  // samples
@@ -55,6 +55,9 @@ constexpr unsigned int SAMPLES_PER_BUFFER = 512;
 
 // Check if audio format can be converted to float32 (AUDIO_F32SYS)
 static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Audio format has to be either int32 or float32");
+
+
+constexpr bool DISPLAY_AUDIO_UNDERRUNS = false;
 
 
 /* Graphics config */
@@ -82,13 +85,15 @@ constexpr int MAX_HISTORY_DATAPOINTS = 2000;
 static_assert(DEFAULT_MAX_DISPLAY_FREQUENCY <= MAX_FOURIER_FREQUENCY, "DEFAULT_MAX_DISPLAY_FREQUENCY is too high; please set to <=0");
 
 
+/* Results file config */
+constexpr char DEFAULT_OUTPUT_FILENAME[] = "output.json";
+constexpr int INDENT_AMOUNT = 4;  // Number of spaces per indent
+
+
 // Easter egg constant time arpeggiator
 // Don't forget to use a low frame size, as audio is played per frame
 constexpr bool ENABLE_ARPEGGIATOR = false;
 constexpr double NOTE_TIME = 100.0;  // ms
-
-
-constexpr bool DISPLAY_AUDIO_UNDERRUNS = false;
 
 
 // Struct with all settings that can be changed through CLI arguments

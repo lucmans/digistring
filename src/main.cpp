@@ -33,9 +33,17 @@ void print_program_config_info() {
     std::cout << "Frame size: " << FRAME_SIZE << '\n'
               << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms\n"
               << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz\n"
-              << "Maximum Fourier frequency: " << MAX_FOURIER_FREQUENCY << " Hz\n"
-              << "Minimum frame advance (" << (DO_OVERLAP_NONBLOCK ? "on" : "off") << "): " << MIN_NEW_SAMPLES << " samples  (" << ((double)MIN_NEW_SAMPLES * 1000.0) / (double)SAMPLE_RATE << " ms)\n"
-              << std::endl;
+              << "Maximum Fourier frequency: " << MAX_FOURIER_FREQUENCY << " Hz\n";
+
+    if(DO_OVERLAP)
+        std::cout << "Overlap ratio: " << OVERLAP_RATIO << '\n';
+
+    if(DO_OVERLAP_NONBLOCK) {
+        std::cout << "Minimum non-blocking frame advance: " << MIN_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MIN_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n"
+                  << "Maximum non-blocking frame advance: " << MAX_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MAX_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n";
+    }
+
+    std::cout << std::endl;
 
     // TODO: Better estimate
     // if constexpr(!HEADLESS) {

@@ -72,6 +72,10 @@ std::string note_to_string(const Note &note) {
     return note_string[static_cast<int>(note.note)] + stringify_sub(note.octave);
 }
 
+std::string note_to_string_ascii(const Note &note) {
+    return note_string[static_cast<int>(note.note)] + std::to_string(note.octave);
+}
+
 
 std::ostream& operator<<(std::ostream &s, const NoteSet &noteset) {
     if(noteset.size() == 0)

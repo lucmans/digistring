@@ -2,6 +2,7 @@
 #include "program.h"
 
 #include "graphics.h"
+#include "results_file.h"
 #include "performance.h"
 #include "config.h"
 #include "error.h"
@@ -50,19 +51,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
 
     mouse_clicked = false;
 
-    if(settings.output_file) {
-        output_stream.open(settings.output_filename, std::fstream::out);
-        if(!output_stream.is_open()) {
-            error("Failed to create/open file '" + settings.output_filename + "'");
-            exit(EXIT_FAILURE);
-        }
-
-        output_stream << "Sample rate: " << SAMPLE_RATE << '\n'
-                      << "Frame size: " << FRAME_SIZE << '\n'
-                      << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms\n"
-                      << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << " Hz"
-                      << std::endl;
-    }
+    if(settings.output_file)
+        results_file = new ResultsFile(settings.output_filename);
 
     lag = 0;
 
@@ -70,10 +60,10 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
 }
 
 Program::~Program() {
-    output_stream.close();
+    if(settings.output_file)
+        delete results_file;
 
     delete sample_getter;
-
     delete estimator;
 }
 
@@ -86,8 +76,10 @@ void Program::main_loop() {
     if(settings.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
-    if(settings.output_file)
-        output_stream << "\nplaytime (s), note, frequency (Hz), amplitude (dB), error (cent)" << std::endl;
+    if(settings.output_file) {
+        write_result_header();
+        results_file->start_array("note events");  // Stopped after while loop, so only note events can be pushed from now on
+    }
 
     while(!poll_quit()) {
         perf.clear_time_points();
@@ -106,7 +98,7 @@ void Program::main_loop() {
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
-        sample_getter->get_frame(input_buffer, input_buffer_n_samples);
+        sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
         perf.push_time_point("Got frame full of audio samples");
 
         // Play it back to the user if chosen
@@ -118,7 +110,7 @@ void Program::main_loop() {
         estimator->perform(input_buffer, noteset);
         perf.push_time_point("Performed estimation");
 
-        // Print note estimation
+        // Print note estimation to CLI
         // print_results(noteset);
 
         // Write estimation to output file
@@ -137,6 +129,9 @@ void Program::main_loop() {
         if constexpr(ENABLE_ARPEGGIATOR)
             arpeggiate();
     }
+
+    if(settings.output_file)
+        results_file->stop_array();
 }
 
 
@@ -168,20 +163,44 @@ void Program::playback_audio() {
 }
 
 
+void Program::write_result_header() {
+    results_file->write_int("Sample rate (Hz)", SAMPLE_RATE);
+    results_file->write_int("Input buffer size (samples)", input_buffer_n_samples);
+    results_file->write_double("Input buffer time (ms)", ((double)input_buffer_n_samples * 1000.0) / (double)SAMPLE_RATE);
+    results_file->write_double("Fourier bin size (Hz)", (double)SAMPLE_RATE / (double)input_buffer_n_samples);
+
+    if(DO_OVERLAP)
+        results_file->write_double("Overlap ratio", OVERLAP_RATIO);
+
+    if(DO_OVERLAP_NONBLOCK) {
+        results_file->write_int("Minimum samples overlap", MIN_NEW_SAMPLES_NONBLOCK);
+        results_file->write_int("Maximum samples overlap", MAX_NEW_SAMPLES_NONBLOCK);
+    }
+}
+
 void Program::write_results(const NoteSet &noteset) {
+    results_file->start_dict();
+
     const int n_notes = noteset.size();
-    if(n_notes == 0)
-        return;
+    if(n_notes == 0) {
+        results_file->write_double("t (s)", sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0);  // Halfway between begin and end of frame
+    }
 
     else if(n_notes == 1) {
-        const std::string note = note_to_string(noteset[0]);
-        output_stream << std::setw(12) << std::fixed << std::setprecision(4);
-        output_stream << sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0 << ", " << (note.size() == 4 ? " " : "") << note << ", " << noteset[0].freq << ", " << noteset[0].amp << ",  " << noteset[0].error << std::endl;
+        const std::string note = note_to_string_ascii(noteset[0]);
+        results_file->write_double("t (s)", sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0);  // Halfway between begin and end of frame
+        results_file->write_string("note", note);
+        results_file->write_double("frequency", noteset[0].freq);
+        results_file->write_double("amplitude", noteset[0].amp);
+        results_file->write_double("error", noteset[0].error);
     }
 
     else  // n_notes > 1
         warning("Polyphonic output is not yet supported");  // TODO: Support
+
+    results_file->stop_dict();
 }
+
 
 void Program::print_results(const NoteSet &noteset) {
     if(noteset.size() > 0)
@@ -265,7 +284,8 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_t:
-                        SDL_ClearQueuedAudio(*out_dev);
+                        if(settings.playback)
+                            SDL_ClearQueuedAudio(*out_dev);
                         break;
 
                     case SDLK_p:

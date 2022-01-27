@@ -25,13 +25,15 @@ Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully shut down
 Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
 
 ## Command line arguments
+Argument parameters in <> are required and in [] are optional.  
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
-`--file [file]`: Use file as input.  
+`--file <file>`: Use file as input.  
 `-n [note]`: Generate note (default is A4).  
+`-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
 `--over <note> [n]`: Print n (default is 5) overtones of given note.  
 `-p`: Play input audio back.  
 `--perf`: Print performance stats to stdout.  
-`-r [w] [h]`: Run digistring with given resolution.  
+`-r <w> <h>`: Run digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.
 
@@ -52,9 +54,10 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
-Output JSON into output file.  
+Split config.h in multiple configuration files.  
+Implement Dolph-Chebyshev window.  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
-Display audio_in captured but not yet retrieved samples.  
+Display audio_in captured but not yet retrieved samples (SDL_GetQueuedAudioSize).  
 Generic data passing structure from estimator to graphics.
 
 

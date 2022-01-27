@@ -99,14 +99,6 @@ SampleGetters AudioFile::get_type() const {
 
 
 void AudioFile::get_frame(float *const in, const int n_samples) {
-    static bool ended = false;
-    if(ended) {
-        // TODO: Quit or listen from audio in
-        memset(in, 0, n_samples * sizeof(float));
-        return;
-    }
-
-
     int overlap_n_samples = n_samples;
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
@@ -122,9 +114,8 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
 
     // Check if file has ended
     if(n_read_samples == 0) {
-        warning("File ended, continuing with silence...");
-        ended = true;
-        return;
+        info("File ended, filling rest of frame with silence...");
+        set_quit();  // TODO: Maybe play file till overlap only contains silence
     }
 
     played_samples += n_read_samples;

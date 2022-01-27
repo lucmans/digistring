@@ -4,6 +4,7 @@
 
 
 #include "graphics.h"
+#include "results_file.h"
 #include "config.h"
 
 #include "note.h"
@@ -12,7 +13,6 @@
 
 #include <SDL2/SDL.h>
 
-#include <fstream>
 #include <chrono>
 
 
@@ -47,7 +47,7 @@ class Program {
         int mouse_x, mouse_y;
 
         // Output results file
-        std::fstream output_stream;
+        ResultsFile *results_file;
 
         // DEBUG
         int lag;  // ms
@@ -60,7 +60,10 @@ class Program {
 
         void playback_audio();
 
+        // These functions should only be called if settings.output_file is true
+        void write_result_header();
         void write_results(const NoteSet &noteset);
+
         void print_results(const NoteSet &noteset);
 
         void update_graphics(const NoteSet &noteset);

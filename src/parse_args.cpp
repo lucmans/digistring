@@ -32,16 +32,17 @@ const std::map<const std::string, void (ArgParser::*const)()> ArgParser::flag_to
 };
 
 void print_help() {
-    std::cout << "Flags:\n"
-              << "  -f                - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
-              << "  --file <file>     - Play samples from given file\n"
-              << "  -n [note]         - Generate note (default is A4)\n"
-              << "  --over <note> [n] - Print n (default is 5) overtones of given note\n"
-              << "  -p                - Play recorded audio back\n"
-              << "  --perf            - Output performance stats in stdout\n"
-              << "  -r <w> <h>        - Start GUI with given resolution\n"
-              << "  --rsc <path>      - Set alternative resource directory location\n"
-              << "  -s [f]            - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
+    std::cout << "Flags (argument parameters in <> are required and in [] are optional):\n"
+              << "  -f                   - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
+              << "  --file <file>        - Play samples from given file\n"
+              << "  -n [note]            - Generate note (default is A4)\n"
+              << "  -o | --output [file] - Write estimation results as JSON to file (default filename is output.json)\n"
+              << "  --over <note> [n]    - Print n (default is 5) overtones of given note\n"
+              << "  -p                   - Play recorded audio back\n"
+              << "  --perf               - Output performance stats in stdout\n"
+              << "  -r <w> <h>           - Start GUI with given resolution\n"
+              << "  --rsc <path>         - Set alternative resource directory location\n"
+              << "  -s [f]               - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
               << std::endl;
 }
 
@@ -168,14 +169,14 @@ void ArgParser::parse_generate_note() {
 void ArgParser::parse_output_file() {
     const char *filename;
     if(!fetch_opt(filename)) {
-        filename = "output.txt";
+        filename = DEFAULT_OUTPUT_FILENAME;
         info("No file provided with output flag; using '" + STR(filename) + " instead");
     }
 
-    // Original filename as std::string instead of char[]
+    // Original filename as std::string instead of char[] for easier manipulation
     const std::string o_filename = filename;
 
-    // Separate basename and extension for automatic numbering
+    // Separate basename and extension
     std::string o_basename, o_extension;
     const size_t pos = o_filename.find_last_of('.');
     if(pos == std::string::npos || pos == 0)
@@ -185,6 +186,10 @@ void ArgParser::parse_output_file() {
         o_extension = o_filename.substr(pos);
     }
 
+    if(o_extension != ".json")
+        warning("Extension of output file is not '.json' " + o_extension);
+
+    // Try to generate a new unique filename inserting a number between name and extension
     std::string g_filename = o_filename;  // Generated filename
     for(int i = 2; std::filesystem::exists(g_filename); i++)
         g_filename = o_basename + '_' + std::to_string(i) + o_extension;
