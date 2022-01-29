@@ -17,12 +17,12 @@
 // Uncomment relevant lines; commented to improve compiling times, as printing times relies on performance, which relies on config
 const bool TIMES = false;  // Display timestamp in CLI messages
 
-const char GREEN[] = "\e[32m";
-const char BLUE[] = "\e[34m";
-const char YELLOW[] = "\e[33m";
-const char RED[] = "\e[31m";
-const char BOLD[] = "\e[1m";
-const char RESET[] = "\e[0m";
+const char GREEN[] = "\033[32m";
+const char BLUE[] = "\033[34m";
+const char YELLOW[] = "\033[33m";
+const char RED[] = "\033[31m";
+const char BOLD[] = "\033[1m";
+const char RESET[] = "\033[0m";
 
 
 // Exception message
