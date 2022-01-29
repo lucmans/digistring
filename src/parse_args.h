@@ -28,7 +28,7 @@ class ArgParser {
         int cur_arg;  // Holds what index in argv will be returned by the next fetch_arg() call
 
         const int argc;
-        const char *const *const argv;
+        const char *const *const argv;  // TODO: Conform constructor
 
 
         void parse_fullscreen();

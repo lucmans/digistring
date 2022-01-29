@@ -8,7 +8,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -g
 DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
-WARNINGS = -Wall -Wextra #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
+WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
 # FLAGS = -DCOLORED
 OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
 LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm

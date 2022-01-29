@@ -38,12 +38,16 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
 
 
 HighRes::HighRes(float *&input_buffer, int &buffer_size) {
+    // in_size = FRAME_SIZE;  // Class member buffer size
+    // buffer_size = in_size;  // Call by reference parameter to inform caller of buffer size
+
+    buffer_size = FRAME_SIZE;
+
     input_buffer = (float*)fftwf_malloc(FRAME_SIZE * sizeof(float));
     if(input_buffer == NULL) {
         error("Failed to malloc sample input buffer");
         exit(EXIT_FAILURE);
     }
-    buffer_size = FRAME_SIZE;
 
     in = input_buffer;  // Share the sample input buffer with the Fourier input buffer
     out = (fftwf_complex*)fftwf_malloc(((FRAME_SIZE / 2) + 1) * sizeof(fftwf_complex));
@@ -111,19 +115,19 @@ void HighRes::envelope_peaks(const double norms[(FRAME_SIZE / 2) + 1], const dou
 
 
 void HighRes::interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE / 2) + 1], const std::vector<int> &peaks) {
-    for(int p : peaks) {
+    for(int peak : peaks) {
         // Check if the interpolation will be in-bounds
-        if(p == 0 || p == FRAME_SIZE / 2) {
+        if(peak == 0 || peak == FRAME_SIZE / 2) {
             warning("Peak on first or last bin");
             continue;
         }
-        else if(p > FRAME_SIZE / 2) {
+        else if(peak > FRAME_SIZE / 2) {
             error("Peak found outside bins");
             exit(-1);
         }
 
         double amp;
-        const double freq = ((double)SAMPLE_RATE / FRAME_SIZE) * interpolate_max(p, norms, amp);
+        const double freq = ((double)SAMPLE_RATE / FRAME_SIZE) * interpolate_max(peak, norms, amp);
         noteset.push_back(Note(freq, amp));
     }
 }
@@ -200,7 +204,7 @@ void HighRes::get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_no
 }
 
 
-void HighRes::perform(float *const input_buffer, NoteSet &noteset) {
+void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     max_norm = 0.0;
 
     // Apply window function to minimize spectral leakage
@@ -213,7 +217,7 @@ void HighRes::perform(float *const input_buffer, NoteSet &noteset) {
     perf.push_time_point("Fourier transformed");
 
     // Calculate amplitude of every frequency component
-    double norms[(FRAME_SIZE / 2) + 1] = {};
+    double norms[(FRAME_SIZE / 2) + 1];
     double power;
     calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
@@ -232,16 +236,25 @@ void HighRes::perform(float *const input_buffer, NoteSet &noteset) {
     interpolate_peaks(candidate_notes, norms, peaks);
 
     // Extract played note from the peaks
-    noteset.clear();
+    NoteSet noteset;  // Noteset, so polyphony can easily be supported
     // get_loudest_peak(noteset, candidate_notes);
     // get_lowest_peak(noteset, candidate_notes);
     get_likeliest_note(noteset, candidate_notes);
+
+    note_events.clear();
+    if(noteset.size() > 0)
+        note_events.push_back(NoteEvent(noteset[0], 0.0));
+        // note_events.push_back(NoteEvent(noteset[0], ((double)FRAME_SIZE / (double)SAMPLE_RATE) / 2.0));
 
 
     // Graphics
     if constexpr(!HEADLESS) {
         spectrum.clear();
-        for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++) {
+
+        spectrum.add_data(0.0, 0.0, 0.0);  // Start graph at bottom left corner
+
+        // Start at j = 1 to skip rendering DC offset
+        for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++) {
             spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i], (double)SAMPLE_RATE / (double)FRAME_SIZE);
             // spectrum.add_envelope(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), envelope[i]);
         }

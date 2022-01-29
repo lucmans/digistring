@@ -66,8 +66,8 @@ void print_overtones(const Note &note, const int n_overtones);
 
 
 // Throws std::string with error description on invalid strings
-// A valid note_string consists of a note name (A-G), with optional accidental ('#' or 'd' for sharp, 'b' for flat) and an integer denoting the octave
-Note string_to_note(const std::string &note_string);
+// A valid in_string consists of a note name (A-G), with optional accidental ('#' or 'd' for sharp, 'b' for flat) and an integer denoting the octave
+Note string_to_note(const std::string &in_string);
 
 
 #endif  // NOTE_H

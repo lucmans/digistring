@@ -73,7 +73,6 @@ constexpr int MIN_RES[2] = {800, 600};
 
 // Set to <=0 for full display
 constexpr double DEFAULT_MAX_DISPLAY_FREQUENCY = 2000.0;
-// constexpr double DEFAULT_MAX_DISPLAY_FREQUENCY = -1.0;  // DEBUG
 constexpr double MAX_FOURIER_FREQUENCY = (double)SAMPLE_RATE / 2.0;  // Hz
 constexpr double MIN_FOURIER_FREQUENCY = 50.0;  // Hz
 
@@ -88,6 +87,7 @@ static_assert(DEFAULT_MAX_DISPLAY_FREQUENCY <= MAX_FOURIER_FREQUENCY, "DEFAULT_M
 /* Results file config */
 constexpr char DEFAULT_OUTPUT_FILENAME[] = "output.json";
 constexpr int INDENT_AMOUNT = 4;  // Number of spaces per indent
+constexpr bool WRITE_SILENCE = true;
 
 
 // Easter egg constant time arpeggiator

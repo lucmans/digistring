@@ -55,6 +55,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 # TODO
 Split config.h in multiple configuration files.  
+Allow max_display_frequency > MAX_FOURIER_FREQUENCY.  
 Implement Dolph-Chebyshev window.  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
 Display audio_in captured but not yet retrieved samples (SDL_GetQueuedAudioSize).  

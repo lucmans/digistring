@@ -15,11 +15,14 @@
 AudioIn::AudioIn(SDL_AudioDeviceID *const _in) {
     in_dev = _in;
 
+    conv_buf = nullptr;
+
     // last_overlap_size = 0;
 }
 
 AudioIn::~AudioIn() {
-
+    if(conv_buf != nullptr)
+        delete[] conv_buf;
 }
 
 
@@ -38,7 +41,12 @@ void AudioIn::read_increment(float *const in, const int n_samples) {
     // wait as if performing a read
     uint32_t read = 0;
     while(read < n_samples * sizeof(float)) {
+        // Ignore VLA warning, as it is debug code anyway
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wvla"
         float ignore[n_samples];
+        #pragma GCC diagnostic pop
+
         uint32_t ret = SDL_DequeueAudio(*in_dev, ignore, (n_samples * sizeof(float)) - read);
         if(ret > (n_samples * sizeof(float)) - read) {
             error("Read too big");
@@ -59,7 +67,7 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
 
     uint32_t read = 0;
     while(read < n_samples * sizeof(float)) {
-        uint32_t ret = SDL_DequeueAudio(*in_dev, in + (read / sizeof(float)), (n_samples * sizeof(float)) - read);
+        const uint32_t ret = SDL_DequeueAudio(*in_dev, in + (read / sizeof(float)), (n_samples * sizeof(float)) - read);
         if(ret > (n_samples * sizeof(float)) - read) {
             error("Read too big");
             exit(EXIT_FAILURE);
@@ -85,10 +93,13 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {
     perf.push_time_point("Start waiting for frame");
 
+    // int32_t conv_buf[n_samples];  // TODO: Remove VLA
+    if(conv_buf == nullptr)
+        conv_buf = new int32_t[n_samples];
+
     uint32_t read = 0;
-    int32_t in_buf[n_samples] = {};  // TODO: Remove VLA
     while(read < n_samples * sizeof(int32_t)) {
-        uint32_t ret = SDL_DequeueAudio(*in_dev, in_buf, (n_samples * sizeof(int32_t)) - read);
+        const uint32_t ret = SDL_DequeueAudio(*in_dev, conv_buf, (n_samples * sizeof(int32_t)) - read);
         if(ret > (n_samples * sizeof(int32_t)) - read) {
             error("Read too big");
             exit(EXIT_FAILURE);
@@ -115,7 +126,7 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
         // Directly perform conversion to save on computation when frame is ready
         // In other words, the only added latency is from casting the data from the last DequeueAudio call
         for(unsigned int i = 0; i < ret / sizeof(int32_t); i++)
-            in[(read / sizeof(int32_t)) + i] = (float)in_buf[i];
+            in[(read / sizeof(int32_t)) + i] = (float)conv_buf[i];
 
         read += ret;
     }

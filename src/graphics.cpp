@@ -134,7 +134,7 @@ void Graphics::add_max_display_frequency(const double d_f) {
         max_display_frequency = MAX_FOURIER_FREQUENCY;
         n_waterfall_pixels = (FRAME_SIZE / 2) + 1;
     }
-    else if(max_display_frequency + d_f < 2.0) {
+    else if(max_display_frequency + d_f < MIN_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
         max_display_frequency = MIN_FOURIER_FREQUENCY;
         n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));

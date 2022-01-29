@@ -30,6 +30,8 @@ class AudioIn : public SampleGetter {
     private:
         SDL_AudioDeviceID *in_dev;
 
+        int32_t *conv_buf;
+
         // float overlap_buffer[MAX_FRAME_SIZE];  // Declared in SampleGetter
         // int last_overlap_size;
 };

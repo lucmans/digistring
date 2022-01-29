@@ -106,20 +106,20 @@ void Program::main_loop() {
             playback_audio();
 
         // Send frame to estimator
-        NoteSet noteset;
-        estimator->perform(input_buffer, noteset);
+        NoteEvents note_events;
+        estimator->perform(input_buffer, note_events);
         perf.push_time_point("Performed estimation");
 
         // Print note estimation to CLI
-        // print_results(noteset);
+        // print_results(note_events);
 
         // Write estimation to output file
         if(settings.output_file)
-            write_results(noteset);
+            write_results(note_events);
 
         // Graphics
         if constexpr(!HEADLESS)
-            update_graphics(noteset);
+            update_graphics(note_events);
 
         // Print performance information to CLI
         if(settings.output_performance)
@@ -178,21 +178,25 @@ void Program::write_result_header() {
     }
 }
 
-void Program::write_results(const NoteSet &noteset) {
+void Program::write_results(const NoteEvents &note_events) {
     results_file->start_dict();
 
-    const int n_notes = noteset.size();
+    const double start_frame_time = sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE);
+
+    const int n_notes = note_events.size();
     if(n_notes == 0) {
-        results_file->write_double("t (s)", sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0);  // Halfway between begin and end of frame
+        if constexpr(WRITE_SILENCE)
+            results_file->write_double("t (s)", start_frame_time);
+            // results_file->write_double("t (s)", start_frame_time + (((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0));  // Halfway between begin and end of frame
     }
 
     else if(n_notes == 1) {
-        const std::string note = note_to_string_ascii(noteset[0]);
-        results_file->write_double("t (s)", sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0);  // Halfway between begin and end of frame
+        const std::string note = note_to_string_ascii(note_events[0].note);
+        results_file->write_double("t (s)", start_frame_time + note_events[0].d_t);  // Halfway between begin and end of frame
         results_file->write_string("note", note);
-        results_file->write_double("frequency", noteset[0].freq);
-        results_file->write_double("amplitude", noteset[0].amp);
-        results_file->write_double("error", noteset[0].error);
+        results_file->write_double("frequency", note_events[0].note.freq);
+        results_file->write_double("amplitude", note_events[0].note.amp);
+        results_file->write_double("error", note_events[0].note.error);
     }
 
     else  // n_notes > 1
@@ -202,13 +206,13 @@ void Program::write_results(const NoteSet &noteset) {
 }
 
 
-void Program::print_results(const NoteSet &noteset) {
-    if(noteset.size() > 0)
-        std::cout << noteset[0] << "  (" << noteset[0].freq << " Hz, " << noteset[0].amp << " dB, " << noteset[0].error << " cent)" << "     \r" << std::flush;
+void Program::print_results(const NoteEvents &note_events) {
+    if(note_events.size() > 0)
+        std::cout << note_events[0].note << "  (" << note_events[0].note.freq << " Hz, " << note_events[0].note.amp << " dB, " << note_events[0].note.error << " cent)" << "     \r" << std::flush;
 }
 
 
-void Program::update_graphics(const NoteSet &noteset) {
+void Program::update_graphics(const NoteEvents &note_events) {
     // Get data from estimator for graphics
     graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
 
@@ -221,11 +225,11 @@ void Program::update_graphics(const NoteSet &noteset) {
     if(frame_time.count() > 1000.0 / MAX_FPS) {
         graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
 
-        const int n_notes = noteset.size();
+        const int n_notes = note_events.size();
         if(n_notes == 0)
             graphics->render_frame(nullptr);
         else if(n_notes == 1)
-            graphics->render_frame(&noteset[0]);
+            graphics->render_frame(&note_events[0].note);
         else  // n_notes > 1
             warning("Polyphonic graphics not yet supported");  // TODO: Support
 

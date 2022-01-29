@@ -17,7 +17,7 @@ class Tuned : public Estimator {
 
         Estimators get_type() const override;
 
-        void perform(float *const input_buffer, NoteSet &noteset) override;
+        void perform(float *const input_buffer, NoteEvents &note_events) override;
 
 
     private:
@@ -26,6 +26,7 @@ class Tuned : public Estimator {
         fftwf_complex *outs[12];
         fftwf_plan plans[12];
 
+        double *norms;
         float *window_funcs[12];
 };
 

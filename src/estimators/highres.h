@@ -26,10 +26,11 @@ class HighRes : public Estimator {
 
         Estimators get_type() const override;
 
-        void perform(float *const input_buffer, NoteSet &noteset) override;
+        void perform(float *const input_buffer, NoteEvents &note_events) override;
 
 
     private:
+        // int in_size;
         float *in;
         fftwf_complex *out;
         fftwf_plan p;

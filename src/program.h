@@ -62,11 +62,11 @@ class Program {
 
         // These functions should only be called if settings.output_file is true
         void write_result_header();
-        void write_results(const NoteSet &noteset);
+        void write_results(const NoteEvents &note_events);
 
-        void print_results(const NoteSet &noteset);
+        void print_results(const NoteEvents &note_events);
 
-        void update_graphics(const NoteSet &noteset);
+        void update_graphics(const NoteEvents &note_events);
 
         void arpeggiate();
 

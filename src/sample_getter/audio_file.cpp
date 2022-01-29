@@ -64,11 +64,15 @@ AudioFile::AudioFile(const std::string &file) {
             volatile float f_sample = (float)d_sample;
             wav_buffer[i] = f_sample;
 
+            // TODO: Maybe check if new_sample > float mantissa limit
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wfloat-equal"
             static bool shown = false;
             if(!shown && f_sample != d_sample) {
                 warning("Lossy conversion of input file");
                 shown = true;
             }
+            #pragma GCC diagnostic pop
         }
 
         // SDL based conversion

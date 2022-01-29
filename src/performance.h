@@ -49,7 +49,7 @@ class Performance {
 extern Performance perf;
 
 
-std::ostream& operator<<(std::ostream &s, const Performance &perf);
+std::ostream& operator<<(std::ostream &s, const Performance &p);
 
 
 #endif  // PERFORMANCE_H

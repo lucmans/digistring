@@ -8,10 +8,19 @@
 
 #include <map>
 #include <string>
+#include <vector>
+
+
+struct NoteEvent {
+    Note note;
+    double d_t = 0.0;
+
+    constexpr NoteEvent(const Note &_n, const double _d_t) : note(_n), d_t(_d_t) {};
+};
+typedef std::vector<NoteEvent> NoteEvents;
 
 
 /* When adding a new estimator, don't forget to include the file in estimators.h */
-
 // Different estimator algorithms types
 enum class Estimators {
     highres, tuned
@@ -21,7 +30,6 @@ enum class Estimators {
 // If a string isn't present in EstimatorString for every type, random crashes may happen
 const std::map<const Estimators, const std::string> EstimatorString = {{Estimators::highres, "highres"},
                                                                        {Estimators::tuned, "tuned"}};
-
 
 class Estimator {
     public:
@@ -38,7 +46,7 @@ class Estimator {
         const Spectrum *get_spectrum();
 
         // Actually performs the estimation
-        virtual void perform(float *const input_buffer, NoteSet &noteset) = 0;
+        virtual void perform(float *const input_buffer, NoteEvents &note_events) = 0;
 
 
     protected:

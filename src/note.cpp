@@ -126,19 +126,19 @@ void print_overtones(const Note &note, const int n_overtones) {
 }
 
 
-Note string_to_note(const std::string &note_string) {
-    if(note_string.size() < 2)
+Note string_to_note(const std::string &in_string) {
+    if(in_string.size() < 2)
         throw(std::string("String too short"));
 
     int note_distance, octave_distance;
     int modifier = 0;
-    if(note_string[1] == '#' || note_string[1] == 'd')
+    if(in_string[1] == '#' || in_string[1] == 'd')
         modifier = 1;
-    else if(note_string[1] == 'b')
+    else if(in_string[1] == 'b')
         modifier = -1;
 
     // note_distance = 0;
-    // switch(note_string[0]) {
+    // switch(in_string[0]) {
     //     case 'b': case 'B':
     //         note_distance += 2;
     //         __attribute__ ((fallthrough));
@@ -161,10 +161,10 @@ Note string_to_note(const std::string &note_string) {
     //         break;
 
     //     default:
-    //         throw(std::string("Incorrect note name ('" + note_string[0] + "')"));
+    //         throw(std::string("Incorrect note name ('" + in_string[0] + "')"));
     // }
 
-    switch(note_string[0]) {
+    switch(in_string[0]) {
         case 'c': case 'C':
             note_distance = static_cast<int>(Notes::C);
             break;
@@ -194,7 +194,7 @@ Note string_to_note(const std::string &note_string) {
             break;
 
         default:
-            throw(std::string("Incorrect note name '" + note_string.substr(0, 1) + "'"));
+            throw(std::string("Incorrect note name '" + in_string.substr(0, 1) + "'"));
     }
 
     note_distance += modifier;
@@ -202,12 +202,12 @@ Note string_to_note(const std::string &note_string) {
 
     try {
         if(modifier == 0)
-            octave_distance = std::stoi(note_string.substr(1));
+            octave_distance = std::stoi(in_string.substr(1));
         else
-            octave_distance = std::stoi(note_string.substr(2));
+            octave_distance = std::stoi(in_string.substr(2));
     }
     catch(...) {
-        throw(std::string("Incorrect octave number '" + (modifier == 0 ? note_string.substr(1) : note_string.substr(2)) + "'"));
+        throw(std::string("Incorrect octave number '" + (modifier == 0 ? in_string.substr(1) : in_string.substr(2)) + "'"));
     }
 
     return Note(static_cast<Notes>(note_distance), octave_distance);

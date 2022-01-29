@@ -79,8 +79,8 @@ const std::vector<Timestamp> *Performance::get_time_points() const {
 }
 
 
-std::ostream& operator<<(std::ostream &s, const Performance &perf) {
-    const std::vector<Timestamp> *time_points = perf.get_time_points();
+std::ostream& operator<<(std::ostream &s, const Performance &p) {
+    const std::vector<Timestamp> *time_points = p.get_time_points();
     std::chrono::duration<double, std::milli> dur = (*time_points)[time_points->size() - 1].second - (*time_points)[0].second;
     const double frame_time = dur.count();
 

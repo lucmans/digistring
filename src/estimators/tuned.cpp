@@ -72,6 +72,7 @@ Tuned::Tuned(float *&input_buffer, int &buffer_size) {
     for(int i = 0; i < 12; i++)
         plans[i] = fftwf_plan_dft_r2c_1d(buffer_sizes[i], ins[i], outs[i], FFTW_ESTIMATE);
 
+
     // Pre-calculate window functions
     for(int i = 0; i < 12; i++) {
         window_funcs[i] = (float*)malloc(buffer_sizes[i] * sizeof(float));
@@ -82,6 +83,9 @@ Tuned::Tuned(float *&input_buffer, int &buffer_size) {
 
         blackman_nuttall_window(window_funcs[i], buffer_sizes[i]);
     }
+
+    // Allocate norms here instead of VLA in perform()
+    norms = new double[(n_samples / 2) + 1];
 }
 
 Tuned::~Tuned() {
@@ -97,6 +101,8 @@ Tuned::~Tuned() {
 
     for(int i = 0; i < 12; i++)
         free(window_funcs[i]);
+
+    delete[] norms;
 }
 
 
@@ -105,7 +111,7 @@ Estimators Tuned::get_type() const {
 }
 
 
-void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
+void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
     // Note that ins[0] = input_buffer
     max_norm = 0.0;
 
@@ -128,7 +134,7 @@ void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
     // Calculate the amplitudes of each measured frequency
     spectrum.clear();
     for(int i = 0; i < 12; i++) {
-        double norms[(buffer_sizes[i] / 2) + 1] = {};
+        // double norms[(buffer_sizes[i] / 2) + 1];
         double power;
         double tmp_max_norm = 0.0;
         calc_norms(outs[i], norms, (buffer_sizes[i] / 2) + 1, tmp_max_norm, power);
@@ -143,13 +149,17 @@ void Tuned::perform(float *const input_buffer, NoteSet &noteset) {
             // if(i != 11)
             //     continue;
 
-            for(int j = 0; j < (buffer_sizes[i] / 2) + 1; j++)
+            // Start at j = 1 to skip rendering DC offset
+            for(int j = 1; j < (buffer_sizes[i] / 2) + 1; j++)
                 spectrum.add_data(j * ((double)SAMPLE_RATE / (double)buffer_sizes[i]), norms[j], (double)SAMPLE_RATE / (double)buffer_sizes[i]);
         }
     }
+    if constexpr(!HEADLESS)
+        spectrum.add_data(0.0, 0.0, 0.0);  // Make graph start at (0, 0)
+
     perf.push_time_point("Norms calculated");
 
     spectrum.sort();
 
-    noteset.clear();
+    note_events.clear();
 }
