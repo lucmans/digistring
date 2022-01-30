@@ -54,6 +54,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
+Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Split config.h in multiple configuration files.  
 Allow max_display_frequency > MAX_FOURIER_FREQUENCY.  
 Implement Dolph-Chebyshev window.  
