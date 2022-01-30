@@ -1,0 +1,10 @@
+#!/bin/python3
+
+import sys, os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/src")
+
+import src.main
+
+
+if __name__ == "__main__":
+    src.main.main(sys.argv)

@@ -20,13 +20,14 @@ function _generate_report_comp() {
             return 0
         fi
 
-        COMPREPLY=(`compgen -A file`)
+        local IFS=$'\\n'
+        COMPREPLY=(`compgen -A file -- $cur`)
     fi
 
     return 0
 }
 
-complete -F _generate_report_comp """ + BIN_NAME + """
+complete -o filenames -F _generate_report_comp """ + BIN_NAME + """
 """)
 
     print("Completions written to 'completions.sh'.")

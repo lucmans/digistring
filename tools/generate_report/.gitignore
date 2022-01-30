@@ -1,5 +1,2 @@
-# The binary
-generate_report
-
 # Python cache
 src/__pycache__/
