@@ -61,7 +61,7 @@ Graphics::Graphics() {
     SDL_RenderPresent(renderer);
 
     plot_type = *(display_plot_type.begin());
-    max_recorded_value = 0.0;
+    max_recorded_value = 1.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
     n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
@@ -115,6 +115,11 @@ Graphics::~Graphics() {
 
 
 void Graphics::set_max_recorded_value(const double new_max) {
+    if(new_max > -0.00001 && new_max < 0.00001) {
+        warning("Can't set max_recorded_value to 0.0, keeping old value '" + STR(max_recorded_value) + '\'');
+        return;
+    }
+
     max_recorded_value = new_max;
 }
 
