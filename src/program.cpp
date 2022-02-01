@@ -197,6 +197,7 @@ void Program::write_results(const NoteEvents &note_events) {
         results_file->write_double("frequency", note_events[0].note.freq);
         results_file->write_double("amplitude", note_events[0].note.amp);
         results_file->write_double("error", note_events[0].note.error);
+        results_file->write_int("midi_number", note_events[0].note.midi_number);
     }
 
     else  // n_notes > 1

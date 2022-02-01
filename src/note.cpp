@@ -41,7 +41,7 @@ const std::string stringify_sub(int n) {
 //     amp = _amp;
 
 //     constexpr double C0 = A4 * exp2(-57.0 / 12.0);
-//     const int note_distance = (int)round(12.0 * log2(freq / C0));
+//     const int note_distance = (int)round(12.0 * log2(freq / C0));  // semitones from C0
 
 //     // First modulo to get a number within -12 < n < 12, then add 12 and another modulo to get 0 <= n < 12
 //     note = static_cast<Notes>(((note_distance % 12) + 12) % 12);
@@ -49,6 +49,8 @@ const std::string stringify_sub(int n) {
 
 //     const double tuned = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
 //     error = 1200.0 * log2(freq / tuned);
+
+//     midi_number = 12 + note_distance;
 // }
 
 // Note::Note(const Notes _note, const int _octave) {
@@ -59,6 +61,21 @@ const std::string stringify_sub(int n) {
 //     freq = C0 * exp2((double)octave + (static_cast<double>(note) / 12.0));
 //     amp = -1.0;
 //     error = 0.0;
+
+//     midi_number = 12 + static_cast<int>(_note) + (_octave * 12)
+// }
+
+// Note::Note(const int _midi_number) {
+//     midi_number = _midi_number;
+
+//     const int note_distance = midi_number - 12;  // semitones from C0
+
+//     freq = C0 * exp2((double)note_distance / 12.0);
+//     amp = -1.0;
+//     error = 0.0;
+
+//     note = static_cast<Notes>(((note_distance % 12) + 12) % 12);
+//     octave = floor((double)note_distance / 12.0);
 // }
 
 
@@ -112,6 +129,8 @@ void print_overtones(const Note &note, const int n_overtones) {
               << std::setw(14) << "closest note"
               << std::setw(max_closest_width) << "f_closest"
               << std::setw(12) << "cent error" << std::endl;
+              // << std::setw(12) << "cent error"
+              // << std::setw(13) << "midi number" << std::endl;
 
     for(int i = 1; i <= n_overtones; i++) {
         Note overtone(note.freq * i, 0);
@@ -121,6 +140,8 @@ void print_overtones(const Note &note, const int n_overtones) {
                   << std::setw(14 - subscript_offset(overtone.octave)) << overtone
                   << std::setw(max_closest_width) << A4 * exp2(round(12.0 * log2((note.freq * i) / A4)) / 12.0)
                   << std::setw(12) << overtone.error << std::endl;
+                  // << std::setw(12) << overtone.error
+                  // << std::setw(13) << note.midi_number << std::endl;
     }
     std::cout << std::endl;
 }

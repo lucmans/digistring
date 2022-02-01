@@ -11,6 +11,7 @@
 class NoteGenerator : public SampleGetter {
     public:
         NoteGenerator(const Note &note);
+        NoteGenerator(const int note_number);
         ~NoteGenerator() override;
 
         SampleGetters get_type() const override;
@@ -23,6 +24,7 @@ class NoteGenerator : public SampleGetter {
 
     private:
         Note generated_note;
+        int generated_note_number;
 
         double last_phase;
 };

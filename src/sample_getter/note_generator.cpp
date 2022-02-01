@@ -10,6 +10,14 @@
 
 
 NoteGenerator::NoteGenerator(const Note &note) : generated_note(note) {
+    generated_note_number = generated_note.midi_number;
+
+    last_phase = 0.0;
+}
+
+NoteGenerator::NoteGenerator(const int note_number) : generated_note(note_number) {
+    generated_note = Note(generated_note_number);
+
     last_phase = 0.0;
 }
 
@@ -24,19 +32,15 @@ SampleGetters NoteGenerator::get_type() const {
 
 
 void NoteGenerator::pitch_up() {
-    if(generated_note.note == Notes::B)
-        generated_note = Note(Notes::C, generated_note.octave + 1);
-    else
-        generated_note = Note(static_cast<Notes>(static_cast<int>(generated_note.note) + 1), generated_note.octave);
+    generated_note_number++;
+    generated_note = Note(generated_note_number);
 
     std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
 }
 
 void NoteGenerator::pitch_down() {
-    if(generated_note.note == Notes::C)
-        generated_note = Note(Notes::B, generated_note.octave - 1);
-    else
-        generated_note = Note(static_cast<Notes>(static_cast<int>(generated_note.note) - 1), generated_note.octave);
+    generated_note_number--;
+    generated_note = Note(generated_note_number);
 
     std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
 }

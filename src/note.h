@@ -29,8 +29,11 @@ struct Note {
     int octave;
     double error;  // In cents, so between -50 and 50
 
+    int midi_number;
+
     // Note(const double _freq, const double _amp);
     // Note(const Notes _note, const int _octave);  // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
+    // Note(const int _midi_number);
 
     // See original, non constexpr, constructors for more readable version (only difference is local variable substitution)
     constexpr Note(const double _freq, const double _amp) :
@@ -38,8 +41,8 @@ struct Note {
             amp(_amp),
             note(static_cast<Notes>(((((int)round(12.0 * log2(_freq / C0))) % 12) + 12) % 12)),
             octave(floor((double)((int)round(12.0 * log2(_freq / C0))) / 12.0)),
-            error(1200.0 * log2(_freq / (C0 * exp2((double)octave + (static_cast<double>(note) / 12.0)))))
-        {};
+            error(1200.0 * log2(_freq / (C0 * exp2((double)octave + (static_cast<double>(note) / 12.0))))),
+            midi_number(12 + round(12.0 * log2(_freq / C0))) {};
 
     // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
     constexpr Note(const Notes _note, const int _octave) :
@@ -47,9 +50,18 @@ struct Note {
             amp(-1.0),
             note(_note),
             octave(_octave),
-            error(0.0) {
+            error(0.0),
+            midi_number(12 + (_octave * 12) + static_cast<int>(_note)) {
         // static_assert(static_cast<int>(_note) >= 0 && static_cast<int>(_note) < 12);
     };
+
+    constexpr Note(const int _midi_number) :
+            freq(C0 * exp2((double)(_midi_number - 12) / 12.0)),
+            amp(-1.0),
+            note(static_cast<Notes>((((_midi_number - 12) % 12) + 12) % 12)),
+            octave(floor((double)(_midi_number - 12) / 12.0)),
+            error(0.0),
+            midi_number(_midi_number) {};
 };
 
 std::ostream& operator<<(std::ostream &s, const Note &note);
