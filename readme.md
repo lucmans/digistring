@@ -5,7 +5,8 @@ The thesis accompanying this project can be found in the thesis branch.
 
 # Build instructions
 ## Requirements
-Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.
+Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
+The build requirements of the individual tools can be found in the tool's readme.
 
 On Arch Linux:  
 `sudo pacman -S sdl2 sdl2_ttf fftw3`
@@ -21,8 +22,8 @@ Run `make help` for more information on all build targets and make scripts.
 Digistring can be started by running the binary.  
 If the current directory is not the root of the project, set the resource directory using the `-rsc` flag.
 
-Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully shut down as soon as possible.  
-Sending `SIGINT` or `SIGTERM` twice will immediately stop digistring.
+Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully exit as soon as possible.  
+Sending `SIGINT` or `SIGTERM` twice will immediately stop Digistring.
 
 ## Command line arguments
 Argument parameters in <> are required and in [] are optional.  
@@ -33,11 +34,11 @@ Argument parameters in <> are required and in [] are optional.
 `--over <note> [n]`: Print n (default is 5) overtones of given note.  
 `-p`: Play input audio back.  
 `--perf`: Print performance stats to stdout.  
-`-r <w> <h>`: Run digistring with given resolution.  
+`-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.
 
-All command line arguments can also be printed by running digistring with `-h`/`--help`.
+All command line arguments can also be printed by running Digistring with `-h`/`--help`.
 
 ## GUI controls
 **Mouse controls**  
