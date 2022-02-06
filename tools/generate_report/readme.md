@@ -8,7 +8,7 @@ Python 3
 On Arch Linux:  
 `sudo pacman -S python3`
 
-## Installing
+## Installing (todo)
 Run `./install.sh` to create the script `generate_report` which start the program.  
 `generate_report` comes with tab completion, which can be used in the current session using:  
 `source ./completions.sh`

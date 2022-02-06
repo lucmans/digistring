@@ -1,3 +1,4 @@
+import parse_digistring
 import parse_fraunhofer
 # import parse_mdb_stem_synth
 
@@ -13,9 +14,7 @@ DATASET_NAMES = [FRAUNHOFER, MDB_STEM_SYNTH]
 
 def generate_report(dataset_name, dataset_annotations, digistring_results, report_filename):
     if dataset_name == FRAUNHOFER:
-        # dataset_noteevents = parse_fraunhofer.parse_noteevents(dataset_annotations)
-        print(f"{FRAUNHOFER} parser not yet implemented")
-        exit(1)
+        dataset_noteevents = parse_fraunhofer.parse_noteevents(dataset_annotations)
     elif dataset_name == MDB_STEM_SYNTH:
         print(f"{MDB_STEM_SYNTH} parser not yet implemented")
         exit(1)
@@ -23,7 +22,12 @@ def generate_report(dataset_name, dataset_annotations, digistring_results, repor
         print(f"No parser defined for {dataset_name}")
         exit(1)
 
+    digistring_noteevents = parse_digistring.parse_noteevents(digistring_results)
+
+
     print(dataset_noteevents)
+    print()
+    print(digistring_noteevents)
 
 
 def print_dataset_names():
