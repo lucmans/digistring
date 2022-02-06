@@ -23,6 +23,7 @@ class ResultsFile {
         void write_int(const std::string &key, const int value);
         void write_double(const std::string &key, const double value);
         void write_bool(const std::string &key, const bool value);
+        void write_null(const std::string &key);
 
         void start_array(const std::string &key);
         void stop_array();
@@ -35,6 +36,7 @@ class ResultsFile {
         void write_int(const int value);
         void write_double(const double value);
         void write_bool(const bool value);
+        void write_null();
 
         void start_array();
         void start_dict();

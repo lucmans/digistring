@@ -21,6 +21,7 @@ constexpr int SAMPLE_RATE = 96000 * 2;
 
 // High Res transcriber
 constexpr int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
+// constexpr int FRAME_SIZE = 1024 * 4 /** 2*/;  // Number of samples in Fourier frame
 constexpr double POWER_THRESHOLD = 15.0;  // Threshold of channel power before finding peaks
 constexpr double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
 constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone

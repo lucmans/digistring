@@ -69,6 +69,15 @@ void ResultsFile::write_bool(const std::string &key, const bool value) {
     first_write_block = false;
 }
 
+void ResultsFile::write_null(const std::string &key) {
+    if(!first_write_block)
+        output_stream << ',';
+    output_stream << '\n';
+
+    output_stream << std::string(cur_indent * INDENT_AMOUNT, ' ') << '"' << key << "\": " << "null" << std::flush;
+    first_write_block = false;
+}
+
 
 void ResultsFile::start_array(const std::string &key) {
     if(!first_write_block)
@@ -152,6 +161,15 @@ void ResultsFile::write_bool(const bool value) {
     output_stream << '\n';
 
     output_stream << std::string(cur_indent * INDENT_AMOUNT, ' ') << (value ? "true" : "false") << std::flush;
+    first_write_block = false;
+}
+
+void ResultsFile::write_null() {
+    if(!first_write_block)
+        output_stream << ',';
+    output_stream << '\n';
+
+    output_stream << std::string(cur_indent * INDENT_AMOUNT, ' ') << "null" << std::flush;
     first_write_block = false;
 }
 

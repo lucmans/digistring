@@ -185,9 +185,15 @@ void Program::write_results(const NoteEvents &note_events) {
 
     const int n_notes = note_events.size();
     if(n_notes == 0) {
-        if constexpr(WRITE_SILENCE)
+        if constexpr(WRITE_SILENCE) {
             results_file->write_double("t (s)", start_frame_time);
             // results_file->write_double("t (s)", start_frame_time + (((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0));  // Halfway between begin and end of frame
+            results_file->write_null("note");
+            results_file->write_null("frequency");
+            results_file->write_null("amplitude");
+            results_file->write_null("error");
+            results_file->write_null("midi_number");
+        }
     }
 
     else if(n_notes == 1) {
