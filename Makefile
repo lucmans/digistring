@@ -94,6 +94,9 @@ valgrind: $(BIN)
 
 
 lines:
+	@echo -e "\033[1mPython tools\033[0m"
+	wc -l tools/generate_report/src/*.py
+	@echo -e "\n\033[1mDigistring (C++) code\033[0m"
 	wc -l $(SRC_FILES)
 
 
