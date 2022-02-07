@@ -59,13 +59,7 @@ class NoteEvents:
 
 
     ### Get methods ###
-    # Get methods always return a list
-    def get_event_index(self, index):
-        if self.sorted == False:
-            self.sort_events()
-
-        return [self.note_events[index]]
-
+    # Get methods always return a list (except explicit index getter, which should only be used internally)
     def get_events_containing_timepoint(self, timepoint):
         if self.sorted == False:
             self.sort_events()
@@ -101,10 +95,17 @@ class NoteEvents:
 
         return ret
 
+
+    def __get_event_index(self, index):
+        if self.sorted == False:
+            self.sort_events()
+
+        return self.note_events[index]
+
     # Overload the subscript operator (for NoteEventIterator)
     def __getitem__(self, key):
         # self.sorted check in get method
-        return self.get_event_index(key)
+        return self.__get_event_index(key)
 
 
     def __len__(self):

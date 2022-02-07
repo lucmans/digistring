@@ -2,6 +2,8 @@ import parse_digistring
 import parse_fraunhofer
 # import parse_mdb_stem_synth
 
+import note_events_grapher
+
 import gen_completions
 
 import os
@@ -24,10 +26,11 @@ def generate_report(dataset_name, dataset_annotations, digistring_results, repor
 
     digistring_noteevents = parse_digistring.parse_noteevents(digistring_results)
 
+    note_events_grapher.graph(digistring_noteevents, dataset_noteevents)
 
-    print(dataset_noteevents)
-    print()
-    print(digistring_noteevents)
+    # print(dataset_noteevents)
+    # print()
+    # print(digistring_noteevents)
 
 
 def print_dataset_names():
