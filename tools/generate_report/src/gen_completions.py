@@ -2,12 +2,12 @@
 BIN_NAME = "./generate_report"
 
 
-def print_help():
+def print_help() -> None:
     print("Running 'source completions.sh' adds the completions to the current shell.")
     # print("Copying it to your completions directory (e.g. /usr/share/bash-completion/completions/) installs it.")
 
 
-def generate(dataset_names):
+def generate(dataset_names: list[str]) -> None:
     with open("completions.sh", "w") as out:
         out.write("""
 function _generate_report_comp() {

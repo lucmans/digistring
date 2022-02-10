@@ -2,6 +2,7 @@ import parse_digistring
 import parse_fraunhofer
 # import parse_mdb_stem_synth
 
+# import note_events_filter
 import note_events_grapher
 
 import gen_completions
@@ -14,7 +15,8 @@ MDB_STEM_SYNTH = "MDB-stem-synth"
 DATASET_NAMES = [FRAUNHOFER, MDB_STEM_SYNTH]
 
 
-def generate_report(dataset_name, dataset_annotations, digistring_results, report_filename):
+def generate_report(dataset_name: str, dataset_annotations: str, digistring_results: str, report_filename: str) -> None:
+    # Parse dataset annotations
     if dataset_name == FRAUNHOFER:
         dataset_noteevents = parse_fraunhofer.parse_noteevents(dataset_annotations)
     elif dataset_name == MDB_STEM_SYNTH:
@@ -24,21 +26,25 @@ def generate_report(dataset_name, dataset_annotations, digistring_results, repor
         print(f"No parser defined for {dataset_name}")
         exit(1)
 
+    # Parse Digistring results
     digistring_noteevents = parse_digistring.parse_noteevents(digistring_results)
 
-    note_events_grapher.graph(digistring_noteevents, dataset_noteevents)
+    # Filter transient errors
+    # digistring_filtered = note_events_filter.filter_transients(digistring_results)
 
-    # print(dataset_noteevents)
-    # print()
-    # print(digistring_noteevents)
+    # Plot the note events (note that this call blocks until the UI is closed)
+    note_events_grapher.graph([
+            note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
+            note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1")
+        ])
 
 
-def print_dataset_names():
+def print_dataset_names() -> None:
     print("Valid dataset names:")
     print("    " + " ".join(DATASET_NAMES))
 
 
-def print_help():
+def print_help() -> None:
     print("To generate performance report of Digistring on a dataset, run:")
     print("    ./generate_report <dataset name> <dataset annotations> <digistring results> <performance report output>")
     print_dataset_names()
@@ -49,32 +55,49 @@ def print_help():
     gen_completions.print_help()
 
 
-def main(args):
+def main(args: list[str]) -> int:
+    # DEBUG
+    if len(args) == 2:
+        if args[1] == "1":
+            generate_report("fraunhofer", "lick.xml", "lick.json", "lick.output")
+        elif args[1] == "2":
+            generate_report("fraunhofer", "dataset/dataset2/annotation/AR_A_fret_0-20.xml", "AR_A_fret_0-20.json", "AR_A_fret_0-20.output")
+
+        elif args[1] == "generate":
+            gen_completions.generate(DATASET_NAMES)
+
+        else:
+            print(f"'{args[1]}' not defined; doing nothing...")
+
+        exit(0)
+
     if len(args) == 2 and args[1] == "generate":
         gen_completions.generate(DATASET_NAMES)
-        exit(0)
+        return 0
 
     if len(args) != 5:
         print(f"Invalid usage; expected 5 arguments, got {len(args)} instead.\n")
         print_help()
-        exit(1)
+        return 1
 
     if args[1] not in DATASET_NAMES:
         print(f"{args[1]} is not a valid dataset name")
-        print_dataset_names(DATASET_NAMES)
-        exit(1)
+        print_dataset_names()
+        return 1
 
     if not os.path.isfile(args[2]):
         print(f"'{args[2]}' is not a file")
-        exit(1)
+        return 1
 
     if not os.path.isfile(args[3]):
         print(f"'{args[3]}' is not a file")
-        exit(1)
+        return 1
 
     # TODO: Generate new filename
     if os.path.isfile(args[4]):
         print(f"'{args[4]}' already exists")
-        exit(1)
+        return 1
 
     generate_report(args[1], args[2], args[3], args[4])
+
+    return 0

@@ -3,7 +3,7 @@ import note_events as ne
 import json
 
 
-def parse_noteevents(digistring_results):
+def parse_noteevents(digistring_results: str) -> ne.NoteEvents:
     # Read and parse the JSON file
     json_events = None
     with open(digistring_results) as file:
