@@ -30,6 +30,27 @@ class NoteEvents:
         self.sorted = False
 
 
+    # TODO
+    # def remove_event(self, del_event: Event) -> None:
+    #     if self.sorted == False:
+    #         self.sort_events()
+
+    #     for event in self.note_events:
+    #         if event["onset"] < del_event["onset"]:
+    #             continue
+
+    #         if event["onset"] > del_event["onset"]:
+    #             break
+
+    #         # Implicit 'event["onset"] == del_event["onset"]'
+    #         if event["offset"] == del_event["offset"] and event["offset"] == del_event["offset"]:
+    #             del()
+
+    # def remove_events(self, del_events: Union[list[Event], NoteEvents]) -> None:
+    #     if self.sorted == False:
+    #         self.sort_events()
+
+
     # Sort the events
     def sort_events(self) -> None:
         if self.sorted == True:
