@@ -24,3 +24,7 @@ To generate bash (tab) completions for dataset names, run:
 `./generate_report generate`  
 This generates the file `completions.sh`.  
 Running `source completions.sh` adds the completions to the current shell.
+
+
+# TODOs
+Use NoteEvents being sorted for more efficient `is_monophonic()`, `is_polyphonic()` and time based getters.

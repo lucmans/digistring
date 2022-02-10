@@ -2,7 +2,7 @@ import parse_digistring
 import parse_fraunhofer
 # import parse_mdb_stem_synth
 
-# import note_events_filter
+import note_events_filter
 import note_events_grapher
 
 import gen_completions
@@ -30,12 +30,18 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     digistring_noteevents = parse_digistring.parse_noteevents(digistring_results)
 
     # Filter transient errors
-    # digistring_filtered = note_events_filter.filter_transients(digistring_results)
+    digistring_correct = note_events_filter.correct_notes(digistring_noteevents, dataset_noteevents)
+    print(f"Correct: {len(digistring_correct)}")
+    # digistring_incorrect = note_events_filter.incorrect_notes(digistring_noteevents, dataset_noteevents)
+    # print(f"Incorrect: {len(digistring_incorrect)}")
 
     # Plot the note events (note that this call blocks until the UI is closed)
     note_events_grapher.graph([
             note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
-            note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1")
+            # note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
+            note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1"),
+            note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
+            # note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3")
         ])
 
 

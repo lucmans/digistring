@@ -13,12 +13,20 @@ class NoteEvents:
         # Each note event consists of a MIDI pitch number "pitch", an onset "onset" in second and an offset "offset" in seconds
         self.note_events: list[Event] = []
 
-        self.sorted: bool = False
+        self.sorted: bool = True
 
 
     # pitch is in MIDI note number and onset/offset in seconds
     def add_event(self, pitch: int, onset: float, offset: float) -> None:
         self.note_events.append({"pitch": pitch, "onset": onset, "offset": offset})
+        self.sorted = False
+
+    def copy_add_event(self, event: Event) -> None:
+        self.note_events.append(event)
+        self.sorted = False
+
+    def copy_add_events(self, events: list[Event]) -> None:
+        self.note_events.extend(events)
         self.sorted = False
 
 
@@ -72,7 +80,7 @@ class NoteEvents:
         ret = []
         for event in self.note_events:
             # If event isn't to the left or right of the timeframe, it is contained in it
-            if not (event["offset"] < start_time or event["onset"] > stop_time):
+            if not (event["offset"] <= start_time or event["onset"] >= stop_time):
                 ret.append(event)
 
         return ret
@@ -84,7 +92,7 @@ class NoteEvents:
 
         ret = []
         for event in self.note_events:
-            if start_time >= event["onset"] and stop_time <= event["offset"]:
+            if event["onset"] >= start_time and event["offset"] <= stop_time:
                 ret.append(event)
 
         return ret
