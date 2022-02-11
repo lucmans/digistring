@@ -1,4 +1,5 @@
 from typing import Iterator
+import copy
 
 
 class Event:
@@ -6,6 +7,11 @@ class Event:
         self.pitch: int = pitch
         self.onset: float = onset
         self.offset: float = offset
+
+
+    def __str__(self) -> str:
+        return f"(pitch={self.pitch}, onset={self.onset}, offset={self.offset})"
+
 
 
 class NoteEvents:
@@ -22,12 +28,13 @@ class NoteEvents:
         self.note_events.append(Event(pitch, onset, offset))
         self.sorted = False
 
+    # Deep is not necessary here, but we do it anyway to prevent future bugs, as the overhead is minimal
     def copy_add_event(self, event: Event) -> None:
-        self.note_events.append(event)
+        self.note_events.append(copy.deepcopy(event))
         self.sorted = False
 
     def copy_add_events(self, events: list[Event]) -> None:
-        self.note_events.extend(events)
+        self.note_events.extend(copy.deepcopy(events))
         self.sorted = False
 
 
