@@ -31,20 +31,30 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     print(f"Total: {len(digistring_noteevents)}")
 
     # Filter transient errors
-    digistring_incorrect, digistring_correct = note_events_filter.incorrect_notes(digistring_noteevents, dataset_noteevents, return_correct=True)
+    digistring_correct, digistring_incorrect, digistring_missed = note_events_filter.correct_incorrect_missed_notes(digistring_noteevents, dataset_noteevents)
     print(f"Correct: {len(digistring_correct)}")
     print(f"Incorrect: {len(digistring_incorrect)}")
+    print(f"Missed: {len(digistring_missed)}")
+    digistring_missed = note_events_filter.missed_notes(digistring_noteevents, dataset_noteevents)
 
-    digistring_filtered = note_events_filter.filter_transient_errors(digistring_noteevents, dataset_noteevents)
-    print(f"Without transient errors: {len(digistring_filtered)}")
+    precision = len(digistring_correct) / (len(digistring_correct) + len(digistring_incorrect))
+    recall = len(digistring_correct) / (len(digistring_correct) + len(digistring_missed))
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    f1 = 2 * ((precision * recall) / (precision + recall))
+    print(f"F1: {f1:.4f}")
+
+    # digistring_filtered = note_events_filter.filter_transient_errors(digistring_noteevents, dataset_noteevents)
+    # print(f"Without transient errors: {len(digistring_filtered)}")
 
     # Plot the note events (note that this call blocks until the UI is closed)
     note_events_grapher.graph([
-            note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
+            # note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
+            note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
             note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
-            # note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
-            # note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3"),
-            note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1")
+            note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3"),
+            note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1"),
+            note_events_grapher.make_plot("Missed", digistring_missed, "C4"),
         ])
 
 
@@ -71,6 +81,8 @@ def main(args: list[str]) -> int:
             generate_report("fraunhofer", "lick.xml", "lick.json", "lick.output")
         elif args[1] == "2":
             generate_report("fraunhofer", "dataset/dataset2/annotation/AR_A_fret_0-20.xml", "AR_A_fret_0-20.json", "AR_A_fret_0-20.output")
+        elif args[1] == "3":
+            generate_report("fraunhofer", "lick_missed.xml", "lick.json", "lick.output")
 
         elif args[1] == "generate":
             gen_completions.generate(DATASET_NAMES)
