@@ -4,7 +4,6 @@ import xml.etree.ElementTree as et
 
 
 def parse_noteevents(annotations_filename: str) -> ne.NoteEvents:
-# def parse_noteevents(annotations_filename):
     annotations = et.parse(annotations_filename)
     root = annotations.getroot()
 
@@ -16,14 +15,34 @@ def parse_noteevents(annotations_filename: str) -> ne.NoteEvents:
     # Extract the note events
     note_events = ne.NoteEvents()
     for event in xlm_events[0]:
-        # if event.find("pitch").text != None:
-        #     pitch = int(event.find("pitch").text)
-        # else:
-        #     raise RuntimeError(f"Found {len(xlm_events)} transcription tags instead of 1")
+        pitch = None
+        onset = None
+        offset = None
 
-        pitch = int(event.find("pitch").text)
-        onset = float(event.find("onsetSec").text)
-        offset = float(event.find("offsetSec").text)
+        res = event.findall("pitch")
+        if res is None:
+            RuntimeError(f"No pitch in note event #{len(note_events) + 1}")
+        elif len(res) != 1:
+            RuntimeError(f"Multi pitch tags in note event #{len(note_events) + 1}")
+        else:
+            pitch = int(res[0].text)
+
+        res = event.findall("onsetSec")
+        if res is None:
+            RuntimeError(f"No onset in note event #{len(note_events) + 1}")
+        elif len(res) != 1:
+            RuntimeError(f"Multi onset tags in note event #{len(note_events) + 1}")
+        else:
+            onset = float(res[0].text)
+
+        res = event.findall("offsetSec")
+        if res is None:
+            RuntimeError(f"No offset in note event #{len(note_events) + 1}")
+        elif len(res) != 1:
+            RuntimeError(f"Multi offset tags in note event #{len(note_events) + 1}")
+        else:
+            offset = float(res[0].text)
+
         note_events.add_event(pitch, onset, offset)
 
     return note_events
