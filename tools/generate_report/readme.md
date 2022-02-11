@@ -3,13 +3,13 @@
 
 # Build instructions
 ## Requirements
-Python 3
+Python >3.10 and Matplotlib >3.5.1
 
 On Arch Linux:  
-`sudo pacman -S python3`
+`sudo pacman -S python3 python-matplotlib`
 
-## Installing (todo)
-Run `./install.sh` to create the script `generate_report` which start the program.  
+## Installing
+The program can be installed to an arbitrary directory by creating a symlink to `generate_report`.  
 `generate_report` comes with tab completion, which can be used in the current session using:  
 `source ./completions.sh`
 
