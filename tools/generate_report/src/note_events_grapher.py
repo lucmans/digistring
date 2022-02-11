@@ -28,9 +28,9 @@ def make_plot(label: str, events: ne.NoteEvents, color: str) -> NoteEventPlot:
 
 def plot_noteevent(event: ne.Event, draw_y_offset: float, color: str, label: Optional[str] = None) -> None:
     plt.plot([event["onset"], event["offset"]], [event["pitch"] + draw_y_offset, event["pitch"] + draw_y_offset],
-            color=color,
-            linewidth=LINE_WIDTH,
-            label=label)
+             color=color,
+             linewidth=LINE_WIDTH,
+             label=label)
 
 
 def plot_noteevents(plot: NoteEventPlot, draw_y_offset: float) -> None:
@@ -60,7 +60,7 @@ def graph(noteevent_plots: list[NoteEventPlot]) -> None:
 
     plt.legend(loc=LEGEND_LOC, fontsize=FONT_SIZE["legend"])
 
-    plt.show();
+    plt.show()
 
 
 # def graph(digistring_noteevents: ne.NoteEvents, annotations_noteevents: ne.NoteEvents) -> None:

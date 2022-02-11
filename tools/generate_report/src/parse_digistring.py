@@ -22,7 +22,7 @@ def parse_noteevents(digistring_results: str) -> ne.NoteEvents:
             continue
 
         # Don't output silence as note event
-        if start_note_event["midi_number"] != None:
+        if start_note_event["midi_number"] is not None:
             note_events.add_event(start_note_event["midi_number"], float(start_note_event["t (s)"]), float(event["t (s)"]))
 
         # Save new note

@@ -31,17 +31,19 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     print(f"Total: {len(digistring_noteevents)}")
 
     # Filter transient errors
-    digistring_correct = note_events_filter.correct_notes(digistring_noteevents, dataset_noteevents)
+    digistring_incorrect, digistring_correct = note_events_filter.incorrect_notes(digistring_noteevents, dataset_noteevents, return_correct=True)
     print(f"Correct: {len(digistring_correct)}")
-    digistring_incorrect = note_events_filter.incorrect_notes(digistring_noteevents, dataset_noteevents)
     print(f"Incorrect: {len(digistring_incorrect)}")
+
+    digistring_filtered = note_events_filter.filter_transient_errors(digistring_noteevents, dataset_noteevents)
+    print(f"Without transient errors: {len(digistring_filtered)}")
 
     # Plot the note events (note that this call blocks until the UI is closed)
     note_events_grapher.graph([
             note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
-            note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
-            note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3"),
-            # note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
+            # note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
+            # note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3"),
+            note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
             note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1")
         ])
 
