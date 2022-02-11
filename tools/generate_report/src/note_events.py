@@ -59,7 +59,7 @@ class NoteEvents:
     #         self.sort_events()
 
 
-    # Sort the events
+    # Sort the events based on onset
     def sort_events(self) -> None:
         if self.sorted is True:
             return
@@ -73,7 +73,7 @@ class NoteEvents:
         self.sorted = True
 
 
-    # TODO: More efficient approach
+    # TODO: More efficient approach based on note_events being sorted on onset
     def is_monophonic(self) -> bool:
         # TODO: Needed?
         if self.sorted is False:
@@ -94,6 +94,7 @@ class NoteEvents:
 
 
     ### Get methods ###
+    # TODO: More efficient approach for get methods based on note_events being sorted on onset
     # Get methods always return a list (except explicit index getter, which should only be used internally)
     def get_events_containing_timepoint(self, timepoint: float) -> list[Event]:
         if self.sorted is False:
@@ -172,6 +173,21 @@ class NoteEvents:
             self.sort_events()
 
         return NoteEventIterator(self)
+
+
+    # TODO: More efficient approach based on note_events being sorted on onset
+    def __contains__(self, item: Event) -> bool:
+        if self.sorted is False:
+            self.sort_events()
+
+        for event in self.note_events:
+            if event.pitch == item.pitch and event.onset == item.onset and event.offset == item.offset:
+                return True
+
+            if event.onset > item.onset:
+                break
+
+        return False
 
 
 
