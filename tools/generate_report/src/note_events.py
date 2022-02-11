@@ -1,10 +1,11 @@
-from typing import TypedDict, Iterator, Union
+from typing import Iterator
 
 
-class Event(TypedDict):
-    pitch: int
-    onset: float
-    offset: float
+class Event:
+    def __init__(self, pitch: int, onset: float, offset: float) -> None:
+        self.pitch: int = pitch
+        self.onset: float = onset
+        self.offset: float = offset
 
 
 class NoteEvents:
@@ -18,7 +19,7 @@ class NoteEvents:
 
     # pitch is in MIDI note number and onset/offset in seconds
     def add_event(self, pitch: int, onset: float, offset: float) -> None:
-        self.note_events.append({"pitch": pitch, "onset": onset, "offset": offset})
+        self.note_events.append(Event(pitch, onset, offset))
         self.sorted = False
 
     def copy_add_event(self, event: Event) -> None:
@@ -36,17 +37,17 @@ class NoteEvents:
     #         self.sort_events()
 
     #     for event in self.note_events:
-    #         if event["onset"] < del_event["onset"]:
+    #         if event.onset < del_event.onset:
     #             continue
 
-    #         if event["onset"] > del_event["onset"]:
+    #         if event.onset > del_event.onset:
     #             break
 
-    #         # Implicit 'event["onset"] == del_event["onset"]'
-    #         if event["offset"] == del_event["offset"] and event["offset"] == del_event["offset"]:
+    #         # Implicit 'event.onset == del_event.onset'
+    #         if event.offset == del_event.offset and event.offset == del_event.offset:
     #             del()
 
-    # def remove_events(self, del_events: Union[list[Event], NoteEvents]) -> None:
+    # def remove_events(self, del_events: list[Event] | NoteEvents) -> None:
     #     if self.sorted is False:
     #         self.sort_events()
 
@@ -61,7 +62,7 @@ class NoteEvents:
             return
 
         # Sort on onset times
-        self.note_events.sort(key=lambda event: event["onset"])
+        self.note_events.sort(key=lambda event: event.onset)
         self.sorted = True
 
 
@@ -75,7 +76,7 @@ class NoteEvents:
             for ri, revent in enumerate(self.note_events[li+1:]):
                 # If one event is fully to the left or right of another event, there is no overlap
                 # If there is overlap, it is polyphonic
-                if not (levent["onset"] >= revent["offset"] or levent["offset"] <= revent["onset"]):
+                if not (levent.onset >= revent.offset or levent.offset <= revent.onset):
                     return False
 
         return True
@@ -93,7 +94,7 @@ class NoteEvents:
 
         ret = []
         for event in self.note_events:
-            if timepoint >= event["onset"] and timepoint < event["offset"]:
+            if event.onset <= timepoint < event.offset:
                 ret.append(event)
 
         return ret
@@ -105,7 +106,7 @@ class NoteEvents:
         ret = []
         for event in self.note_events:
             # If event isn't to the left or right of the timeframe, it is contained in it
-            if not (event["offset"] <= start_time or event["onset"] >= stop_time):
+            if not (event.offset <= start_time or event.onset >= stop_time):
                 ret.append(event)
 
         return ret
@@ -117,7 +118,7 @@ class NoteEvents:
 
         ret = []
         for event in self.note_events:
-            if event["onset"] >= start_time and event["offset"] <= stop_time:
+            if event.onset >= start_time and event.offset <= stop_time:
                 ret.append(event)
 
         return ret
@@ -167,7 +168,7 @@ class NoteEvents:
 
 
 
-class NoteEventIterator():
+class NoteEventIterator:
     def __init__(self, note_events: NoteEvents) -> None:
         self.index = 0
         self.note_events = note_events

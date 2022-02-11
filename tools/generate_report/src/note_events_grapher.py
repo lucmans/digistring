@@ -1,9 +1,8 @@
 import note_events as ne
 
-import numpy as np
 import matplotlib.pyplot as plt
 
-from typing import Optional, TypedDict
+from typing import Optional
 
 
 SEPARATION = 0.2
@@ -16,31 +15,32 @@ FONT_SIZE = {"label": 20,
              "legend": 18}
 
 
-class NoteEventPlot(TypedDict):
-    events: ne.NoteEvents
-    color: str
-    label: str
+class NoteEventPlot:
+    def __init__(self, events: ne.NoteEvents, color: str, label: str) -> None:
+        self.events: ne.NoteEvents = events
+        self.color: str = color
+        self.label: str = label
 
 
 def make_plot(label: str, events: ne.NoteEvents, color: str) -> NoteEventPlot:
-    return {"events": events, "color": color, "label": label}
+    return NoteEventPlot(events, color, label)
 
 
 def plot_noteevent(event: ne.Event, draw_y_offset: float, color: str, label: Optional[str] = None) -> None:
-    plt.plot([event["onset"], event["offset"]], [event["pitch"] + draw_y_offset, event["pitch"] + draw_y_offset],
+    plt.plot([event.onset, event.offset], [event.pitch + draw_y_offset, event.pitch + draw_y_offset],
              color=color,
              linewidth=LINE_WIDTH,
              label=label)
 
 
 def plot_noteevents(plot: NoteEventPlot, draw_y_offset: float) -> None:
-    if len(plot["events"]) == 0:
-        print(f"Warning: No note events in {plot['label']}")
+    if len(plot.events) == 0:
+        print(f"Warning: No note events in {plot.label}")
         return
 
-    plot_noteevent(plot["events"][0], draw_y_offset, plot["color"], plot["label"])
-    for event in plot["events"][1:]:
-        plot_noteevent(event, draw_y_offset, plot["color"])
+    plot_noteevent(plot.events[0], draw_y_offset, plot.color, plot.label)
+    for event in plot.events[1:]:
+        plot_noteevent(event, draw_y_offset, plot.color)
 
 
 # Note that this call blocks on plt.show() until the user closes the plot

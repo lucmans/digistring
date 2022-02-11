@@ -5,14 +5,13 @@ import json
 
 def parse_noteevents(digistring_results: str) -> ne.NoteEvents:
     # Read and parse the JSON file
-    json_events = None
     with open(digistring_results) as file:
         json_events = json.load(file)
 
     # Extract the note events
     note_events = ne.NoteEvents()
 
-    # First note explicit
+    # First note explicit, as there is no previous event
     if len(json_events["note events"]) > 0:
         start_note_event = json_events["note events"][0]
 
