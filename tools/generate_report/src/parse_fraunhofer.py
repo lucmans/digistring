@@ -15,33 +15,26 @@ def parse_noteevents(annotations_filename: str) -> ne.NoteEvents:
     # Extract the note events
     note_events = ne.NoteEvents()
     for event in xlm_events[0]:
-        pitch = None
-        onset = None
-        offset = None
-
         res = event.findall("pitch")
         if res is None:
             RuntimeError(f"No pitch in note event #{len(note_events) + 1}")
         elif len(res) != 1:
             RuntimeError(f"Multi pitch tags in note event #{len(note_events) + 1}")
-        else:
-            pitch = int(res[0].text)
+        pitch = int(res[0].text)
 
         res = event.findall("onsetSec")
         if res is None:
             RuntimeError(f"No onset in note event #{len(note_events) + 1}")
         elif len(res) != 1:
             RuntimeError(f"Multi onset tags in note event #{len(note_events) + 1}")
-        else:
-            onset = float(res[0].text)
+        onset = float(res[0].text)
 
         res = event.findall("offsetSec")
         if res is None:
             RuntimeError(f"No offset in note event #{len(note_events) + 1}")
         elif len(res) != 1:
             RuntimeError(f"Multi offset tags in note event #{len(note_events) + 1}")
-        else:
-            offset = float(res[0].text)
+        offset = float(res[0].text)
 
         note_events.add_event(pitch, onset, offset)
 

@@ -40,7 +40,7 @@ class NoteEvents:
 
     # TODO
     # def remove_event(self, del_event: Event) -> None:
-    #     if self.sorted is False:
+    #     if self.sorted == False:
     #         self.sort_events()
 
     #     for event in self.note_events:
@@ -55,13 +55,13 @@ class NoteEvents:
     #             del()
 
     # def remove_events(self, del_events: list[Event] | NoteEvents) -> None:
-    #     if self.sorted is False:
+    #     if self.sorted == False:
     #         self.sort_events()
 
 
     # Sort the events based on onset
     def sort_events(self) -> None:
-        if self.sorted is True:
+        if self.sorted == True:
             return
 
         if len(self.note_events) < 2:
@@ -76,7 +76,7 @@ class NoteEvents:
     # TODO: More efficient approach based on note_events being sorted on onset
     def is_monophonic(self) -> bool:
         # TODO: Needed?
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         for li, levent in enumerate(self.note_events[:-1]):
@@ -97,7 +97,7 @@ class NoteEvents:
     # TODO: More efficient approach for get methods based on note_events being sorted on onset
     # Get methods always return a list (except explicit index getter, which should only be used internally)
     def get_events_containing_timepoint(self, timepoint: float) -> list[Event]:
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         ret = []
@@ -108,7 +108,7 @@ class NoteEvents:
         return ret
 
     def get_events_containing_timeframe(self, start_time: float, stop_time: float) -> list[Event]:
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         ret = []
@@ -121,7 +121,7 @@ class NoteEvents:
 
     # Events that are fully contained in the inclusive timeframe bounds
     def get_events_contained_timeframe(self, start_time: float, stop_time: float) -> list[Event]:
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         ret = []
@@ -133,7 +133,7 @@ class NoteEvents:
 
 
     def __get_event_index(self, index):
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         return self.note_events[index]
@@ -146,14 +146,14 @@ class NoteEvents:
 
     def __len__(self) -> int:
         # TODO: Needed?
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         return len(self.note_events)
 
 
     def __str__(self) -> str:
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         out = "["
@@ -169,7 +169,7 @@ class NoteEvents:
 
 
     def __iter__(self) -> Iterator[Event]:
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         return NoteEventIterator(self)
@@ -177,7 +177,7 @@ class NoteEvents:
 
     # TODO: More efficient approach based on note_events being sorted on onset
     def __contains__(self, item: Event) -> bool:
-        if self.sorted is False:
+        if self.sorted == False:
             self.sort_events()
 
         for event in self.note_events:
