@@ -27,4 +27,9 @@ def parse_noteevents(digistring_results: str) -> ne.NoteEvents:
         # Save new note
         start_note_event = event
 
+    # Output last note if it isn't silent
+    if start_note_event["midi_number"] is not None:
+        # TODO: Actual offset time
+        note_events.add_event(start_note_event["midi_number"], float(start_note_event["t (s)"]), float(event["t (s)"]) + 1)
+
     return note_events

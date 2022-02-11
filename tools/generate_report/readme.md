@@ -27,4 +27,6 @@ Running `source completions.sh` adds the completions to the current shell.
 
 
 # TODOs
-Use NoteEvents being sorted for more efficient `is_monophonic()`, `is_polyphonic()` and time based getters.
+Use NoteEvents being sorted for more efficient `is_monophonic()`, `is_polyphonic()` and time based getters.  
+Get correct length of last Digistring event.  
+Support Digistring results JSON with only one event.
