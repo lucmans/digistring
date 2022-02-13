@@ -130,8 +130,20 @@ void Program::main_loop() {
             arpeggiate();
     }
 
-    if(settings.output_file)
+    if(settings.output_file) {
+        // Write silent note event to explicitly stop the last note
+        results_file->start_dict();
+        results_file->write_double("t (s)", sample_getter->get_played_time());
+        results_file->write_null("note");
+        results_file->write_null("frequency");
+        results_file->write_null("amplitude");
+        results_file->write_null("error");
+        results_file->write_null("midi_number");
+        results_file->stop_dict();
+
+        // Note events array
         results_file->stop_array();
+    }
 }
 
 
@@ -188,6 +200,7 @@ void Program::write_results(const NoteEvents &note_events) {
         if constexpr(WRITE_SILENCE) {
             results_file->write_double("t (s)", start_frame_time);
             // results_file->write_double("t (s)", start_frame_time + (((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0));  // Halfway between begin and end of frame
+            // results_file->write_null("duration (s)");  // TODO
             results_file->write_null("note");
             results_file->write_null("frequency");
             results_file->write_null("amplitude");
@@ -198,7 +211,8 @@ void Program::write_results(const NoteEvents &note_events) {
 
     else if(n_notes == 1) {
         const std::string note = note_to_string_ascii(note_events[0].note);
-        results_file->write_double("t (s)", start_frame_time + note_events[0].d_t);  // Halfway between begin and end of frame
+        results_file->write_double("t (s)", start_frame_time + note_events[0].d_t);
+        // results_file->write_double("duration (s)", note_events[0].length);  // TODO
         results_file->write_string("note", note);
         results_file->write_double("frequency", note_events[0].note.freq);
         results_file->write_double("amplitude", note_events[0].note.amp);
