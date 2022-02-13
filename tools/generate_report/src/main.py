@@ -51,9 +51,9 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     note_events_grapher.graph([
             # note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
             note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
-            note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
-            note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3"),
+            # note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
             note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1"),
+            note_events_grapher.make_plot("Incorrect", digistring_incorrect, "C3"),
             note_events_grapher.make_plot("Missed", digistring_missed, "C4"),
         ])
 

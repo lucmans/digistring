@@ -44,7 +44,7 @@ def missed_notes(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne
 
 
 # Even when only two of the three sets are needed, this is more efficient
-def correct_incorrect_missed_notes(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> ne.NoteEvents:
+def correct_incorrect_missed_notes(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> tuple[ne.NoteEvents, ne.NoteEvents, ne.NoteEvents]:
     correct = ne.NoteEvents()    # True positives
     incorrect = ne.NoteEvents()  # False positives
     missed = ne.NoteEvents()     # False negatives
