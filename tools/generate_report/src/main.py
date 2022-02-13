@@ -28,6 +28,9 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
 
     # Parse Digistring results
     digistring_noteevents = parse_digistring.parse_noteevents(digistring_results)
+    if len(digistring_noteevents) == 0:
+        print("Error: No note events in file")
+        exit(1)
     print(f"Total: {len(digistring_noteevents)}")
 
     # Filter transient errors
@@ -41,7 +44,10 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     recall = len(digistring_correct) / (len(digistring_correct) + len(digistring_missed))
     print(f"Precision: {precision:.4f}")
     print(f"Recall: {recall:.4f}")
-    f1 = 2 * ((precision * recall) / (precision + recall))
+    if precision + recall == 0:
+        f1 = 0
+    else:
+        f1 = 2 * ((precision * recall) / (precision + recall))
     print(f"F1: {f1:.4f}")
 
     # digistring_filtered = note_events_filter.filter_transient_errors(digistring_noteevents, dataset_noteevents)

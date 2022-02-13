@@ -27,4 +27,8 @@ def parse_noteevents(digistring_results: str) -> ne.NoteEvents:
         # Save new note
         start_note_event = event
 
+    if json_events["note events"][-1]["midi_number"] is not None:
+        print("Error: Last event should be a silent one (null in all fields)")
+        exit(1)
+
     return note_events
