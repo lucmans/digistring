@@ -22,7 +22,7 @@ class AudioFile : public SampleGetter {
 
     private:
         float *wav_buffer;
-        unsigned long wav_buffer_samples;
+        int wav_buffer_samples;
         SDL_AudioSpec wav_spec;
 };
 

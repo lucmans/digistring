@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h>
 
 #include <string>
+#include <algorithm>
 #include <cstring>  // memcpy(), memset()
 
 
@@ -50,7 +51,7 @@ AudioFile::AudioFile(const std::string &file) {
         wav_buffer = new float[wav_buffer_samples];
 
         const int32_t *const sample_buffer = (int32_t*)read_buffer;
-        for(unsigned long i = 0; i < wav_buffer_samples; i++) {
+        for(int i = 0; i < wav_buffer_samples; i++) {
             // | can be interchanged with +
             // const int32_t new_sample = (read_buffer[(i * 4) + 0]    << 0)
             //                             | (read_buffer[(i * 4) + 1] << 8)
@@ -109,8 +110,9 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
         calc_and_paste_overlap(overlap_in, overlap_n_samples);
 
     // If file end doesn't align with a frame, we need to read less then n_samples
-    const int n_read_samples = std::min(overlap_n_samples, (int)(wav_buffer_samples - played_samples));
-    memcpy(overlap_in, wav_buffer + played_samples, n_read_samples * sizeof(float));
+    const int n_read_samples = std::clamp(overlap_n_samples, 0, std::max(wav_buffer_samples - played_samples, 0));
+    if(played_samples < wav_buffer_samples)
+        memcpy(overlap_in, wav_buffer + played_samples, n_read_samples * sizeof(float));
 
     // Zero rest of buffer if file ended
     if(n_read_samples < overlap_n_samples)
@@ -122,7 +124,7 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
         set_quit();  // TODO: Maybe play file till overlap only contains silence
     }
 
-    played_samples += n_read_samples;
+    played_samples += overlap_n_samples;
 
 
     if constexpr(DO_OVERLAP)

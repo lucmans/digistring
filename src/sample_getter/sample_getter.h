@@ -55,7 +55,7 @@ class SampleGetter {
 
 
     protected:
-        unsigned long played_samples;
+        int played_samples;
 
         float overlap_buffer[MAX_FRAME_SIZE];
 };
