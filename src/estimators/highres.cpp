@@ -60,7 +60,8 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     p = fftwf_plan_dft_r2c_1d(FRAME_SIZE, input_buffer, out, FFTW_ESTIMATE);
 
     // Pre-calculate window function
-    blackman_nuttall_window(window_func, FRAME_SIZE);
+    // blackman_nuttall_window(window_func, FRAME_SIZE);
+    dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION);
 
     // Pre-calculate Gaussian for envelope computation
     for(int i = 0; i < KERNEL_WIDTH; i++)

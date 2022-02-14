@@ -47,6 +47,10 @@ static_assert(!(DO_OVERLAP && DO_OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP a
 // TODO: Remove, as is checked run-time by Program constructor (where the estimator is created)
 constexpr int MAX_FRAME_SIZE = std::max(FRAME_SIZE, (int)round((double)SAMPLE_RATE / LOWEST_NOTE.freq));
 
+// Name of temporary file to compute the Dolph Chebyshev window
+const std::string TMP_DOLPH_WIN_FILENAME = "rsc/dolph_chebyshev_win.txt";
+constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
+
 
 /* Audio in/out config */
 constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_F32SYS;  // 32 bit floats

@@ -3,11 +3,20 @@
 
 #include <cmath>
 
+// For Dolph Chebyshev window (calling Python code and reading the output file)
+#include <string>
+#include <filesystem>
+#include <fstream>
+#include <cstdlib>  // system(), EXIT_FAILURE
+
+#include "../error.h"
+
 
 void rectangle_window(double window[], const int size) {
     for(int i = 0; i < size; i++)
         window[i] = 1.0;
 }
+
 
 void hamming_window(double window[], const int size) {
     const double a0 = 25.0 / 46.0;
@@ -109,6 +118,7 @@ void flat_top_window(double window[], const int size) {
     }
 }
 
+
 void welch_window(double window[], const int size) {
     const double N = size;
     const double hN = (double)size / 2.0;
@@ -119,11 +129,36 @@ void welch_window(double window[], const int size) {
 }
 
 
+void dolph_chebyshev_window(double window[], const int size, const double attenuation) {
+    std::string filename = TMP_DOLPH_WIN_FILENAME;
+    if(std::filesystem::exists(filename)) {
+        error("File '" + filename + "' already exists\nPlease delete this file before using the Dolph Chebyshev window.");
+        exit(EXIT_FAILURE);
+    }
+
+    const int ret = system(("tools/dolph_chebyshev_window/dolph_chebyshev_window " + filename + ' ' + std::to_string(size) + ' ' + std::to_string(attenuation)).c_str());
+    if(ret != 0) {
+        error("Failed to get dolph chebyshev window");
+        exit(EXIT_FAILURE);
+    }
+
+    std::fstream output_file(filename);
+    for(int i = 0; i < size; i++)
+        output_file >> window[i];
+
+    if(!std::filesystem::remove(filename)) {
+        error("Failed to delete '" + filename + "' after computing the Dolph Chebyshev window\nPlease remove manually");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
 
 void rectangle_window(float window[], const int size) {
     for(int i = 0; i < size; i++)
         window[i] = 1.0;
 }
+
 
 void hamming_window(float window[], const int size) {
     const double a0 = 25.0 / 46.0;
@@ -225,6 +260,7 @@ void flat_top_window(float window[], const int size) {
     }
 }
 
+
 void welch_window(float window[], const int size) {
     const double N = size;
     const double hN = (double)size / 2.0;
@@ -233,3 +269,79 @@ void welch_window(float window[], const int size) {
         window[i] = 1 - (t * t);
     }
 }
+
+
+void dolph_chebyshev_window(float window[], const int size, const double attenuation) {
+    std::string filename = TMP_DOLPH_WIN_FILENAME;
+    if(std::filesystem::exists(filename)) {
+        error("File '" + filename + "' already exists\nPlease delete this file before using the Dolph Chebyshev window.");
+        exit(EXIT_FAILURE);
+    }
+
+    const int ret = system(("tools/dolph_chebyshev_window/dolph_chebyshev_window " + filename + ' ' + std::to_string(size) + ' ' + std::to_string(attenuation)).c_str());
+    if(ret != 0) {
+        error("Failed to get dolph chebyshev window");
+        exit(EXIT_FAILURE);
+    }
+
+    std::fstream output_file(filename);
+    for(int i = 0; i < size; i++)
+        output_file >> window[i];
+
+    if(!std::filesystem::remove(filename)) {
+        error("Failed to delete '" + filename + "' after computing the Dolph Chebyshev window\nPlease remove manually");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// #include <fftw3.h>
+// #include <algorithm>
+// #include "../error.h"
+// void dolph_chebyshev_window(float window[], const int size) {
+//     // The Dolph-Chebyshev is defined in the frequency domain
+//     fftwf_complex *f_win_in = (fftwf_complex*)fftwf_malloc(size * sizeof(fftwf_complex));
+//     fftwf_complex *out = (fftwf_complex*)fftwf_malloc(size * sizeof(fftwf_complex));
+//     fftwf_plan p = fftwf_plan_dft_1d(size, f_win_in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+//     // Alpha
+//     const double dB = -60.0;
+//     const double alpha = dB / -20.0;
+//     const double beta = cosh((1.0 / (double)size) * acosh(pow(10.0, alpha)));
+
+//     info("dB: " + STR(dB));
+//     info("alpha: " + STR(alpha));
+//     info("beta: " + STR(beta));
+//     info("");
+
+//     for(int i = 0; i < size; i++) {
+//         info("acos: " + STR(beta * cos((M_PI * i) / (double)size)));
+//         const double acos_range_check = std::clamp(beta * cos((M_PI * i) / (double)size), -1.0, 1.0);
+//         // const double acos_range_check = beta * cos((M_PI * i) / (double)size);
+//         info("acos2: " + STR(acos_range_check));
+
+//         f_win_in[i][0] = (cos((double)size * acos(acos_range_check)))
+//                       / (cosh((double)size * acosh(beta)));
+//         f_win_in[i][1] = 0.0;
+//         info("f_win_in: " + STR(f_win_in[i][0]));
+//         info("");
+//     }
+
+//     fftwf_execute(p);
+
+//     double normalization_sum = 0.0;
+//     for(int i = 0; i < size; i++) {
+//         const double norm = sqrt((out[i][0] * out[i][0]) + (out[i][1] * out[i][1]));
+//         // const double norm = fabs(out[i]);
+//         info(STR(out[i][1]));
+//         window[i] = norm;
+//         normalization_sum += norm;
+//     }
+
+//     // Normalize such that the area under the window function is 1.0
+//     for(int i = 0; i < size; i++)
+//         window[i] /= normalization_sum;
+
+//     fftwf_destroy_plan(p);
+//     fftwf_free(out);
+//     fftwf_free(f_win_in);
+// }
