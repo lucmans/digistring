@@ -4,7 +4,8 @@ Digistring calls this script and reads the output file to obtain the window.
 
 # Build instructions
 ## Requirements
-Python >=3.10 and SciPy >=1.7.3
+Python >=3.10 and SciPy >=1.7.3  
+Furthermore, `python3` should be present in the environment variable PATH of the environment running Digistring.
 
 On Arch Linux:  
 `sudo pacman -S python3 python-scipy`

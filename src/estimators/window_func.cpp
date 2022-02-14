@@ -7,7 +7,11 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
-#include <cstdlib>  // system(), EXIT_FAILURE
+#include <chrono>
+#include <cstring>  // std::strerror()
+#include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
+#include <unistd.h>  // execvp
+#include <sys/wait.h>  // waitpid()
 
 #include "../error.h"
 
@@ -129,27 +133,34 @@ void welch_window(double window[], const int size) {
 }
 
 
-void dolph_chebyshev_window(double window[], const int size, const double attenuation) {
-    std::string filename = TMP_DOLPH_WIN_FILENAME;
-    if(std::filesystem::exists(filename)) {
-        error("File '" + filename + "' already exists\nPlease delete this file before using the Dolph Chebyshev window.");
-        exit(EXIT_FAILURE);
-    }
+std::string generate_tmp_filename(const std::string &o_filename);
+bool run_python_script(const std::string &tmp_file_path, const std::string &size, const std::string &attenuation);
+bool dolph_chebyshev_window(double window[], const int size, const double attenuation) {
+    const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    info("Generating Dolph Chebyshev window using Python, this may take some time...");
 
-    const int ret = system(("tools/dolph_chebyshev_window/dolph_chebyshev_window " + filename + ' ' + std::to_string(size) + ' ' + std::to_string(attenuation)).c_str());
-    if(ret != 0) {
-        error("Failed to get dolph chebyshev window");
-        exit(EXIT_FAILURE);
-    }
+    const std::string tmp_file_path = settings.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
 
-    std::fstream output_file(filename);
+    // Bubble the return value up; error is printed in the function
+    if(!run_python_script(tmp_file_path, std::to_string(size), std::to_string(attenuation)))
+        return false;
+
+    // Read the output file of the Python script
+    std::fstream output_file(tmp_file_path);
     for(int i = 0; i < size; i++)
         output_file >> window[i];
 
-    if(!std::filesystem::remove(filename)) {
-        error("Failed to delete '" + filename + "' after computing the Dolph Chebyshev window\nPlease remove manually");
-        exit(EXIT_FAILURE);
+    // Remove the output file
+    if(!std::filesystem::remove(tmp_file_path)) {
+        warning("Failed to delete '" + tmp_file_path + "' after computing the Dolph Chebyshev window\nPlease remove manually");
+        return false;
     }
+
+    // Output performance measurement
+    const double duration = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_time).count();
+    info("Dolph Chebyshev window created (" + STR(duration) + " ms)");
+
+    return true;
 }
 
 
@@ -271,27 +282,107 @@ void welch_window(float window[], const int size) {
 }
 
 
-void dolph_chebyshev_window(float window[], const int size, const double attenuation) {
-    std::string filename = TMP_DOLPH_WIN_FILENAME;
-    if(std::filesystem::exists(filename)) {
-        error("File '" + filename + "' already exists\nPlease delete this file before using the Dolph Chebyshev window.");
-        exit(EXIT_FAILURE);
+std::string generate_tmp_filename(const std::string &o_filename) {
+    // Separate basename and extension
+    std::string o_basename, o_extension;
+    const size_t pos = o_filename.find_last_of('.');
+    if(pos == std::string::npos || pos == 0)
+        o_basename = o_filename;
+    else {  // pos > 0
+        o_basename = o_filename.substr(0, pos);
+        o_extension = o_filename.substr(pos);
     }
 
-    const int ret = system(("tools/dolph_chebyshev_window/dolph_chebyshev_window " + filename + ' ' + std::to_string(size) + ' ' + std::to_string(attenuation)).c_str());
-    if(ret != 0) {
-        error("Failed to get dolph chebyshev window");
-        exit(EXIT_FAILURE);
+    // Try to generate a new unique filename inserting a number between name and extension
+    std::string g_filename = o_filename;  // Generated filename
+    for(int i = 2; std::filesystem::exists(settings.rsc_dir + "/" + g_filename); i++)
+        g_filename = o_basename + '_' + std::to_string(i) + o_extension;
+
+    return g_filename;
+}
+
+bool run_python_script(const std::string &tmp_file_path, const std::string &size, const std::string &attenuation) {
+    const pid_t pid = fork();
+    if(pid == -1) {
+        warning("Failed to fork process\nOS error: " + std::string(std::strerror(errno)));
+        return false;
+    }
+    else if(pid == 0) {
+        // Child process
+        const std::string python_script = settings.rsc_dir + "/../tools/dolph_chebyshev_window/dolph_chebyshev_window";
+        const char *child_argv[] = {"python3",
+                                    python_script.c_str(),
+                                    tmp_file_path.c_str(),
+                                    size.c_str(),
+                                    attenuation.c_str(),
+                                    NULL};
+        const int ret = execvp("python3", const_cast<char *const *>(child_argv));
+        if(ret == -1) {
+            warning("Failed to run Python in child process\nOS error: " + std::string(std::strerror(errno)));
+            exit(EXIT_FAILURE);
+        }
+
+        exit(EXIT_SUCCESS);
+    }
+    else {
+        // Parent process
+        int status;
+        const pid_t ret_pid = waitpid(pid, &status, 0);
+        if(ret_pid == -1) {
+            warning("waitpid() returned -1\nOS error: " + std::string(std::strerror(errno)));  // TODO: Better warning
+            return false;
+        }
+
+        if(ret_pid != pid) {
+            warning("PID mismatch");  // TODO: Better warning
+            return false;
+        }
+
+        if(!WIFEXITED(status)) {
+            warning("waitpid() status argument hint abnormal child process exit");
+            return false;
+        }
+
+        if(WEXITSTATUS(status) == 127) {
+            warning("Failed execv (127 return code)");
+            return false;
+        }
+
+        if(WEXITSTATUS(status) != 0) {
+            warning("Python program exited with non-zero exit code (Python error should be printed above)");
+            return false;
+        }
     }
 
-    std::fstream output_file(filename);
+    return true;
+}
+
+bool dolph_chebyshev_window(float window[], const int size, const double attenuation) {
+    const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    info("Generating Dolph Chebyshev window using Python, this may take some time...");
+
+    const std::string tmp_file_path = settings.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
+
+    // Bubble the return value up; error is printed in the function
+    if(!run_python_script(tmp_file_path, std::to_string(size), std::to_string(attenuation)))
+        return false;
+
+    // Read the output file of the Python script
+    std::fstream output_file(tmp_file_path);
     for(int i = 0; i < size; i++)
         output_file >> window[i];
 
-    if(!std::filesystem::remove(filename)) {
-        error("Failed to delete '" + filename + "' after computing the Dolph Chebyshev window\nPlease remove manually");
-        exit(EXIT_FAILURE);
+    // Remove the output file
+    if(!std::filesystem::remove(tmp_file_path)) {
+        warning("Failed to delete '" + tmp_file_path + "' after computing the Dolph Chebyshev window\nPlease remove manually");
+        return false;
     }
+
+    // Output performance measurement
+    const double duration = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_time).count();
+    info("Dolph Chebyshev window created (" + STR(duration) + " ms)");
+
+    return true;
 }
 
 // #include <fftw3.h>

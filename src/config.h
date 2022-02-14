@@ -48,7 +48,7 @@ static_assert(!(DO_OVERLAP && DO_OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP a
 constexpr int MAX_FRAME_SIZE = std::max(FRAME_SIZE, (int)round((double)SAMPLE_RATE / LOWEST_NOTE.freq));
 
 // Name of temporary file to compute the Dolph Chebyshev window
-const std::string TMP_DOLPH_WIN_FILENAME = "rsc/dolph_chebyshev_win.txt";
+const std::string TMP_DOLPH_WIN_FILENAME = "dolph_chebyshev_win.txt";
 constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
 
 

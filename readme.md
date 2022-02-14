@@ -6,7 +6,8 @@ The thesis accompanying this project can be found in the thesis branch.
 # Build instructions
 ## Requirements
 Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
-The build requirements of the individual tools can be found in the tool's readme.
+The build requirements of the individual tools can be found in the tool's readme.  
+Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in de respective directory for its requirements.
 
 On Arch Linux:  
 `sudo pacman -S sdl2 sdl2_ttf fftw3`
