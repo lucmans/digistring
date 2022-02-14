@@ -3,7 +3,7 @@
 
 # Build instructions
 ## Requirements
-Python >3.10 and Matplotlib >3.5.1
+Python >=3.10 and Matplotlib >=3.5.1
 
 On Arch Linux:  
 `sudo pacman -S python3 python-matplotlib`
