@@ -133,8 +133,10 @@ void welch_window(double window[], const int size) {
 }
 
 
+// There two helper functions are defined at the bottom
 std::string generate_tmp_filename(const std::string &o_filename);
 bool run_python_script(const std::string &tmp_file_path, const std::string &size, const std::string &attenuation);
+
 bool dolph_chebyshev_window(double window[], const int size, const double attenuation) {
     const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     info("Generating Dolph Chebyshev window using Python, this may take some time...");
