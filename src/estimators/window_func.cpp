@@ -309,16 +309,17 @@ bool run_python_script(const std::string &tmp_file_path, const std::string &size
     }
     else if(pid == 0) {
         // Child process
+        const std::string python_cmd = "python3";
         const std::string python_script = settings.rsc_dir + "/../tools/dolph_chebyshev_window/dolph_chebyshev_window";
-        const char *child_argv[] = {"python3",
+        const char *child_argv[] = {python_cmd.c_str(),
                                     python_script.c_str(),
                                     tmp_file_path.c_str(),
                                     size.c_str(),
                                     attenuation.c_str(),
                                     NULL};
-        const int ret = execvp("python3", const_cast<char *const *>(child_argv));
+        const int ret = execvp(python_cmd.c_str(), const_cast<char *const *>(child_argv));
         if(ret == -1) {
-            warning("Failed to run Python in child process\nOS error: " + std::string(std::strerror(errno)));
+            warning("Failed to run Python in child process (using '" + python_cmd + "')\nOS error: " + std::string(std::strerror(errno)));
             exit(EXIT_FAILURE);
         }
 
