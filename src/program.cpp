@@ -305,7 +305,7 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_r:
-                        graphics->set_max_recorded_value(0.0);
+                        graphics->set_max_recorded_value(1.0);
                         break;
 
                     case SDLK_t:
