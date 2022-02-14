@@ -56,7 +56,6 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 # TODO
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
-While playing file back, overlap 0 frames till no audio from file is in input buffer.  
 Split config.h in multiple configuration files.  
 Allow max_display_frequency > MAX_FOURIER_FREQUENCY.  
 Implement Dolph-Chebyshev window.  

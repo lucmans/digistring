@@ -109,6 +109,7 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
     if constexpr(DO_OVERLAP)
         calc_and_paste_overlap(overlap_in, overlap_n_samples);
 
+
     // If file end doesn't align with a frame, we need to read less then n_samples
     const int n_read_samples = std::clamp(overlap_n_samples, 0, std::max(wav_buffer_samples - played_samples, 0));
     if(played_samples < wav_buffer_samples)
@@ -118,13 +119,13 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
     if(n_read_samples < overlap_n_samples)
         memset(overlap_in + n_read_samples, 0, (overlap_n_samples - n_read_samples) * sizeof(float));
 
-    // Check if file has ended
-    if(n_read_samples == 0) {
-        info("File ended, filling rest of frame with silence...");
-        set_quit();  // TODO: Maybe play file till overlap only contains silence
-    }
-
     played_samples += overlap_n_samples;
+
+    // Check if there won't be any of the file in the next read and quit if so
+    if(played_samples >= wav_buffer_samples + (n_samples - overlap_n_samples)) {
+        info("File ended, filling rest of frame with silence...");
+        set_quit();
+    }
 
 
     if constexpr(DO_OVERLAP)
