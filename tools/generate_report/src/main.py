@@ -31,15 +31,18 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     if len(digistring_noteevents) == 0:
         print("Error: No note events in file")
         exit(1)
-    print(f"Total: {len(digistring_noteevents)}")
+    print(f"Total Digistring events: {len(digistring_noteevents)}")
 
     # Filter transient errors
     digistring_correct, digistring_incorrect, digistring_missed = note_events_filter.correct_incorrect_missed_notes(digistring_noteevents, dataset_noteevents)
-    print(f"Correct: {len(digistring_correct)}")
-    print(f"Incorrect: {len(digistring_incorrect)}")
-    print(f"Missed: {len(digistring_missed)}")
-    digistring_missed = note_events_filter.missed_notes(digistring_noteevents, dataset_noteevents)
+    print(f"  - Correct: {len(digistring_correct)}")
+    print(f"  - Incorrect: {len(digistring_incorrect)}")
+    print(f"  - Missed: {len(digistring_missed)}")
+    print()
 
+    # Correct = true positives
+    # Incorrect = false positives
+    # Missed = false negatives
     precision = len(digistring_correct) / (len(digistring_correct) + len(digistring_incorrect))
     recall = len(digistring_correct) / (len(digistring_correct) + len(digistring_missed))
     print(f"Precision: {precision:.4f}")
@@ -49,6 +52,7 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     else:
         f1 = 2 * ((precision * recall) / (precision + recall))
     print(f"F1: {f1:.4f}")
+    print()
 
     # digistring_filtered = note_events_filter.filter_transient_errors(digistring_noteevents, dataset_noteevents)
     # print(f"Without transient errors: {len(digistring_filtered)}")
