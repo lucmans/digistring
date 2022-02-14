@@ -89,6 +89,8 @@ def main(args: list[str]) -> int:
             generate_report("fraunhofer", "dataset/dataset2/annotation/AR_A_fret_0-20.xml", "AR_A_fret_0-20.json", "AR_A_fret_0-20.output")
         elif args[1] == "3":
             generate_report("fraunhofer", "lick_missed.xml", "lick.json", "lick.output")
+        elif args[1] == "4":
+            generate_report("fraunhofer", "lick.xml", "lick_dolph.json", "lick.output")
 
         elif args[1] == "generate":
             gen_completions.generate(DATASET_NAMES)
