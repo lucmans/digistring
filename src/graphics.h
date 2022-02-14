@@ -43,6 +43,7 @@ class Graphics {
         void set_max_display_frequency(const double f);
         // double get_max_display_frequency();
 
+        void set_queued_samples(const int n_samples);
         void set_clicked(const int x, const int y);
 
         void toggle_freeze_graph();
@@ -74,6 +75,9 @@ class Graphics {
         TTF_Font *info_font;
         SDL_Texture *note_text, *note_freq_text, *note_error_text, *note_amp_text;
 
+        SDL_Texture *n_samples_text;
+        int queued_samples;
+
         double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
         int n_waterfall_pixels;  // Number of pixels from waterfall line buffer to write to screen
         SDL_Texture *max_display_frequency_text;  // Rendered static text
@@ -97,6 +101,7 @@ class Graphics {
 
         void render_current_note(const Note *const note);
         void render_max_displayed_frequency();
+        void render_queued_samples();
         void render_clicked_frequency();
         void render_freeze();
 };

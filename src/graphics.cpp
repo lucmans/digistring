@@ -79,6 +79,9 @@ Graphics::Graphics() {
     max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
     max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), info_font, {0xff, 0xff, 0xff, 0xff});
 
+    n_samples_text = create_txt_texture(renderer, "Queued input samples: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    queued_samples = -1;
+
     mouse_x = -1;
     clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
@@ -98,6 +101,10 @@ Graphics::~Graphics() {
             SDL_DestroyTexture(dp.waterfall_line_buffer);
 
     SDL_DestroyTexture(freeze_txt_buffer);
+
+    SDL_DestroyTexture(clicked_freq_text);
+
+    SDL_DestroyTexture(n_samples_text);
 
     SDL_DestroyTexture(note_text);
     SDL_DestroyTexture(note_freq_text);
@@ -181,6 +188,10 @@ void Graphics::set_max_display_frequency(const double f) {
 //     return max_display_frequency;
 // }
 
+
+void Graphics::set_queued_samples(const int n_samples) {
+    queued_samples = n_samples;
+}
 
 void Graphics::set_clicked(const int x, const int y) {
     mouse_x = x;
@@ -314,6 +325,8 @@ void Graphics::render_frame(const Note *const note) {
 
     render_current_note(note);
     render_max_displayed_frequency();
+    if constexpr(DISPLAY_QUEUED_IN_SAMPLES)
+        render_queued_samples();
     render_clicked_frequency();
     render_freeze();
 
@@ -507,6 +520,32 @@ void Graphics::render_max_displayed_frequency() {
 }
 
 
+void Graphics::render_queued_samples() {
+    if(queued_samples == -1)
+        return;
+
+    SDL_Texture *n_samples_number = create_txt_texture(renderer, STR(queued_samples), info_font, {0xff, 0xff, 0xff, 0xff});
+
+    int w, h;
+    SDL_QueryTexture(n_samples_text, NULL, NULL, &w, &h);
+    int w2;
+    SDL_QueryTexture(n_samples_number, NULL, NULL, &w2, &h);
+
+    static int max_w2 = w2;
+    if(w2 > max_w2)
+        max_w2 = w2;
+
+    const int h_offset = h;  // One below max_display_frequency
+
+    SDL_Rect dst = {res_w - w - max_w2 - 1, h_offset, w, h};
+    SDL_RenderCopy(renderer, n_samples_text, NULL, &dst);
+    dst = {res_w - w2 - 1, h_offset, w2, h};
+    SDL_RenderCopy(renderer, n_samples_number, NULL, &dst);
+
+    SDL_DestroyTexture(n_samples_number);
+}
+
+
 void Graphics::render_clicked_frequency() {
     if(mouse_x == -1)
         return;
@@ -519,9 +558,14 @@ void Graphics::render_clicked_frequency() {
     int w2;
     SDL_QueryTexture(clicked_freq_number, NULL, NULL, &w2, &h);
 
-    SDL_Rect dst = {res_w - w - w2 - 1, h, w, h};
+    // If queued samples are rendered, render clicked frequency below it
+    int h_offset = h;
+    if(queued_samples != -1)
+        h_offset += h;
+
+    SDL_Rect dst = {res_w - w - w2 - 1, h_offset, w, h};
     SDL_RenderCopy(renderer, clicked_freq_text, NULL, &dst);
-    dst = {res_w - w2 - 1, h, w2, h};
+    dst = {res_w - w2 - 1, h_offset, w2, h};
     SDL_RenderCopy(renderer, clicked_freq_number, NULL, &dst);
 
     SDL_DestroyTexture(clicked_freq_number);

@@ -72,6 +72,7 @@ constexpr bool HEADLESS = false;
 constexpr double MAX_FPS = 30.0;
 
 constexpr bool DISPLAY_NOTE_LINES = false;
+constexpr bool DISPLAY_QUEUED_IN_SAMPLES = true;
 
 constexpr int DEFAULT_RES[2] = {1024, 768};
 constexpr int MIN_RES[2] = {800, 600};

@@ -32,6 +32,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         exit(EXIT_FAILURE);
     }
 
+    audio_in = false;
     if(settings.generate_sine) {
         // info("Playing generate_sine");
         sample_getter = new WaveGenerator(settings.generate_sine_freq);
@@ -47,6 +48,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     else {
         // info("Sourcing audio from computer audio input");
         sample_getter = new AudioIn(in_dev);
+        audio_in = true;
     }
 
     mouse_clicked = false;
@@ -70,7 +72,7 @@ Program::~Program() {
 
 void Program::main_loop() {
     // Unpause audio devices so that samples are collected/played
-    if(!(settings.generate_sine || settings.generate_note || settings.play_file))
+    if(audio_in)
         SDL_PauseAudioDevice(*in_dev, 0);
 
     if(settings.playback)
@@ -163,8 +165,7 @@ void Program::playback_audio() {
     }
 
     // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
-    const bool playing_audio_in = !(settings.generate_sine || settings.generate_note || settings.play_file);
-    if(playing_audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+    if(audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
         warning("Audio overrun (too much audio to play); clearing buffer...");
         SDL_ClearQueuedAudio(*out_dev);
     }
@@ -245,6 +246,9 @@ void Program::update_graphics(const NoteEvents &note_events) {
     frame_time = std::chrono::steady_clock::now() - prev_frame;
     if(frame_time.count() > 1000.0 / MAX_FPS) {
         graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
+
+        if(audio_in)
+            graphics->set_queued_samples(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8));
 
         const int n_notes = note_events.size();
         if(n_notes == 0)

@@ -37,6 +37,7 @@ class Program {
         int input_buffer_n_samples;
 
         SampleGetter *sample_getter;
+        bool audio_in;
 
         // Frame limiting (graphics)
         std::chrono::duration<double, std::milli> frame_time;
