@@ -1,15 +1,16 @@
 
 #include "estimator.h"
 
-#include "../config.h"
-#include "../error.h"
+#include "spectrum.h"
+#include "error.h"
 
-#include "../spectrum.h"
+#include "config/graphics.h"
 
 #include <fftw3.h>
 
 #include <map>
 #include <string>
+#include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
 
 
 Estimator::Estimator() {

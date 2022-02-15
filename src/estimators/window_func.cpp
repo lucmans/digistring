@@ -13,7 +13,10 @@
 #include <unistd.h>  // execvp
 #include <sys/wait.h>  // waitpid()
 
-#include "../error.h"
+#include "error.h"
+
+#include "config/transcription.h"
+#include "config/cli_args.h"
 
 
 void rectangle_window(double window[], const int size) {
@@ -141,7 +144,7 @@ bool dolph_chebyshev_window(double window[], const int size, const double attenu
     const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     info("Generating Dolph Chebyshev window using Python, this may take some time...");
 
-    const std::string tmp_file_path = settings.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
+    const std::string tmp_file_path = cli_args.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
 
     // Bubble the return value up; error is printed in the function
     if(!run_python_script(tmp_file_path, std::to_string(size), std::to_string(attenuation)))
@@ -297,7 +300,7 @@ std::string generate_tmp_filename(const std::string &o_filename) {
 
     // Try to generate a new unique filename inserting a number between name and extension
     std::string g_filename = o_filename;  // Generated filename
-    for(int i = 2; std::filesystem::exists(settings.rsc_dir + "/" + g_filename); i++)
+    for(int i = 2; std::filesystem::exists(cli_args.rsc_dir + "/" + g_filename); i++)
         g_filename = o_basename + '_' + std::to_string(i) + o_extension;
 
     return g_filename;
@@ -312,7 +315,7 @@ bool run_python_script(const std::string &tmp_file_path, const std::string &size
     else if(pid == 0) {
         // Child process
         const std::string python_cmd = "python3";
-        const std::string python_script = settings.rsc_dir + "/../tools/dolph_chebyshev_window/dolph_chebyshev_window";
+        const std::string python_script = cli_args.rsc_dir + "/../tools/dolph_chebyshev_window/dolph_chebyshev_window";
         const char *child_argv[] = {python_cmd.c_str(),
                                     python_script.c_str(),
                                     tmp_file_path.c_str(),
@@ -364,7 +367,7 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
     const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     info("Generating Dolph Chebyshev window using Python, this may take some time...");
 
-    const std::string tmp_file_path = settings.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
+    const std::string tmp_file_path = cli_args.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
 
     // Bubble the return value up; error is printed in the function
     if(!run_python_script(tmp_file_path, std::to_string(size), std::to_string(attenuation)))

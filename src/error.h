@@ -82,13 +82,26 @@ std::string __str(T x) {
 #define STR(x)              __str(x)
 
 
-#define ex_msg(msg)         __ex_msg(__FILE__, __LINE__, (msg))
+inline void ex_msg(const std::string &msg) {
+    __ex_msg(__FILE__, __LINE__, (msg));
+}
 
-#define error(msg)          __msg("Error", RED, __FILE__, __LINE__, (msg))
-#define warning(msg)        __msg("Warning", YELLOW, __FILE__, __LINE__, (msg))
-// #define info(msg)           __msg("Info", GREEN, __FILE__, __LINE__, (msg))
-#define info(msg)           __info_msg((msg))  // Prints to std::cout and does not print file:line
-#define debug(msg)          __msg("Debug", BLUE, __FILE__, __LINE__, (msg))
+inline void error(const std::string &msg) {
+    __msg("Error", RED, __FILE__, __LINE__, (msg));
+}
+
+inline void warning(const std::string &msg) {
+    __msg("Warning", YELLOW, __FILE__, __LINE__, (msg));
+}
+
+inline void info(const std::string &msg) {
+    // __msg("Info", GREEN, __FILE__, __LINE__, (msg));
+    __info_msg((msg));  // Prints to std::cout and does not print file:line
+}
+
+inline void debug(const std::string &msg) {
+    __msg("Debug", BLUE, __FILE__, __LINE__, (msg));
+}
 
 
 #endif  // ERROR_H

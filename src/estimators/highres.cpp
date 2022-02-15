@@ -1,13 +1,16 @@
 
 #include "highres.h"
 
-#include "../config.h"
-#include "../error.h"
-#include "../performance.h"
-#include "../note.h"
+#include "error.h"
+#include "performance.h"
+#include "note.h"
 
 #include "window_func.h"
 #include "estimation_func.h"
+
+#include "config/audio.h"
+#include "config/transcription.h"
+#include "config/graphics.h"
 
 #include <fftw3.h>
 

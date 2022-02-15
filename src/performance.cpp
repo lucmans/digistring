@@ -1,7 +1,6 @@
 
 #include "performance.h"
 
-#include "config.h"
 #include "error.h"
 
 #include <string>

@@ -1,9 +1,11 @@
 
 #include "note_generator.h"
 
-#include "../note.h"
-#include "../config.h"
-#include "../error.h"
+#include "note.h"
+#include "error.h"
+
+#include "config/audio.h"
+#include "config/transcription.h"
 
 #include <cmath>
 #include <iostream>

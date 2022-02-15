@@ -1,9 +1,11 @@
 
 #include "audio_in.h"
 
-#include "../performance.h"
-#include "../config.h"
-#include "../error.h"
+#include "performance.h"
+#include "error.h"
+
+#include "config/audio.h"
+#include "config/transcription.h"
 
 #include <SDL2/SDL.h>
 

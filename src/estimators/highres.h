@@ -5,7 +5,7 @@
 
 #include "estimator.h"
 
-#include "../config.h"
+#include "config/transcription.h"
 
 #include <fftw3.h>
 

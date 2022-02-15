@@ -1,12 +1,10 @@
 
-#include "config.h"
+#include "quit.h"
 
 #include "error.h"
 
-#include <string.h>  // sigabbrev_np()
-
-
-Settings settings;
+#include <string>
+#include <cstring>  // sigabbrev_np()
 
 
 static volatile bool quit;

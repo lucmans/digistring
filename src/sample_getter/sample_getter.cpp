@@ -1,7 +1,8 @@
 
 #include "sample_getter.h"
 
-#include "../config.h"
+#include "config/audio.h"
+#include "config/transcription.h"
 
 #include <cstring>  // memset(), memcpy()
 #include <algorithm>  // std::clamp()

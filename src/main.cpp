@@ -1,10 +1,15 @@
 
-#include "parse_args.h"
+#include "parse_cli_args.h"
 #include "program.h"
 #include "graphics.h"
 #include "performance.h"
-#include "config.h"
+#include "quit.h"
 #include "error.h"
+
+#include "config/audio.h"
+#include "config/transcription.h"
+#include "config/graphics.h"
+#include "config/cli_args.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -98,22 +103,22 @@ void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev, c
 
 
 bool verify_rsc_dir() {
-    if(!std::filesystem::exists(settings.rsc_dir)) {
+    if(!std::filesystem::exists(cli_args.rsc_dir)) {
         error("Resource path not found");
         return false;
     }
 
-    if(!std::filesystem::is_directory(settings.rsc_dir)) {
+    if(!std::filesystem::is_directory(cli_args.rsc_dir)) {
         error("Resource path is not a directory");
         return false;
     }
 
-    if(!std::filesystem::exists(settings.rsc_dir + "/verify")) {
+    if(!std::filesystem::exists(cli_args.rsc_dir + "/verify")) {
         error("Recourse directory verification file not present");
         return false;
     }
 
-    std::ifstream file(settings.rsc_dir + "/verify");
+    std::ifstream file(cli_args.rsc_dir + "/verify");
     std::string line;
     file >> line;
     if(line != "4c3f666590eeb398f4606555d3756350") {
@@ -162,8 +167,8 @@ int main(int argc, char *argv[]) {
 
     info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
     SDL_AudioDeviceID in_dev, out_dev;
-    print_audio_devices(settings.playback);
-    init_audio_devices(in_dev, out_dev, settings.playback);
+    print_audio_devices(cli_args.playback);
+    init_audio_devices(in_dev, out_dev, cli_args.playback);
 
     print_program_config_info();
 

@@ -5,7 +5,6 @@
 
 #include "graphics.h"
 #include "results_file.h"
-#include "config.h"
 
 #include "note.h"
 #include "estimators/estimators.h"
@@ -59,14 +58,16 @@ class Program {
         std::chrono::steady_clock::time_point prev_note_change;
 
 
+        // This function should only be called if cli_args.playback is true
         void playback_audio();
 
-        // These functions should only be called if settings.output_file is true
+        // These functions should only be called if cli_args.output_file is true
         void write_result_header();
         void write_results(const NoteEvents &note_events);
 
         void print_results(const NoteEvents &note_events);
 
+        // This function should only be called if HEADLESS is false
         void update_graphics(const NoteEvents &note_events);
 
         void arpeggiate();

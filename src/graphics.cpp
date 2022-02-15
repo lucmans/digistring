@@ -3,11 +3,15 @@
 
 #include "graphics_func.h"
 #include "performance.h"
-#include "config.h"
 #include "error.h"
 
 #include "note.h"
 #include "spectrum.h"
+
+#include "config/cli_args.h"
+#include "config/graphics.h"
+#include "config/audio.h"
+#include "config/transcription.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -23,11 +27,17 @@ Graphics::Graphics() {
     //         warning("Failed to set scaling hint; using ugly pixelated nearest neighbor scaling");
     // }
 
-    res_w = settings.res_w;
-    res_h = settings.res_h;
+    if(cli_args.res_w == -1) {
+        res_w = DEFAULT_RES[0];
+        res_h = DEFAULT_RES[1];
+    }
+    else {
+        res_w = cli_args.res_w;
+        res_h = cli_args.res_h;
+    }
 
     uint32_t window_flags;
-    if(settings.fullscreen)
+    if(cli_args.fullscreen)
         window_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
     else
         window_flags = SDL_WINDOW_UTILITY/* | SDL_WINDOW_RESIZABLE*/;
@@ -65,9 +75,9 @@ Graphics::Graphics() {
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
     n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
-    info_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
+    info_font = TTF_OpenFont((cli_args.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
     if(info_font == NULL) {
-        error("Failed to load font '" + settings.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
+        error("Failed to load font '" + cli_args.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);
     }
 
@@ -85,9 +95,9 @@ Graphics::Graphics() {
     mouse_x = -1;
     clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
-    TTF_Font *freeze_font = TTF_OpenFont((settings.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
+    TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
     if(freeze_font == NULL) {
-        error("Failed to load font '" + settings.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
+        error("Failed to load font '" + cli_args.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);
     }
     freeze = false;

@@ -18,7 +18,8 @@ INCL = -Isrc/ -Ilib/include/
 CORES = 20
 
 SRC_FOLDERS = $(patsubst %, %/, $(shell find src -type d -print))
-SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDERS)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS))
+# SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDERS)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS))
+SRC_FILES = $(wildcard $(patsubst src%/, src%/*.h, $(SRC_FOLDERS))) $(wildcard $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS)))
 BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDERS)) $(patsubst src%/, dep%/, $(SRC_FOLDERS))
 
 # Object files to create (source files to compile)
@@ -106,7 +107,6 @@ lines:
 
 # Usage: make grep pat="pattern"
 grep:
-# 	@echo $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 	@grep --color=auto -n "$(pat)" $(SRC_FILES) || echo -e "Pattern not found\n"
 
 debug:

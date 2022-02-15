@@ -7,7 +7,7 @@
 
 #include <fftw3.h>
 
-#include "../note.h"
+#include "note.h"
 
 
 class Tuned : public Estimator {

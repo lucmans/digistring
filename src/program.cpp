@@ -4,8 +4,14 @@
 #include "graphics.h"
 #include "results_file.h"
 #include "performance.h"
-#include "config.h"
+#include "quit.h"
 #include "error.h"
+
+#include "config/cli_args.h"
+#include "config/audio.h"
+#include "config/transcription.h"
+#include "config/graphics.h"
+#include "config/results_file.h"
 
 #include "estimators/estimators.h"
 #include "sample_getter/sample_getters.h"
@@ -33,17 +39,17 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     }
 
     audio_in = false;
-    if(settings.generate_sine) {
+    if(cli_args.generate_sine) {
         // info("Playing generate_sine");
-        sample_getter = new WaveGenerator(settings.generate_sine_freq);
+        sample_getter = new WaveGenerator(cli_args.generate_sine_freq);
     }
-    else if(settings.generate_note) {
+    else if(cli_args.generate_note) {
         // info("Playing generate_note");
-        sample_getter = new NoteGenerator(settings.generate_note_note);
+        sample_getter = new NoteGenerator(cli_args.generate_note_note);
     }
-    else if(settings.play_file) {
-        // info("Playing '" + settings.play_file_name + "'");
-        sample_getter = new AudioFile(settings.play_file_name);
+    else if(cli_args.play_file) {
+        // info("Playing '" + cli_args.play_file_name + "'");
+        sample_getter = new AudioFile(cli_args.play_file_name);
     }
     else {
         // info("Sourcing audio from computer audio input");
@@ -53,8 +59,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
 
     mouse_clicked = false;
 
-    if(settings.output_file)
-        results_file = new ResultsFile(settings.output_filename);
+    if(cli_args.output_file)
+        results_file = new ResultsFile(cli_args.output_filename);
 
     lag = 0;
 
@@ -62,7 +68,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
 }
 
 Program::~Program() {
-    if(settings.output_file)
+    if(cli_args.output_file)
         delete results_file;
 
     delete sample_getter;
@@ -75,10 +81,10 @@ void Program::main_loop() {
     if(audio_in)
         SDL_PauseAudioDevice(*in_dev, 0);
 
-    if(settings.playback)
+    if(cli_args.playback)
         SDL_PauseAudioDevice(*out_dev, 0);
 
-    if(settings.output_file) {
+    if(cli_args.output_file) {
         write_result_header();
         results_file->start_array("note events");  // Stopped after while loop, so only note events can be pushed from now on
     }
@@ -104,7 +110,7 @@ void Program::main_loop() {
         perf.push_time_point("Got frame full of audio samples");
 
         // Play it back to the user if chosen
-        if(settings.playback)
+        if(cli_args.playback)
             playback_audio();
 
         // Send frame to estimator
@@ -116,7 +122,7 @@ void Program::main_loop() {
         // print_results(note_events);
 
         // Write estimation to output file
-        if(settings.output_file)
+        if(cli_args.output_file)
             write_results(note_events);
 
         // Graphics
@@ -124,7 +130,7 @@ void Program::main_loop() {
             update_graphics(note_events);
 
         // Print performance information to CLI
-        if(settings.output_performance)
+        if(cli_args.output_performance)
             std::cout << perf << std::endl;
 
         // Arpeggiator easter egg
@@ -132,7 +138,7 @@ void Program::main_loop() {
             arpeggiate();
     }
 
-    if(settings.output_file) {
+    if(cli_args.output_file) {
         // Write silent note event to explicitly stop the last note
         results_file->start_dict();
         results_file->write_double("t (s)", sample_getter->get_played_time());
@@ -155,7 +161,7 @@ void Program::resize(const int w, const int h) {
 
 
 void Program::playback_audio() {
-    if constexpr(DISPLAY_AUDIO_UNDERRUNS)
+    if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
 
@@ -313,7 +319,7 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_t:
-                        if(settings.playback)
+                        if(cli_args.playback)
                             SDL_ClearQueuedAudio(*out_dev);
                         break;
 

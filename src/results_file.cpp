@@ -1,8 +1,9 @@
 
 #include "results_file.h"
 
-#include "config.h"
 #include "error.h"
+
+#include "config/results_file.h"
 
 #include <string>
 #include <fstream>

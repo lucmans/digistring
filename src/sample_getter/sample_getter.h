@@ -3,7 +3,7 @@
 #define SAMPLE_GETTER_H
 
 
-#include "../config.h"
+#include "config/transcription.h"
 
 #include <map>
 #include <string>

@@ -1,19 +1,24 @@
 
-#include "parse_args.h"
-
-#include "config.h"
-#include "error.h"
+#include "parse_cli_args.h"
 
 #include "note.h"
+#include "error.h"
+
+#include "config/cli_args.h"
+#include "config/audio.h"
+#include "config/transcription.h"
+#include "config/graphics.h"
+#include "config/results_file.h"
 
 #include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
 #include <string>  // std::stoi()
 #include <filesystem>  // basic checks on given rsc directory
 #include <functional>  // std::invoke()
 #include <optional>  // Construct note without initializing it
-
-
 #include <map>
+
+
+CLIArgs cli_args;
 
 const std::map<const std::string, void (ArgParser::*const)()> ArgParser::flag_to_func = {
     {"-f", &ArgParser::parse_fullscreen},
@@ -108,7 +113,7 @@ void ArgParser::parse_args() {
 
 
 void ArgParser::parse_fullscreen() {
-    settings.fullscreen = true;
+    cli_args.fullscreen = true;
 }
 
 void ArgParser::parse_file() {
@@ -118,11 +123,11 @@ void ArgParser::parse_file() {
         exit(EXIT_FAILURE);
     }
 
-    if(settings.generate_note) {
+    if(cli_args.generate_note) {
         error("Can't play a file while generating a note");
         exit(EXIT_FAILURE);
     }
-    if(settings.generate_sine) {
+    if(cli_args.generate_sine) {
         error("Can't play a file while generating a sine wave");
         exit(EXIT_FAILURE);
     }
@@ -132,8 +137,8 @@ void ArgParser::parse_file() {
         exit(EXIT_FAILURE);
     }
 
-    settings.play_file = true;
-    settings.play_file_name = arg;
+    cli_args.play_file = true;
+    cli_args.play_file_name = arg;
 }
 
 void ArgParser::parse_help() {
@@ -142,23 +147,23 @@ void ArgParser::parse_help() {
 }
 
 void ArgParser::parse_generate_note() {
-    if(settings.play_file) {
+    if(cli_args.play_file) {
         error("Can't generate a note while playing a file");
         exit(EXIT_FAILURE);
     }
-    if(settings.generate_sine) {
+    if(cli_args.generate_sine) {
         error("Can't generate a note while generating a sine wave");
         exit(EXIT_FAILURE);
     }
 
-    settings.generate_note = true;
+    cli_args.generate_note = true;
 
     const char *arg;
     if(!fetch_opt(arg))  // No more arguments, so use default value (set in config.h)
         return;
 
     try {
-        settings.generate_note_note = string_to_note(arg);
+        cli_args.generate_note_note = string_to_note(arg);
     }
     catch(const std::string &what) {
         error("Failed to parse note string: " + what);
@@ -197,8 +202,8 @@ void ArgParser::parse_output_file() {
     if(g_filename != o_filename)
         warning("File '" + o_filename + "' already exists; naming it '" + g_filename + "' instead");
 
-    settings.output_file = true;
-    settings.output_filename = g_filename;
+    cli_args.output_file = true;
+    cli_args.output_filename = g_filename;
 }
 
 void ArgParser::parse_print_overtone() {
@@ -234,7 +239,7 @@ void ArgParser::parse_print_overtone() {
 }
 
 void ArgParser::parse_playback() {
-    settings.playback = true;
+    cli_args.playback = true;
 
     if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
         const char *overlap;
@@ -252,7 +257,7 @@ void ArgParser::parse_playback() {
 }
 
 void ArgParser::parse_print_performance() {
-    settings.output_performance = true;
+    cli_args.output_performance = true;
 }
 
 void ArgParser::parse_resolution() {
@@ -278,7 +283,7 @@ void ArgParser::parse_resolution() {
         error("Width is too small (" + STR(n) + " < " + STR(MIN_RES[0]) + ")");
         exit(EXIT_FAILURE);
     }
-    settings.res_w = n;
+    cli_args.res_w = n;
 
     try {
         n = std::stoi(h_string);
@@ -291,7 +296,7 @@ void ArgParser::parse_resolution() {
         error("Height is too small (" + STR(n) + " < " + STR(MIN_RES[1]) + ")");
         exit(EXIT_FAILURE);
     }
-    settings.res_h = n;
+    cli_args.res_h = n;
 }
 
 void ArgParser::parse_rsc_dir() {
@@ -323,20 +328,20 @@ void ArgParser::parse_rsc_dir() {
         exit(EXIT_FAILURE);
     }
 
-    settings.rsc_dir = path_string;
+    cli_args.rsc_dir = path_string;
 }
 
 void ArgParser::parse_generate_sine() {
-    if(settings.play_file) {
+    if(cli_args.play_file) {
         error("Can't generate sine wave while playing a file");
         exit(EXIT_FAILURE);
     }
-    if(settings.generate_note) {
+    if(cli_args.generate_note) {
         error("Can't generate sine wave while generating a note");
         exit(EXIT_FAILURE);
     }
 
-    settings.generate_sine = true;
+    cli_args.generate_sine = true;
 
     const char *arg;
     if(!fetch_opt(arg))  // No more arguments, so use default value (set in config.h)
@@ -354,5 +359,5 @@ void ArgParser::parse_generate_sine() {
         error("Frequency below 1 Hz (" + STR(f) + ")");
         exit(EXIT_FAILURE);
     }
-    settings.generate_sine_freq = f;
+    cli_args.generate_sine_freq = f;
 }

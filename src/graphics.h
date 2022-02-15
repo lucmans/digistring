@@ -3,8 +3,6 @@
 #define GRAPHICS_H
 
 
-#include "config.h"
-
 #include "note.h"
 #include "spectrum.h"
 

@@ -3,9 +3,6 @@
 #define WINDOW_FUNC
 
 
-#include "../config.h"
-
-
 void rectangle_window(double window[], const int size);
 void hamming_window(double window[], const int size);
 void hann_window(double window[], const int size);

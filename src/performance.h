@@ -3,8 +3,6 @@
 #define PERFORMANCE_H
 
 
-#include "config.h"
-
 #include <utility>  // std::pair
 #include <string>
 #include <vector>

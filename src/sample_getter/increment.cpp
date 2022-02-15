@@ -1,7 +1,7 @@
 
 #include "increment.h"
 
-#include "../config.h"
+#include "config/transcription.h"
 
 
 Increment::Increment() {

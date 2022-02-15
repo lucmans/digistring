@@ -1,7 +1,7 @@
 
 #include "graphics_func.h"
 
-#include "config.h"
+#include "quit.h"
 #include "error.h"
 
 #include <SDL2/SDL.h>

@@ -1,8 +1,11 @@
 
 #include "audio_file.h"
 
-#include "../config.h"
-#include "../error.h"
+#include "quit.h"
+#include "error.h"
+
+#include "config/audio.h"
+#include "config/transcription.h"
 
 #include <SDL2/SDL.h>
 

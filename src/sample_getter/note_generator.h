@@ -5,7 +5,7 @@
 
 #include "sample_getter.h"
 
-#include "../note.h"
+#include "note.h"
 
 
 class NoteGenerator : public SampleGetter {

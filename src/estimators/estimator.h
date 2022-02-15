@@ -3,8 +3,8 @@
 #define ESTIMATOR_H
 
 
-#include "../note.h"
-#include "../spectrum.h"
+#include "note.h"
+#include "spectrum.h"
 
 #include <map>
 #include <string>

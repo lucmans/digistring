@@ -1,6 +1,6 @@
 
-#ifndef PARSE_ARGS_H
-#define PARSE_ARGS_H
+#ifndef PARSE_CLI_ARGS_H
+#define PARSE_CLI_ARGS_H
 
 
 #include <map>
@@ -47,4 +47,4 @@ class ArgParser {
 };
 
 
-#endif  // PARSE_ARGS_H
+#endif  // PARSE_CLI_ARGS_H
