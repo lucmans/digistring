@@ -3,6 +3,8 @@
 # @author Luc de Jonckheere
 ##
 
+# Binary name
+BIN = digistring
 
 # General compiler flags
 CXX = g++
@@ -12,26 +14,26 @@ WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wf
 # FLAGS = -DCOLORED
 OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
 LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
-INCL = -Ilib/include/
+INCL = -Isrc/ -Ilib/include/
 CORES = 20
 
-SRC_FOLDER = src/ src/estimators/ src/sample_getter/
-SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDER)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDER))
-BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDER)) $(patsubst src%/, dep%/, $(SRC_FOLDER))
+SRC_FOLDERS = $(patsubst %, %/, $(shell find src -type d -print))
+SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDERS)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS))
+BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDERS)) $(patsubst src%/, dep%/, $(SRC_FOLDERS))
 
-# Binary name
-BIN = digistring
-# Objects to compile
-OBJ = obj/main.o obj/parse_args.o obj/program.o obj/graphics.o obj/graphics_func.o obj/results_file.o obj/performance.o obj/config.o \
-      obj/estimators/estimator.o obj/estimators/highres.o obj/estimators/tuned.o \
-      obj/estimators/window_func.o obj/estimators/estimation_func.o obj/spectrum.o obj/note.o \
-      obj/sample_getter/sample_getter.o obj/sample_getter/audio_file.o obj/sample_getter/audio_in.o obj/sample_getter/wave_generator.o obj/sample_getter/note_generator.o obj/sample_getter/increment.o
+# Object files to create (source files to compile)
+# Create an .o file for every .cpp file
+ALL_OBJ = $(patsubst src/%.cpp, obj/%.o, $(wildcard $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS))))
+# .o files which should not be created (.cpp which should not be compiled)
+FILTER_OBJ = #obj/main.o
+OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
 .PHONY: all sanitize force fresh clean outputclean valgrind lines grep debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
 all: | $(BUILD_FOLDERS)
+# 	@echo $(OBJ)
 	make -j $(CORES) $(BIN)
 
 # Don't forget to run make force to remove sanitize
