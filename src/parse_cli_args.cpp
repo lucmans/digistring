@@ -313,7 +313,7 @@ void ArgParser::parse_rsc_dir() {
         path = std::filesystem::canonical(path);
     }
     catch(...) {
-        error("Path '" + std::string(path_string) + "' doesn't exist");
+        error("Path '" + std::string(path.string()) + "' doesn't exist");
         exit(EXIT_FAILURE);
     }
 
@@ -328,7 +328,7 @@ void ArgParser::parse_rsc_dir() {
         exit(EXIT_FAILURE);
     }
 
-    cli_args.rsc_dir = path_string;
+    cli_args.rsc_dir = path.string();
 }
 
 void ArgParser::parse_generate_sine() {

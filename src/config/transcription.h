@@ -4,7 +4,6 @@
 
 
 #include "note.h"
-#include "config/audio.h"
 
 #include <string>
 #include <algorithm>
@@ -25,10 +24,7 @@ constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected over
 constexpr int MAX_FRAME_SIZE = FRAME_SIZE;
 // constexpr int MAX_FRAME_SIZE = std::max(FRAME_SIZE, (int)round((double)SAMPLE_RATE / LOWEST_NOTE.freq));
 
-
-/* Dolph Chebyshev window config */
 constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
-const std::string TMP_DOLPH_WIN_FILENAME = "dolph_chebyshev_win.txt";
 
 
 /* Overlapping read buffers */

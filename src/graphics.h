@@ -22,7 +22,7 @@ enum class PlotType {
 const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, /*PlotType::waterfall,*/ PlotType::bins};
 
 
-struct DataCache {
+struct DataPoint {
     SpectrumData spectrum_data;
     SDL_Texture *waterfall_line_buffer = NULL;
 };
@@ -66,7 +66,7 @@ class Graphics {
         SDL_Texture *frame_buffer;
 
         PlotType plot_type;
-        std::list<DataCache> data_points;
+        std::list<DataPoint> data_points;
         double max_recorded_value;
 
         //

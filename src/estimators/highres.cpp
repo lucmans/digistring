@@ -63,7 +63,7 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     p = fftwf_plan_dft_r2c_1d(FRAME_SIZE, input_buffer, out, FFTW_ESTIMATE);
 
     // Pre-calculate window function
-    if(!dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION)) {
+    if(!dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION, true)) {
         // dolph_chebyshev_window() already prints error
         warning("Failed to get Dolph Chebyshev window; using Blackman Nuttall window instead...");
 

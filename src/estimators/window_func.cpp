@@ -13,6 +13,7 @@
 #include <unistd.h>  // execvp
 #include <sys/wait.h>  // waitpid()
 
+#include "data_cache.h"
 #include "error.h"
 
 #include "config/transcription.h"
@@ -136,34 +137,52 @@ void welch_window(double window[], const int size) {
 }
 
 
-// There two helper functions are defined at the bottom
+// The two helper functions are defined at the bottom (above float dolph_chebyshev_window() definition)
 std::string generate_tmp_filename(const std::string &o_filename);
 bool run_python_script(const std::string &tmp_file_path, const std::string &size, const std::string &attenuation);
 
-bool dolph_chebyshev_window(double window[], const int size, const double attenuation) {
-    const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-    info("Generating Dolph Chebyshev window using Python, this may take some time...");
-
-    const std::string tmp_file_path = cli_args.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
-
-    // Bubble the return value up; error is printed in the function
-    if(!run_python_script(tmp_file_path, std::to_string(size), std::to_string(attenuation)))
-        return false;
-
-    // Read the output file of the Python script
-    std::fstream output_file(tmp_file_path);
-    for(int i = 0; i < size; i++)
-        output_file >> window[i];
-
-    // Remove the output file
-    if(!std::filesystem::remove(tmp_file_path)) {
-        warning("Failed to delete '" + tmp_file_path + "' after computing the Dolph Chebyshev window\nPlease remove manually");
-        return false;
+bool dolph_chebyshev_window(double window[], const int size, const double attenuation, const bool cache /*= false*/) {
+    bool generate_and_read;
+    std::string dolph_window_file;
+    if(cache) {
+        // If the window isn't present in the cache, generate the window
+        if(!DataCache::load_dolph_window(window, size, attenuation)) {
+            generate_and_read = true;
+            dolph_window_file = DataCache::get_dolph_path() + DataCache::get_dolph_filename(size, attenuation);
+        }
+        else {
+            generate_and_read = false;
+        }
+    }
+    else {
+        generate_and_read = true;
+        dolph_window_file = generate_tmp_filename(".tmp_dolph_window_output.txt");
     }
 
-    // Output performance measurement
-    const double duration = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_time).count();
-    info("Dolph Chebyshev window created (" + STR(duration) + " ms)");
+    if(generate_and_read) {
+        const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+        info("Generating Dolph Chebyshev window using Python, this may take some time...");
+
+        if(!run_python_script(dolph_window_file, std::to_string(size), std::to_string(attenuation)))
+            return false;  // Bubble the return value up; error is printed in run_python_script()
+
+        // Read the output file of the Python script
+        std::fstream output_file(dolph_window_file);
+        for(int i = 0; i < size; i++)
+            output_file >> window[i];
+
+        // Remove the output file if not caching
+        if(!cache) {
+            if(!std::filesystem::remove(dolph_window_file)) {
+                warning("Failed to delete '" + dolph_window_file + "' after computing the Dolph Chebyshev window\nPlease remove manually");
+                return false;
+            }
+        }
+
+        // Output performance measurement
+        const double duration = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_time).count();
+        info("Dolph Chebyshev window created (" + STR(duration) + " ms)");
+    }
 
     return true;
 }
@@ -300,7 +319,7 @@ std::string generate_tmp_filename(const std::string &o_filename) {
 
     // Try to generate a new unique filename inserting a number between name and extension
     std::string g_filename = o_filename;  // Generated filename
-    for(int i = 2; std::filesystem::exists(cli_args.rsc_dir + "/" + g_filename); i++)
+    for(int i = 2; std::filesystem::exists(g_filename); i++)
         g_filename = o_basename + '_' + std::to_string(i) + o_extension;
 
     return g_filename;
@@ -315,7 +334,7 @@ bool run_python_script(const std::string &tmp_file_path, const std::string &size
     else if(pid == 0) {
         // Child process
         const std::string python_cmd = "python3";
-        const std::string python_script = cli_args.rsc_dir + "/../tools/dolph_chebyshev_window/dolph_chebyshev_window";
+        const std::string python_script = cli_args.rsc_dir + "../tools/dolph_chebyshev_window/dolph_chebyshev_window";
         const char *child_argv[] = {python_cmd.c_str(),
                                     python_script.c_str(),
                                     tmp_file_path.c_str(),
@@ -363,30 +382,48 @@ bool run_python_script(const std::string &tmp_file_path, const std::string &size
     return true;
 }
 
-bool dolph_chebyshev_window(float window[], const int size, const double attenuation) {
-    const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-    info("Generating Dolph Chebyshev window using Python, this may take some time...");
-
-    const std::string tmp_file_path = cli_args.rsc_dir + "/" + generate_tmp_filename(TMP_DOLPH_WIN_FILENAME);
-
-    // Bubble the return value up; error is printed in the function
-    if(!run_python_script(tmp_file_path, std::to_string(size), std::to_string(attenuation)))
-        return false;
-
-    // Read the output file of the Python script
-    std::fstream output_file(tmp_file_path);
-    for(int i = 0; i < size; i++)
-        output_file >> window[i];
-
-    // Remove the output file
-    if(!std::filesystem::remove(tmp_file_path)) {
-        warning("Failed to delete '" + tmp_file_path + "' after computing the Dolph Chebyshev window\nPlease remove manually");
-        return false;
+bool dolph_chebyshev_window(float window[], const int size, const double attenuation, const bool cache /*= false*/) {
+    bool generate_and_read = true;
+    std::string dolph_window_file;
+    if(cache) {
+        // If the window isn't present in the cache, generate the window
+        if(!DataCache::load_dolph_window(window, size, attenuation)) {
+            generate_and_read = true;
+            dolph_window_file = DataCache::get_dolph_path() + DataCache::get_dolph_filename(size, attenuation);
+        }
+        else {
+            generate_and_read = false;
+        }
+    }
+    else {
+        generate_and_read = true;
+        dolph_window_file = generate_tmp_filename(".tmp_dolph_window_output.txt");
     }
 
-    // Output performance measurement
-    const double duration = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_time).count();
-    info("Dolph Chebyshev window created (" + STR(duration) + " ms)");
+    if(generate_and_read) {
+        const std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+        info("Generating Dolph Chebyshev window using Python, this may take some time...");
+
+        if(!run_python_script(dolph_window_file, std::to_string(size), std::to_string(attenuation)))
+            return false;  // Bubble the return value up; error is printed in run_python_script()
+
+        // Read the output file of the Python script
+        std::fstream output_file(dolph_window_file);
+        for(int i = 0; i < size; i++)
+            output_file >> window[i];
+
+        // Remove the output file if not caching
+        if(!cache) {
+            if(!std::filesystem::remove(dolph_window_file)) {
+                warning("Failed to delete '" + dolph_window_file + "' after computing the Dolph Chebyshev window\nPlease remove manually");
+                return false;
+            }
+        }
+
+        // Output performance measurement
+        const double duration = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_time).count();
+        info("Dolph Chebyshev window created (" + STR(duration) + " ms)");
+    }
 
     return true;
 }

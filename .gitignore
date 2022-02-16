@@ -1,5 +1,8 @@
 # The binary
-digistring
+/digistring
+
+# Digistring cache
+/cache/
 
 # Object files 
 /obj/
@@ -8,4 +11,4 @@ digistring
 /dep/
 
 # Segfault dumps
-vgcore.*
+/vgcore.*

@@ -2,6 +2,7 @@
 #include "parse_cli_args.h"
 #include "program.h"
 #include "graphics.h"
+#include "data_cache.h"
 #include "performance.h"
 #include "quit.h"
 #include "error.h"
@@ -113,12 +114,16 @@ bool verify_rsc_dir() {
         return false;
     }
 
-    if(!std::filesystem::exists(cli_args.rsc_dir + "/verify")) {
+    // Make the path end with a /
+    if(cli_args.rsc_dir.back() != '/')
+        cli_args.rsc_dir += '/';
+
+    if(!std::filesystem::exists(cli_args.rsc_dir + "verify")) {
         error("Recourse directory verification file not present");
         return false;
     }
 
-    std::ifstream file(cli_args.rsc_dir + "/verify");
+    std::ifstream file(cli_args.rsc_dir + "verify");
     std::string line;
     file >> line;
     if(line != "4c3f666590eeb398f4606555d3756350") {
@@ -144,6 +149,8 @@ int main(int argc, char *argv[]) {
         info("You have to point to the resource directory if not running from project root using the '-rsc <path>' flag.");
         exit(EXIT_FAILURE);
     }
+
+    DataCache::init_cache();
 
     // Init SDL
     if(SDL_Init(SDL_INIT_AUDIO) < 0) {

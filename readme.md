@@ -56,9 +56,10 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
-Create a tmp folder at start-up and cache FFTW3 knowledge and Dolph windows.  
+Set cache directory location based on project root instead of relative to rsc directory.  
+Ability to cache knowledge.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
-Allow max_display_frequency > MAX_FOURIER_FREQUENCY.  
+Allow max_display_frequency > MAX_FOURIER_FREQUENCY (and remove audio config include in graphics config).  
 Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
 Generic data passing structure from estimator to graphics.

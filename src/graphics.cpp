@@ -75,9 +75,9 @@ Graphics::Graphics() {
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
     n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
-    info_font = TTF_OpenFont((cli_args.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 20);
+    info_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 20);
     if(info_font == NULL) {
-        error("Failed to load font '" + cli_args.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
+        error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);
     }
 
@@ -95,9 +95,9 @@ Graphics::Graphics() {
     mouse_x = -1;
     clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
-    TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "/font/DejaVuSans.ttf").c_str(), 75);
+    TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
     if(freeze_font == NULL) {
-        error("Failed to load font '" + cli_args.rsc_dir + "/font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
+        error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);
     }
     freeze = false;
@@ -275,8 +275,8 @@ inline uint32_t calc_color(const double data, const double max_value) {
 }
 
 void Graphics::add_data_point(const SpectrumData *const data) {
-    data_points.push_front(DataCache());
-    DataCache &dc = *(data_points.begin());
+    data_points.push_front(DataPoint());
+    DataPoint &dc = *(data_points.begin());
 
     // Make a copy of spectrum, as it is data local to the estimator which will change
     // This assignment calls the copy constructor of std::vector
@@ -454,7 +454,7 @@ void Graphics::render_spectrogram() {
 void Graphics::render_waterfall() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
-    std::list<DataCache>::iterator it = data_points.begin();
+    std::list<DataPoint>::iterator it = data_points.begin();
     int n_data_points = data_points.size();
     for(int i = 0; i < n_data_points && i < res_h; i++) {
         SDL_Rect src_rect = {0, 0, n_waterfall_pixels, 1};  // TODO: Calculate the number of points that should be used

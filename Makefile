@@ -29,7 +29,7 @@ ALL_OBJ = $(patsubst src/%.cpp, obj/%.o, $(wildcard $(patsubst src%/, src%/*.cpp
 FILTER_OBJ = #obj/main.o
 OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
-.PHONY: all sanitize force fresh clean outputclean valgrind lines grep debug todo trailing_spaces help
+.PHONY: all sanitize force fresh clean cacheclean outputclean valgrind lines grep debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -55,6 +55,9 @@ clean:
 	rm -f $(BIN)
 	rm -f *.s
 	rm -f vgcore*
+
+cacheclean:
+	rm -rf cache/
 
 outputclean:
 	rm -f output*.json
@@ -123,6 +126,7 @@ trailing_spaces:
 help:
 	@echo The default build target is \"all\", which builds the binary \"$(BIN)\".
 	@echo \"make clean\" removes all built files.
+	@echo \"make cacheclean\" removes the Digistring cache directory.
 	@echo \"make outputclean\" removes the default named output files.
 	@echo \"make force\" forces all build targets to be rebuild.
 	@echo \"make fresh\" runs \"make clean\; make\", which may help with potential building problems after updating.
