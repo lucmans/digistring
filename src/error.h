@@ -12,6 +12,7 @@
 #include <iostream>
 // #include <unistd.h>  // isatty
 #include <stdexcept>
+#include <source_location>
 
 
 // Uncomment relevant lines; commented to improve compiling times, as printing times relies on performance, which relies on config
@@ -82,25 +83,27 @@ std::string __str(T x) {
 #define STR(x)              __str(x)
 
 
-inline void ex_msg(const std::string &msg) {
-    __ex_msg(__FILE__, __LINE__, (msg));
+inline void ex_msg(const std::string &msg, const std::source_location location = std::source_location::current()) {
+    __ex_msg(location.file_name(), location.line(), msg);
 }
 
-inline void error(const std::string &msg) {
-    __msg("Error", RED, __FILE__, __LINE__, (msg));
+inline void error(const std::string &msg, const std::source_location location = std::source_location::current()) {
+    __msg("Error", RED, location.file_name(), location.line(), msg);
 }
 
-inline void warning(const std::string &msg) {
-    __msg("Warning", YELLOW, __FILE__, __LINE__, (msg));
+inline void warning(const std::string &msg, const std::source_location location = std::source_location::current()) {
+    __msg("Warning", YELLOW, location.file_name(), location.line(), msg);
 }
 
+// inline void info(const std::string &msg, const std::source_location location = std::source_location::current()) {
+//     __msg("Info", GREEN, location.file_name(), location.line(), msg);
+// }
 inline void info(const std::string &msg) {
-    // __msg("Info", GREEN, __FILE__, __LINE__, (msg));
-    __info_msg((msg));  // Prints to std::cout and does not print file:line
+    __info_msg(msg);  // Prints to std::cout and does not print file:line
 }
 
-inline void debug(const std::string &msg) {
-    __msg("Debug", BLUE, __FILE__, __LINE__, (msg));
+inline void debug(const std::string &msg, const std::source_location location = std::source_location::current()) {
+    __msg("Debug", BLUE, location.file_name(), location.line(), msg);
 }
 
 

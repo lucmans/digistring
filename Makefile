@@ -8,7 +8,7 @@ BIN = digistring
 
 # General compiler flags
 CXX = g++
-CXXFLAGS = -std=c++17 -g
+CXXFLAGS = -std=c++20 -g
 DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
 WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
 # FLAGS = -DCOLORED
