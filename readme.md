@@ -13,8 +13,7 @@ On Arch Linux:
 `sudo pacman -S sdl2 sdl2_ttf fftw3`
 
 ## Building
-Run `make` in the root directory of the project to build the binary.  
-This creates the binary `digistring` in the root of the project.  
+Run `make` in the root directory of the project to build the binary `digistring` in the root directory of the project.  
 In case of build failures after updating, try running `make fresh`.  
 Run `make help` for more information on all build targets and make scripts.
 
