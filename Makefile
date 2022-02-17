@@ -26,7 +26,7 @@ BUILD_FOLDERS = $(patsubst src%/, obj%/, $(SRC_FOLDERS)) $(patsubst src%/, dep%/
 # Create an .o file for every .cpp file
 ALL_OBJ = $(patsubst src/%.cpp, obj/%.o, $(wildcard $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS))))
 # .o files which should not be created (.cpp which should not be compiled)
-FILTER_OBJ = #obj/main.o
+FILTER_OBJ = obj/generate_completions.o
 OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
 .PHONY: all sanitize force fresh clean cacheclean outputclean valgrind lines grep debug todo trailing_spaces help
@@ -86,7 +86,7 @@ include $(wildcard $(patsubst obj/%.o, dep/%.d, $(OBJ)))
 	$(CXX) -S -fverbose-asm -g -O2 $<
 
 
-valgrind: $(BIN)
+valgrind: all
 	clear
 	valgrind --leak-check=full --error-limit=no ./$(BIN)  #--show-reachable=yes
 

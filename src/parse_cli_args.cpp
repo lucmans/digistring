@@ -1,5 +1,6 @@
 
 #include "parse_cli_args.h"
+#include "generate_completions.cpp"
 
 #include "note.h"
 #include "error.h"
@@ -18,30 +19,35 @@
 #include <map>
 
 
+// Initialize the global holding the chosen CLI argument options
 CLIArgs cli_args;
 
-const std::map<const std::string, void (ArgParser::*const)()> ArgParser::flag_to_func = {
-    {"-f", &ArgParser::parse_fullscreen},
-    {"--file", &ArgParser::parse_file},
-    {"-h", &ArgParser::parse_help},
-    {"--help", &ArgParser::parse_help},
-    {"-n", &ArgParser::parse_generate_note},
-    {"-o", &ArgParser::parse_output_file},
-    {"--output", &ArgParser::parse_output_file},
-    {"--over", &ArgParser::parse_print_overtone},
-    {"-p", &ArgParser::parse_playback},
-    {"--perf", &ArgParser::parse_print_performance},
-    {"-r", &ArgParser::parse_resolution},
-    {"--rsc", &ArgParser::parse_rsc_dir},
-    {"-s", &ArgParser::parse_generate_sine}
+
+const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
+    {"-f",                      ParseObj(&ArgParser::parse_fullscreen,          {})},
+    {"--file",                  ParseObj(&ArgParser::parse_file,                {OptType::file})},
+    {"-g",                      ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
+    {"--generate-completions",  ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
+    {"-h",                      ParseObj(&ArgParser::parse_help,                {})},
+    {"--help",                  ParseObj(&ArgParser::parse_help,                {})},
+    {"-n",                      ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
+    {"-o",                      ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
+    {"--output",                ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
+    {"--over",                  ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::last_arg})},
+    {"-p",                      ParseObj(&ArgParser::parse_playback,            {})},
+    {"--perf",                  ParseObj(&ArgParser::parse_print_performance,   {})},
+    {"-r",                      ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
+    {"--rsc",                   ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
+    {"-s",                      ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})}
 };
 
 void print_help() {
     std::cout << "Flags (argument parameters in <> are required and in [] are optional):\n"
               << "  -f                   - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
               << "  --file <file>        - Play samples from given file\n"
+              << "  -g <file>            - Generate Bash completions to file (overwriting it)\n"
               << "  -n [note]            - Generate note (default is A4)\n"
-              << "  -o | --output [file] - Write estimation results as JSON to file (default filename is output.json)\n"
+              << "  -o | --output [file] - Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")\n"
               << "  --over <note> [n]    - Print n (default is 5) overtones of given note\n"
               << "  -p                   - Play recorded audio back\n"
               << "  --perf               - Output performance stats in stdout\n"
@@ -97,7 +103,8 @@ void ArgParser::parse_args() {
     const char *arg;
     while(fetch_arg(arg)) {
         try {
-            std::invoke(flag_to_func.at(arg), this);
+            const std::function<void(ArgParser&)> parse_func = ArgParser::flag_to_func.at(arg).function;
+            parse_func(*this);
         }
         catch(const std::out_of_range &oor) {
             std::cout << "Incorrect usage; flag '" + std::string(arg) + "' not known\n" << std::endl;
@@ -174,7 +181,7 @@ void ArgParser::parse_generate_note() {
 void ArgParser::parse_output_file() {
     const char *filename;
     if(!fetch_opt(filename)) {
-        filename = DEFAULT_OUTPUT_FILENAME;
+        filename = DEFAULT_OUTPUT_FILENAME.c_str();
         info("No file provided with output flag; using '" + STR(filename) + " instead");
     }
 

@@ -3,7 +3,10 @@
 #define CONFIG_RESULTS_FILE_H
 
 
-constexpr char DEFAULT_OUTPUT_FILENAME[] = "output.json";
+#include <string>
+
+
+const std::string DEFAULT_OUTPUT_FILENAME = "output.json";
 constexpr int INDENT_AMOUNT = 4;  // Number of spaces per indent
 constexpr bool WRITE_SILENCE = true;
 

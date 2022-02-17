@@ -5,6 +5,11 @@
 
 #include <map>
 #include <string>
+#include <functional>
+
+
+// Prototype before ArgParser
+class ParseObj;
 
 
 // Helps hiding creating an ArgParser object
@@ -22,6 +27,9 @@ class ArgParser {
         bool fetch_opt(const char *&arg);
 
         void parse_args();
+
+        // In generate_completions.cpp
+        void generate_completions();
 
 
     private:
@@ -43,7 +51,25 @@ class ArgParser {
         void parse_rsc_dir();
         void parse_generate_sine();
 
-        static const std::map<const std::string, void (ArgParser::*const)()> flag_to_func;
+        static const std::map<const std::string, const ParseObj> flag_to_func;
+};
+
+
+/* For automatically generating completions */
+// The OptType determines what kind of tab complete to perform on arguments of flags
+// last_arg will prevent further completions to be given (useful for signalling no other flags are possible)
+enum class OptType {
+    dir, file, output_file, completions_file, integer, opt_integer, note, opt_note, last_arg
+};
+
+// Struct holding the parse function and OptTypes
+struct ParseObj {
+    const std::function<void(ArgParser&)> function;
+    const std::vector<OptType> opt_types;
+
+    ParseObj(const std::function<void(ArgParser&)> _function, const std::vector<OptType> _opt_types) :
+            function(_function),
+            opt_types(_opt_types) {};
 };
 
 
