@@ -23,6 +23,9 @@ Run `make help` for more information on all build targets and make scripts.
 Digistring can be started by running the binary.  
 If the current directory is not the root of the project, set the resource directory using the `-rsc` flag.
 
+Digistring comes with tab completion, which can be used in the current session using:  
+`source completions.sh`
+
 Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully exit as soon as possible.  
 Sending `SIGINT` or `SIGTERM` twice will immediately stop Digistring.
 
@@ -30,6 +33,7 @@ Sending `SIGINT` or `SIGTERM` twice will immediately stop Digistring.
 Argument parameters in <> are required and in [] are optional.  
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
 `--file <file>`: Use file as input.  
+`-g | --generate-completions <file>`: Generate Bash completions to file (overwriting it).  
 `-n [note]`: Generate note (default is A4).  
 `-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
 `--over <note> [n]`: Print n (default is 5) overtones of given note.  
