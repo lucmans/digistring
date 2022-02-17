@@ -175,7 +175,8 @@ void ArgParser::generate_completions() {
     ss << "    return 0\n"
        << "}\n"
        << "\n"
-       << "complete -o filenames -o nosort -F _generate_digistring_compl ./digistring"
+       << "complete -o filenames -o nosort -F _generate_digistring_compl ./digistring\n"
+       << "complete -o filenames -o nosort -F _generate_digistring_compl digistring"
        << std::endl;
 
 

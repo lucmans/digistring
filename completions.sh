@@ -168,3 +168,4 @@ function _generate_digistring_compl() {
 }
 
 complete -o filenames -o nosort -F _generate_digistring_compl ./digistring
+complete -o filenames -o nosort -F _generate_digistring_compl digistring
