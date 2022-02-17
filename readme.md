@@ -23,7 +23,7 @@ Run `make help` for more information on all build targets and make scripts.
 Digistring can be started by running the binary.  
 If the current directory is not the root of the project, set the resource directory using the `-rsc` flag.
 
-Digistring comes with tab completion, which can be used in the current session using:  
+Digistring comes with tab completion, which can be used in the current session after running:  
 `source completions.sh`
 
 Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully exit as soon as possible.  
