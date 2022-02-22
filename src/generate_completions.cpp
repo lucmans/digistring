@@ -1,3 +1,4 @@
+// Included by "parse_cli_args.cpp"
 
 #include "parse_cli_args.h"
 #include "error.h"
@@ -8,6 +9,12 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+
+
+constexpr int INDENT_SPACES = 4;
+inline std::string indent(const int level) {
+    return std::string(level * INDENT_SPACES, ' ');
+}
 
 
 void ArgParser::generate_completions() {
@@ -21,142 +28,142 @@ void ArgParser::generate_completions() {
 
     // Make a list of all flags and count the maximum number of opts for any arg
     std::string all_flags;
-    size_t max_number_of_opts = 0;
+    size_t max_number_of_opts = 0;  // Determines the maximum number of opts we have to look back for completions
     for(const auto &[key, value] : flag_to_func) {
-        all_flags += " " + key;
+        all_flags += key + " ";
 
         if(value.opt_types.size() > max_number_of_opts)
             max_number_of_opts = value.opt_types.size();
     }
 
-    // Remove leading space
+    // Remove trailing space
     if(all_flags.size() > 0)
-        all_flags.erase(0, 1);
+        all_flags.pop_back();
 
     // Generate rules for when expecting something else than a flag
     for(size_t i = 1; i <= max_number_of_opts; i++) {
-        ss << "    if (( $COMP_CWORD - 1 >= 1 )); then\n"
-           << "        case ${COMP_WORDS[COMP_CWORD - " + std::to_string(i) + "]} in\n";
+        ss << indent(1) << "if (( $COMP_CWORD - 1 >= 1 )); then\n"
+           << indent(1) << "    case ${COMP_WORDS[COMP_CWORD - " + std::to_string(i) + "]} in\n";
         for(const auto &[key, value] : flag_to_func) {
             // Don't look more opts back than an arg accepts
             if(value.opt_types.size() < i)
                 continue;
 
             // Generate the rule to match the exception
-            ss << "            " << key << ")\n";
+            ss << indent(3) << key << ")\n";
             switch(value.opt_types[i - 1]) {
                 case OptType::dir:
-                    ss << "                COMPREPLY=(`compgen -A directory -- $cur`)\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "COMPREPLY=(`compgen -A directory -- $cur`)\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::file:
-                    ss << "                COMPREPLY=(`compgen -A file -- $cur`)\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "COMPREPLY=(`compgen -A file -- $cur`)\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::output_file:
-                    ss << "                if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
-                       << "                    COMPREPLY=(\"" + DEFAULT_OUTPUT_FILENAME + "\")\n"
-                       << "                else\n"  // Or suggest existing files on non-empty tab
-                       << "                    COMPREPLY=(`compgen -A file -- $cur`)\n"
-                       << "                fi\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
+                       << indent(4) << "    COMPREPLY=(\"" + DEFAULT_OUTPUT_FILENAME + "\")\n"
+                       << indent(4) << "else\n"  // Or suggest existing files on non-empty tab
+                       << indent(4) << "    COMPREPLY=(`compgen -A file -- $cur`)\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::completions_file:
-                    ss << "                if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
-                       << "                    COMPREPLY=(\"completions.sh\")\n"
-                       << "                else\n"  // Or suggest existing files on non-empty tab
-                       << "                    COMPREPLY=(`compgen -A file -- $cur`)\n"
-                       << "                fi\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
+                       << indent(4) << "    COMPREPLY=(\"completions.sh\")\n"
+                       << indent(4) << "else\n"  // Or suggest existing files on non-empty tab
+                       << indent(4) << "    COMPREPLY=(`compgen -A file -- $cur`)\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::integer:
-                    ss << "                if [[ ${#cur} == 0 ]]; then\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Please enter an integer${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                elif [[ $cur =~ ^-?[0123456789]+$ ]]; then\n"  // An integer is typed
-                       << "                    COMPREPLY=(${cur})\n"
-                       << "                else\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Error: Not an integer${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                fi\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter an integer${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "elif [[ $cur =~ ^-?[0123456789]+$ ]]; then\n"  // An integer is typed
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not an integer${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::opt_integer:
-                    ss << "                if [[ ${#cur} == 0 ]]; then\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Please enter an integer or type \'-\' for flag completions${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << "                    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
-                       << "                elif [[ $cur =~ ^-?[0123456789]+$ ]]; then\n"  // An integer is typed
-                       << "                    COMPREPLY=(${cur})\n"
-                       << "                else\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Error: Not an integer or '-'${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                fi\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter an integer or type \'-\' for flag completions${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
+                       << indent(4) << "elif [[ $cur =~ ^-?[0123456789]+$ ]]; then\n"  // An integer is typed
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not an integer or '-'${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::note:
-                    ss << "                if [[ ${#cur} == 0 ]]; then\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4)${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then\n"  // Note is fully typed
-                       << "                    COMPREPLY=(${cur})\n"
-                       << "                elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then\n"  // Note is being typed
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Note name example: A#4${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                else\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Error: Not a note name (e.g. A#4)${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                fi\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4)${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then\n"  // Note is fully typed
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then\n"  // Note is being typed
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Note name example: A#4${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not a note name (e.g. A#4)${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::opt_note:
-                    ss << "                if [[ ${#cur} == 0 ]]; then\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4) or type \'-\' for flag completions${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << "                    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
-                       << "                elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then\n"  // Note is fully typed
-                       << "                    COMPREPLY=(${cur})\n"
-                       << "                elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then\n"  // Note is being typed
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Note name example: A#4${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                else\n"
-                       << "                    OLD_IFS=\"$IFS\"\n"
-                       << "                    IFS=$'\\n'\n"
-                       << "                    COMPREPLY=($(compgen -W \"Error: Not a note name (e.g. A#4) or '-'${IFS}...\" -- \"\"))\n"
-                       << "                    IFS=\"$OLD_IFS\"\n"
-                       << "                fi\n"
-                       << "                return 0;;\n";
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4) or type \'-\' for flag completions${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
+                       << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then\n"  // Note is fully typed
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then\n"  // Note is being typed
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Note name example: A#4${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not a note name (e.g. A#4) or '-'${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::last_arg:
-                    ss << "                return 0;;\n";
+                    ss << indent(4) << "return 0;;\n";
                     break;
 
                 default:

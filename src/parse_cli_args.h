@@ -67,7 +67,7 @@ struct ParseObj {
     const std::function<void(ArgParser&)> function;
     const std::vector<OptType> opt_types;
 
-    ParseObj(const std::function<void(ArgParser&)> _function, const std::vector<OptType> _opt_types) :
+    ParseObj(const std::function<void(ArgParser&)> _function, const std::vector<OptType> &_opt_types) :
             function(_function),
             opt_types(_opt_types) {};
 };

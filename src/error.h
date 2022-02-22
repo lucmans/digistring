@@ -3,7 +3,7 @@
 #define ERROR_H
 
 
-// #include "performance.h"
+#include "performance.h"
 
 #include <cerrno>
 #include <cstdio>
@@ -15,8 +15,7 @@
 #include <source_location>
 
 
-// Uncomment relevant lines; commented to improve compiling times, as printing times relies on performance, which relies on config
-const bool TIMES = false;  // Display timestamp in CLI messages
+constexpr bool TIMES = false;  // Display timestamp in CLI messages
 
 const char GREEN[] = "\033[32m";
 const char BLUE[] = "\033[34m";
@@ -29,15 +28,15 @@ const char RESET[] = "\033[0m";
 // Exception message
 inline std::string __ex_msg(const char *file, int line, const std::string &msg) {
     std::string out_msg = "";
-    out_msg += RED;
     out_msg += BOLD;
-    // if(TIMES) {
-    //     out_msg += "[";
-    //     out_msg += perf.get_program_time();
-    //     out_msg += "] ";
-    // }
+    if constexpr(TIMES) {
+        out_msg += "[";
+        out_msg += perf.get_program_time();
+        out_msg += "] ";
+    }
 
-    out_msg += "Unhandled video exception: ";
+    out_msg += RED;
+    out_msg += "Unhandled exception: ";
     out_msg += RESET;
     out_msg += msg;
     out_msg += " (";
@@ -51,17 +50,19 @@ inline std::string __ex_msg(const char *file, int line, const std::string &msg) 
 
 
 inline void __info_msg(const std::string msg) {
-    std::cout << GREEN << BOLD;
-    // if(TIMES)
-    //     std::cout << "[" << perf.get_program_time() << "] ";
-    std::cout << "Info" << RESET << ": " << msg << std::endl;
+    std::cout << BOLD;
+    if constexpr(TIMES)
+        std::cout << "[" << perf.get_program_time() << "] ";
+
+    std::cout << GREEN << "Info" << RESET << ": " << msg << std::endl;
 }
 
 inline void __msg(const char *type, const char *color, const char *file, const int line, const std::string &msg) {
-    std::cerr << color << BOLD;
-    // if(TIMES)
-    //     std::cerr << "[" << perf.get_program_time() << "] ";
-    std::cerr << type << RESET << ": " << msg << " (" << file << ":" << line << ")" << std::endl;
+    std::cerr << BOLD;
+    if constexpr(TIMES)
+        std::cerr << "[" << perf.get_program_time() << "] ";
+
+    std::cerr << color << type << RESET << ": " << msg << " (" << file << ":" << line << ")" << std::endl;
 }
 
 

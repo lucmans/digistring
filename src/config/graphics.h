@@ -6,12 +6,16 @@
 #include "config/audio.h"
 
 
+// For disabling graphics
 constexpr bool HEADLESS = false;
 
 // Maximum graphics frames per second (not to be confused with Fourier frames)
 constexpr double MAX_FPS = 30.0;
 
+// Show a vertical line at note frequencies in spectrum
 constexpr bool DISPLAY_NOTE_LINES = false;
+
+// Render the number of input samples queued, which shows audio overruns
 constexpr bool DISPLAY_QUEUED_IN_SAMPLES = true;
 
 constexpr int DEFAULT_RES[2] = {1024, 768};

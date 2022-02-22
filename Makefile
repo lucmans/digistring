@@ -7,6 +7,7 @@
 BIN = digistring
 
 # General compiler flags
+# c++20 is required for std::source_location (error.h)
 CXX = g++
 CXXFLAGS = -std=c++20 -g
 DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
