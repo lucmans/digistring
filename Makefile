@@ -30,7 +30,7 @@ ALL_OBJ = $(patsubst src/%.cpp, obj/%.o, $(wildcard $(patsubst src%/, src%/*.cpp
 FILTER_OBJ = obj/generate_completions.o
 OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
-.PHONY: all sanitize force fresh clean cacheclean outputclean valgrind lines grep debug todo trailing_spaces help
+.PHONY: all sanitize force fresh clean cacheclean outputclean valgrind lines grep grepl debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -113,6 +113,9 @@ lines:
 grep:
 	@grep --color=auto -n "$(pat)" $(SRC_FILES) || echo -e "Pattern not found\n"
 
+grepl:
+	@grep --color=auto -F -n '$(pat)' $(SRC_FILES) || echo -e "Pattern not found\n"
+
 debug:
 	@grep --color=auto -n DEBUG $(SRC_FILES) || echo -e "No debug code left!\n"
 
@@ -136,6 +139,7 @@ help:
 	@echo Furthermore, some often used command are added to the makefile:
 	@echo \"make lines\" counts the number of lines in all source files.
 	@echo \"make grep pat=\'pattern\'\" searches for pattern in all source files.
+	@echo \"make grepl pat=\'pattern\'\" is the same as \"make grep\" but with fixed string patterns \(no regex\).
 	@echo \"make debug\" searches for all debug comments in the source files.
 	@echo \"make todo\" searches for all todo comments in the source files.
 	@echo \"make trailing_spaces\" searches all source files for trailing whitespace characters \(whitespace characters before line end\).
