@@ -51,7 +51,6 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 **Keyboard controls:**  
 `-`/`+`: Decrease/increase the frequency of the generated sine wave or note. Note that frame containing samples representing the old frequency has to finish playing before new frame is played.  
 `[`/`]`: Decrease/increase the maximum displayed frequency.  
-`f`: Freeze current graph.  
 `p`: Change plot type.  
 `r`: Reset loudest recorded value.  
 `t`: Clear SDL audio playback buffer (samples sent to OS are still played).  
@@ -60,12 +59,14 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 # TODO
 Set cache directory location based on project root instead of relative to rsc directory.  
-Ability to cache knowledge.  
+Ability to cache FFTW3 knowledge.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Allow max_display_frequency > MAX_FOURIER_FREQUENCY (and remove audio config include in graphics config).  
 Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
-Generic data passing structure from estimator to graphics.
+Use correct destination when rendering Bins and Spectrogram (only uses width and height, not x/y offset).  
+Waterfall plot (some code still left in graphics.cpp).  
+Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure)
 
 
 # BUGS

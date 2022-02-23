@@ -4,7 +4,9 @@
 
 
 #include "note.h"
-#include "spectrum.h"
+#include "estimator_graphics/spectrum.h"
+
+#include <SDL2/SDL.h>
 
 #include <map>
 #include <string>
@@ -34,6 +36,7 @@ enum class Estimators {
 const std::map<const Estimators, const std::string> EstimatorString = {{Estimators::highres, "highres"},
                                                                        {Estimators::tuned, "tuned"}};
 
+class EstimatorGraphics;  // Declared Estimator class in this file
 class Estimator {
     public:
         Estimator();
@@ -44,19 +47,40 @@ class Estimator {
 
         // Functions for retrieving graphics related data
         double get_max_norm() const;
-        // The spectrum data pointer is valid till the next perform() call
-        // It also sorts the spectrum, as is needed for the graphics
-        const Spectrum *get_spectrum();
+
+        // The estimator graphics pointer is valid till the next perform() call
+        const EstimatorGraphics *get_estimator_graphics();
+        void next_plot_type();
 
         // Actually performs the estimation
         virtual void perform(float *const input_buffer, NoteEvents &note_events) = 0;
 
 
     protected:
-        // Graphics output related variables, so only available in without headless mode
+        // Graphics output related variables, so only available without headless mode
         // These variables are set during perform, so relate to the last perform call
-        Spectrum spectrum;
+        EstimatorGraphics *estimator_graphics;
         double max_norm;
+};
+
+
+struct GraphicsData {
+    double max_display_frequency;
+    double max_recorded_value;
+};
+
+class EstimatorGraphics {
+    public:
+        EstimatorGraphics() : cur_plot(0) {};
+        virtual ~EstimatorGraphics() {};
+
+        void next_plot() {cur_plot++;};
+        virtual void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const = 0;
+
+
+    protected:
+        // Mutable, so Estimator can return a const EstimatorGraphics pointer, so that the data used for graphics can only be altered by an Estimator
+        mutable int cur_plot;
 };
 
 

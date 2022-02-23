@@ -1,7 +1,7 @@
 
 #include "estimator.h"
 
-#include "spectrum.h"
+#include "estimator_graphics/spectrum.h"
 #include "error.h"
 
 #include "config/graphics.h"
@@ -31,12 +31,17 @@ double Estimator::get_max_norm() const {
     return max_norm;
 }
 
-const Spectrum *Estimator::get_spectrum() {
+
+const EstimatorGraphics *Estimator::get_estimator_graphics() {
     if constexpr(HEADLESS) {
         error("This call should never occur with headless mode");
         exit(EXIT_FAILURE);
     }
 
-    spectrum.sort();
-    return &spectrum;
+    return estimator_graphics;
+}
+
+
+void Estimator::next_plot_type() {
+    estimator_graphics->next_plot();
 }

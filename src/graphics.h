@@ -4,28 +4,10 @@
 
 
 #include "note.h"
-#include "spectrum.h"
+#include "estimators/estimator.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-
-#include <forward_list>  // For display_plot_type
-#include <list>  // For Graphics.data_points
-
-
-enum class PlotType {
-    spectrogram, bins, waterfall
-};
-
-// List of plot types to switch between
-// Graphics starts with first plot type in this list
-const std::forward_list<PlotType> display_plot_type = {PlotType::spectrogram, /*PlotType::waterfall,*/ PlotType::bins};
-
-
-struct DataPoint {
-    SpectrumData spectrum_data;
-    SDL_Texture *waterfall_line_buffer = NULL;
-};
 
 
 class Graphics {
@@ -44,18 +26,11 @@ class Graphics {
         void set_queued_samples(const int n_samples);
         void set_clicked(const int x, const int y);
 
-        void toggle_freeze_graph();
-
-        void next_plot_type();
-
         // Returns if size was changed
         bool resize_window(const int w, const int h);
 
-        // The SpectrumData has to be sorted on ascending frequency
-        void add_data_point(const SpectrumData *const data);
-
-        // Render the frame to the framebuffer
-        void render_frame(const Note *const note);
+        // Render the frame to the framebuffer and framebuffer to screen
+        void render_frame(const Note *const note, const EstimatorGraphics *const estimator_graphics);
 
 
     private:
@@ -65,8 +40,6 @@ class Graphics {
         SDL_Renderer *renderer;
         SDL_Texture *frame_buffer;
 
-        PlotType plot_type;
-        std::list<DataPoint> data_points;
         double max_recorded_value;
 
         //
@@ -77,31 +50,20 @@ class Graphics {
         int queued_samples;
 
         double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
-        int n_waterfall_pixels;  // Number of pixels from waterfall line buffer to write to screen
         SDL_Texture *max_display_frequency_text;  // Rendered static text
         SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
 
         int mouse_x, mouse_y;
         SDL_Texture *clicked_freq_text;
 
-        // Graph freezing
-        bool freeze;
-        SpectrumData freeze_data;
-        SDL_Texture *freeze_txt_buffer;
-
 
         // Render functions render to framebuffer
         void render_black_screen();
-
-        void render_bins();
-        void render_spectrogram();
-        void render_waterfall();
 
         void render_current_note(const Note *const note);
         void render_max_displayed_frequency();
         void render_queued_samples();
         void render_clicked_frequency();
-        void render_freeze();
 };
 
 

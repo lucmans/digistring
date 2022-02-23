@@ -73,9 +73,13 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     // Pre-calculate Gaussian for envelope computation
     for(int i = 0; i < KERNEL_WIDTH; i++)
         gaussian[i] = exp(-M_PI * ((double)(i - MID) / ((double)MID * SIGMA)) * ((double)(i - MID) / ((double)MID * SIGMA)));
+
+    estimator_graphics = new HighResGraphics();
 }
 
 HighRes::~HighRes() {
+    delete estimator_graphics;
+
     fftwf_destroy_plan(p);
     fftwf_free(out);
     fftwf_free(in);
@@ -257,14 +261,28 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
 
     // Graphics
     if constexpr(!HEADLESS) {
+        HighResGraphics *highres_graphics = static_cast<HighResGraphics *>(estimator_graphics);
+
+        Spectrum &spectrum = highres_graphics->get_spectrum();
         spectrum.clear();
 
-        spectrum.add_data(0.0, 0.0, 0.0);  // Start graph at bottom left corner
+        Spectrum &envelope_spectrum = highres_graphics->get_envelope();
+        envelope_spectrum.clear();
 
-        // Start at j = 1 to skip rendering DC offset
+        // Start at i = 1 to skip rendering DC offset (envelope has no DC offset, so do first explicitly)
+        envelope_spectrum.add_data(0.0, envelope[0], 0.0);
         for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++) {
             spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i], (double)SAMPLE_RATE / (double)FRAME_SIZE);
-            // spectrum.add_envelope(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), envelope[i]);
+            envelope_spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), envelope[i], 0.0);
         }
+        spectrum.sort();
+        envelope_spectrum.sort();
+
+
+        std::vector<double> &f_peaks = highres_graphics->get_peaks();
+        f_peaks.clear();
+        for(int peak_bin : peaks)
+            f_peaks.push_back(peak_bin * ((double)SAMPLE_RATE / (double)FRAME_SIZE));
+        std::sort(f_peaks.begin(), f_peaks.end());
     }
 }

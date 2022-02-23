@@ -18,6 +18,15 @@ constexpr bool DISPLAY_NOTE_LINES = false;
 // Render the number of input samples queued, which shows audio overruns
 constexpr bool DISPLAY_QUEUED_IN_SAMPLES = true;
 
+// Draw a highlighted dot in spectrogram denoting a measured point
+constexpr bool DRAW_MEASURED_POINTS = false;
+
+// Draw the envelope used for peak detection in the high res estimator
+constexpr bool RENDER_ENVELOPE = true;
+
+// Draw the peaks found by the high res estimator
+constexpr bool RENDER_PEAKS = true;
+
 constexpr int DEFAULT_RES[2] = {1024, 768};
 constexpr int MIN_RES[2] = {800, 600};
 

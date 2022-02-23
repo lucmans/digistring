@@ -430,7 +430,7 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
 
 // #include <fftw3.h>
 // #include <algorithm>
-// #include "../error.h"
+// #include "error.h"
 // void dolph_chebyshev_window(float window[], const int size) {
 //     // The Dolph-Chebyshev is defined in the frequency domain
 //     fftwf_complex *f_win_in = (fftwf_complex*)fftwf_malloc(size * sizeof(fftwf_complex));

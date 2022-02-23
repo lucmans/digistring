@@ -244,8 +244,8 @@ void Program::update_graphics(const NoteEvents &note_events) {
     // Get data from estimator for graphics
     graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
 
-    const Spectrum *spec = estimator->get_spectrum();
-    graphics->add_data_point(spec->get_data());
+    // Get the pointer to the graphics object here, as it is only valid till next call to Estimator::perform()
+    const EstimatorGraphics *estimator_graphics = estimator->get_estimator_graphics();
     perf.push_time_point("Graphics parsed data");
 
     // Render data
@@ -258,9 +258,9 @@ void Program::update_graphics(const NoteEvents &note_events) {
 
         const int n_notes = note_events.size();
         if(n_notes == 0)
-            graphics->render_frame(nullptr);
+            graphics->render_frame(nullptr, estimator_graphics);
         else if(n_notes == 1)
-            graphics->render_frame(&note_events[0].note);
+            graphics->render_frame(&note_events[0].note, estimator_graphics);
         else  // n_notes > 1
             warning("Polyphonic graphics not yet supported");  // TODO: Support
 
@@ -324,7 +324,7 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_p:
-                        graphics->next_plot_type();
+                        estimator->next_plot_type();
                         break;
 
                     case SDLK_LEFTBRACKET:
@@ -335,9 +335,9 @@ void Program::handle_sdl_events() {
                         graphics->add_max_display_frequency(300.0);
                         break;
 
-                    case SDLK_f:
-                        graphics->toggle_freeze_graph();
-                        break;
+                    // case SDLK_f:
+                    //     graphics->toggle_freeze_graph();
+                    //     break;
 
                     case SDLK_s:
                         debug("Creating lag spike");

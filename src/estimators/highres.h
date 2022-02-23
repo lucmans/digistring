@@ -5,7 +5,11 @@
 
 #include "estimator.h"
 
+#include "estimator_graphics/spectrogram.h"
+#include "estimator_graphics/bins.h"
+
 #include "config/transcription.h"
+#include "config/graphics.h"
 
 #include <fftw3.h>
 
@@ -49,6 +53,38 @@ class HighRes : public Estimator {
         void get_loudest_peak(NoteSet &out_notes, const NoteSet &candidate_notes);
         void get_lowest_peak(NoteSet &out_notes, const NoteSet &candidate_notes);
         void get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_notes);
+};
+
+
+class HighResGraphics : public EstimatorGraphics {
+    public:
+        void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const override {
+            switch(cur_plot) {
+                default:
+                    cur_plot = 0;
+                    __attribute__ ((fallthrough));
+                case 0:
+                    spectrogram.render(renderer, dst, graphics_data, spectrum, envelope, peak_frequencies);
+                    break;
+
+                case 1:
+                    bins.render(renderer, dst, graphics_data, spectrum);
+                    break;
+            }
+        };
+
+        Spectrum &get_spectrum() {return spectrum;};
+        Spectrum &get_envelope() {return envelope;};
+        std::vector<double> &get_peaks() {return peak_frequencies;};
+
+
+    private:
+        Spectrogram spectrogram;
+        Bins bins;
+
+        Spectrum spectrum;
+        Spectrum envelope;
+        std::vector<double> peak_frequencies;
 };
 
 

@@ -6,18 +6,13 @@
 #include "error.h"
 
 #include "note.h"
-#include "spectrum.h"
+#include "estimators/estimator.h"
 
 #include "config/cli_args.h"
 #include "config/graphics.h"
-#include "config/audio.h"
-#include "config/transcription.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-
-#include <algorithm>  // std::find(), std::max()
-#include <cmath>  // std::find(), std::max()
 
 
 Graphics::Graphics() {
@@ -70,10 +65,8 @@ Graphics::Graphics() {
     SDL_RenderCopy(renderer, frame_buffer, NULL, NULL);
     SDL_RenderPresent(renderer);
 
-    plot_type = *(display_plot_type.begin());
     max_recorded_value = 1.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
-    n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
 
     info_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 20);
     if(info_font == NULL) {
@@ -95,22 +88,18 @@ Graphics::Graphics() {
     mouse_x = -1;
     clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
-    TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
-    if(freeze_font == NULL) {
-        error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
-        exit(EXIT_FAILURE);
-    }
-    freeze = false;
-    freeze_txt_buffer = create_txt_texture(renderer, "Frozen", freeze_font, {0x00, 0xff, 0xff, 0xff});
-    TTF_CloseFont(freeze_font);
+    // TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
+    // if(freeze_font == NULL) {
+    //     error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
+    //     exit(EXIT_FAILURE);
+    // }
+    // freeze = false;
+    // freeze_txt_buffer = create_txt_texture(renderer, "Frozen", freeze_font, {0x00, 0xff, 0xff, 0xff});
+    // TTF_CloseFont(freeze_font);
 }
 
 Graphics::~Graphics() {
-    for(auto &dp : data_points)
-        if(dp.waterfall_line_buffer != NULL)
-            SDL_DestroyTexture(dp.waterfall_line_buffer);
-
-    SDL_DestroyTexture(freeze_txt_buffer);
+    // SDL_DestroyTexture(freeze_txt_buffer);
 
     SDL_DestroyTexture(clicked_freq_text);
 
@@ -154,16 +143,13 @@ void Graphics::add_max_display_frequency(const double d_f) {
     if(max_display_frequency + d_f > MAX_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency greater than " + STR(MAX_FOURIER_FREQUENCY) + " Hz; setting it to maximum");
         max_display_frequency = MAX_FOURIER_FREQUENCY;
-        n_waterfall_pixels = (FRAME_SIZE / 2) + 1;
     }
     else if(max_display_frequency + d_f < MIN_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
         max_display_frequency = MIN_FOURIER_FREQUENCY;
-        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
     else {
         max_display_frequency += d_f;
-        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 
     SDL_DestroyTexture(max_display_frequency_number);
@@ -176,16 +162,13 @@ void Graphics::set_max_display_frequency(const double f) {
     if(f > MAX_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency greater than " + STR(MAX_FOURIER_FREQUENCY) + " Hz; setting it to maximum");
         max_display_frequency = MAX_FOURIER_FREQUENCY;
-        n_waterfall_pixels = (FRAME_SIZE / 2) + 1;
     }
     else if(f < MIN_FOURIER_FREQUENCY) {
         warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
         max_display_frequency = MIN_FOURIER_FREQUENCY;
-        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
     else {
         max_display_frequency = f;
-        n_waterfall_pixels = ceil(max_display_frequency / ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 
     SDL_DestroyTexture(max_display_frequency_number);
@@ -209,29 +192,10 @@ void Graphics::set_clicked(const int x, const int y) {
 }
 
 
-void Graphics::toggle_freeze_graph() {
-    freeze = !freeze;
-    freeze_data = (*(data_points.begin())).spectrum_data;
-}
-
-
-void Graphics::next_plot_type() {
-    // Get to current plot type in the list of plot types to display
-    std::forward_list<PlotType>::const_iterator current_type = std::find(display_plot_type.begin(), display_plot_type.end(), plot_type);
-    if(current_type == display_plot_type.end()) {
-        warning("Current plot type not in list of plot types to display. Graphics was likely initialized with a plot type not in the display_plot_type list.");
-        plot_type = *(display_plot_type.begin());
-        return;
-    }
-
-    // Get next in list
-    std::forward_list<PlotType>::const_iterator next_type = ++current_type;
-    if(next_type == display_plot_type.end())  // Loop to start
-        next_type = display_plot_type.begin();
-
-    // Actually set the new plot type
-    plot_type = *next_type;
-}
+// void Graphics::toggle_freeze_graph() {
+//     freeze = !freeze;
+//     freeze_data = (*(data_points.begin())).spectrum_data;
+// }
 
 
 bool Graphics::resize_window(const int w, const int h) {
@@ -263,7 +227,7 @@ bool Graphics::resize_window(const int w, const int h) {
 }
 
 
-inline uint32_t calc_color(const double data, const double max_value) {
+/*inline uint32_t calc_color(const double data, const double max_value) {
     uint32_t rgba = 0x000000ff;  // a
     const double t = (data / max_value) * 0.8;
 
@@ -313,32 +277,22 @@ void Graphics::add_data_point(const SpectrumData *const data) {
     // Remove expired points
     if(data_points.size() > MAX_HISTORY_DATAPOINTS)
         data_points.pop_back();
-}
+}*/
 
 
-void Graphics::render_frame(const Note *const note) {
+void Graphics::render_frame(const Note *const note, const EstimatorGraphics *const estimator_graphics) {
     render_black_screen();
 
-    switch(plot_type) {
-        case PlotType::spectrogram:
-            render_spectrogram();
-            break;
-
-        case PlotType::bins:
-            render_bins();
-            break;
-
-        case PlotType::waterfall:
-            render_waterfall();
-            break;
-    }
+    GraphicsData gd = {.max_display_frequency = max_display_frequency,
+                       .max_recorded_value = max_recorded_value};
+    estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
 
     render_current_note(note);
     render_max_displayed_frequency();
     if constexpr(DISPLAY_QUEUED_IN_SAMPLES)
         render_queued_samples();
     render_clicked_frequency();
-    render_freeze();
+    // render_freeze();
 
     // Render framebuffer to window
     SDL_SetRenderTarget(renderer, NULL);
@@ -355,102 +309,7 @@ void Graphics::render_black_screen() {
 }
 
 
-void Graphics::render_bins() {
-    SpectrumData spectrum_data = (freeze ? freeze_data : (*(data_points.begin())).spectrum_data);
-
-    SDL_SetRenderTarget(renderer, frame_buffer);
-
-    float x, y, bin_width;
-    unsigned int i;
-    SDL_SetRenderDrawColor(renderer, 0x1f, 0x77, 0xb4, 0xff);
-    for(i = 0; spectrum_data[i].freq + (spectrum_data[i].bin_size / 2.0) < max_display_frequency && i < spectrum_data.size(); i++) {
-        x = (spectrum_data[i].freq / max_display_frequency) * (float)res_w;
-        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * (float)res_h);
-        bin_width = (spectrum_data[i].bin_size / max_display_frequency) * (float)res_w;
-
-        SDL_FRect rect = {x - (bin_width / 2.0f), y, std::max(bin_width - 1.0f, 1.0f), (float)res_h};
-        SDL_RenderFillRectF(renderer, &rect);
-    }
-
-    if(i < spectrum_data.size()) {
-        x = (spectrum_data[i].freq / max_display_frequency) * (float)res_w;
-        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * (float)res_h);
-        bin_width = (spectrum_data[i].bin_size / max_display_frequency) * (float)res_w;
-
-        SDL_FRect rect = {x - (bin_width / 2.0f), y, std::max(bin_width - 1.0f, 1.0f), (float)res_h};
-        SDL_RenderFillRectF(renderer, &rect);
-    }
-}
-
-
-void Graphics::render_spectrogram() {
-    SpectrumData spectrum_data = (freeze ? freeze_data : (*(data_points.begin())).spectrum_data);
-
-    SDL_SetRenderTarget(renderer, frame_buffer);
-
-    // Draw line for note location in graphics
-    if constexpr(DISPLAY_NOTE_LINES) {
-        for(double f = LOWEST_NOTE.freq; f < max_display_frequency; f *= exp2(1.0 / 12.0)) {
-            SDL_SetRenderDrawColor(renderer, 0x30, 0x70, 0x35, 0xff);
-            int x = (f / max_display_frequency) * res_w;
-            SDL_RenderDrawLine(renderer, x, 0, x, res_h);
-        }
-    }
-
-    // TODO: Envelope and peaks
-    // EnvelopeData env = (*(data_points.begin())).envelope_data;
-    // SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
-    // for(i = 0; i < env.size(); i++) {
-    //     if(env[i].freq > max_display_frequency)
-    //         break;
-
-    //     x = (env[i].freq / max_display_frequency) * res_w;
-    //     y = res_h - ((env[i].amp / max_recorded_value) * res_h);
-
-    //     // SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    //     SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
-
-    //     // Draw actual measured points
-    //     // SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-    //     // SDL_RenderDrawPoint(renderer, prev_x, prev_y);
-
-    //     prev_x = x;
-    //     prev_y = y;
-    // }
-
-    // Plot line of spectrum
-    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-    int prev_x = 0;
-    int prev_y = res_h - 1;
-    int x, y;
-    unsigned int i;
-    for(i = 1; i < spectrum_data.size(); i++) {
-        if(spectrum_data[i].freq > max_display_frequency)
-            break;
-
-        x = (spectrum_data[i].freq / max_display_frequency) * res_w;
-        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
-
-        // SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
-        SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
-
-        // Draw actual measured points
-        // SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-        // SDL_RenderDrawPoint(renderer, prev_x, prev_y);
-
-        prev_x = x;
-        prev_y = y;
-    }
-
-    // Plot one point behind screen so graph exits screen correctly
-    if(i < spectrum_data.size()) {
-        x = (spectrum_data[i].freq / max_display_frequency) * res_w;
-        y = res_h - ((spectrum_data[i].amp / max_recorded_value) * res_h);
-        SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
-    }
-}
-
-
+/*
 void Graphics::render_waterfall() {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
@@ -463,6 +322,7 @@ void Graphics::render_waterfall() {
         it++;
     }
 }
+*/
 
 
 void Graphics::render_current_note(const Note *const note) {
@@ -582,15 +442,15 @@ void Graphics::render_clicked_frequency() {
 }
 
 
-void Graphics::render_freeze() {
-    if(!freeze)
-        return;
+// void Graphics::render_freeze() {
+//     if(!freeze)
+//         return;
 
-    SDL_SetRenderTarget(renderer, frame_buffer);
+//     SDL_SetRenderTarget(renderer, frame_buffer);
 
-    int w, h;
-    SDL_QueryTexture(freeze_txt_buffer, NULL, NULL, &w, &h);
+//     int w, h;
+//     SDL_QueryTexture(freeze_txt_buffer, NULL, NULL, &w, &h);
 
-    SDL_Rect dst = {res_w - w, 0, w, h};
-    SDL_RenderCopy(renderer, freeze_txt_buffer, NULL, &dst);
-}
+//     SDL_Rect dst = {res_w - w, 0, w, h};
+//     SDL_RenderCopy(renderer, freeze_txt_buffer, NULL, &dst);
+// }
