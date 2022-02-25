@@ -13,7 +13,7 @@
 #include <unistd.h>  // execvp
 #include <sys/wait.h>  // waitpid()
 
-#include "data_cache.h"
+#include "cache.h"
 #include "error.h"
 
 #include "config/transcription.h"
@@ -146,9 +146,9 @@ bool dolph_chebyshev_window(double window[], const int size, const double attenu
     std::string dolph_window_file;
     if(cache) {
         // If the window isn't present in the cache, generate the window
-        if(!DataCache::load_dolph_window(window, size, attenuation)) {
+        if(!Cache::load_dolph_window(window, size, attenuation)) {
             generate_and_read = true;
-            dolph_window_file = DataCache::get_dolph_path() + DataCache::get_dolph_filename(size, attenuation);
+            dolph_window_file = Cache::get_dolph_path() + Cache::get_dolph_filename(size, attenuation);
         }
         else {
             generate_and_read = false;
@@ -387,9 +387,9 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
     std::string dolph_window_file;
     if(cache) {
         // If the window isn't present in the cache, generate the window
-        if(!DataCache::load_dolph_window(window, size, attenuation)) {
+        if(!Cache::load_dolph_window(window, size, attenuation)) {
             generate_and_read = true;
-            dolph_window_file = DataCache::get_dolph_path() + DataCache::get_dolph_filename(size, attenuation);
+            dolph_window_file = Cache::get_dolph_path() + Cache::get_dolph_filename(size, attenuation);
         }
         else {
             generate_and_read = false;

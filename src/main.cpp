@@ -2,7 +2,7 @@
 #include "parse_cli_args.h"
 #include "program.h"
 #include "graphics.h"
-#include "data_cache.h"
+#include "cache.h"
 #include "performance.h"
 #include "quit.h"
 #include "error.h"
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    DataCache::init_cache();
+    Cache::init_cache();
 
     // Init SDL
     if(SDL_Init(SDL_INIT_AUDIO) < 0) {

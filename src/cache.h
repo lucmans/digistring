@@ -1,12 +1,12 @@
 
-#ifndef DATA_CACHE
-#define DATA_CACHE
+#ifndef CACHE
+#define CACHE
 
 
 #include <string>
 
 
-class DataCache {
+class Cache {
     public:
         // Should be called once at start of program after parsing CLI arguments and verifying resource directory
         static void init_cache();
@@ -25,11 +25,11 @@ class DataCache {
 
     private:
         // Remove ability to create an instance
-        DataCache() {}
+        Cache() {}
 
         // Is set in init_cache()
         static std::string cache_dir;
 };
 
 
-#endif  // DATA_CACHE
+#endif  // CACHE

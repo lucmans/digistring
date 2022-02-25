@@ -1,9 +1,9 @@
 
-#include "data_cache.h"
+#include "cache.h"
 
 #include <error.h>
 
-#include <config/data_cache.h>
+#include <config/cache.h>
 #include <config/cli_args.h>
 
 #include <string>
@@ -14,10 +14,10 @@
 
 
 // Is set in init_cache()
-std::string DataCache::cache_dir = "";
+std::string Cache::cache_dir = "";
 
 
-void DataCache::init_cache() {
+void Cache::init_cache() {
     if(cache_dir != "") {
         warning("Cache directory is already initialized; this function shouldn't be called twice...");
         return;
@@ -46,9 +46,9 @@ void DataCache::init_cache() {
 }
 
 
-const std::string DataCache::get_cache_dir() {
+const std::string Cache::get_cache_dir() {
     if(cache_dir == "") {
-        warning("DataCache was not yet initialized, so directory is not yet set");
+        warning("Cache was not yet initialized, so directory is not yet set");
         return "";
     }
 
@@ -56,7 +56,7 @@ const std::string DataCache::get_cache_dir() {
 }
 
 
-std::string DataCache::get_dolph_filename(const int size, const double attenuation) {
+std::string Cache::get_dolph_filename(const int size, const double attenuation) {
     // Copy the const string, as replace() mutates string
     std::string out = DOLPH_WINDOW_FILENAME;
 
@@ -83,12 +83,12 @@ std::string DataCache::get_dolph_filename(const int size, const double attenuati
     return out;
 }
 
-std::string DataCache::get_dolph_path() {
+std::string Cache::get_dolph_path() {
     return cache_dir;
 }
 
 
-void DataCache::save_dolph_window(const double in[], const int size, const double attenuation) {
+void Cache::save_dolph_window(const double in[], const int size, const double attenuation) {
     const std::string filename = get_dolph_filename(size, attenuation);
 
     std::fstream dolph_file(cache_dir + filename, std::ios::out);
@@ -102,7 +102,7 @@ void DataCache::save_dolph_window(const double in[], const int size, const doubl
     dolph_file << std::endl;
 }
 
-void DataCache::save_dolph_window(const float in[], const int size, const double attenuation) {
+void Cache::save_dolph_window(const float in[], const int size, const double attenuation) {
     const std::string filename = get_dolph_filename(size, attenuation);
 
     std::fstream dolph_file(cache_dir + filename, std::ios::out);
@@ -116,7 +116,7 @@ void DataCache::save_dolph_window(const float in[], const int size, const double
     dolph_file << std::endl;
 }
 
-bool DataCache::load_dolph_window(double out[], const int size, const double attenuation) {
+bool Cache::load_dolph_window(double out[], const int size, const double attenuation) {
     const std::string filename = get_dolph_filename(size, attenuation);
     if(!std::filesystem::exists(cache_dir + filename))
         return false;
@@ -128,7 +128,7 @@ bool DataCache::load_dolph_window(double out[], const int size, const double att
     return true;
 }
 
-bool DataCache::load_dolph_window(float out[], const int size, const double attenuation) {
+bool Cache::load_dolph_window(float out[], const int size, const double attenuation) {
     const std::string filename = get_dolph_filename(size, attenuation);
     if(!std::filesystem::exists(cache_dir + filename))
         return false;
