@@ -47,13 +47,15 @@ void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, con
     const SpectrumData spectrum_data = spectrum.get_data();
     static const unsigned int spectrum_size = get_spectrum_size(spectrum_data);
 
-    // Add new line
+    // Create line texture
+    // SDL_Texture *new_line = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, spectrum_size, 1);
     SDL_Texture *new_line = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, spectrum_size, 1);
     if(new_line == NULL) {
         error("Failed to create line texture for waterfall plot\nSDL error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
 
+    // Calculate the color of each pixel
     uint32_t *pixels;
     int pitch;
     SDL_LockTexture(new_line, NULL, (void **)&pixels, &pitch);
@@ -61,12 +63,15 @@ void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, con
         pixels[i] = calc_color(spectrum_data[i].amp, graphics_data.max_recorded_value);
     SDL_UnlockTexture(new_line);
 
-    // // Static texture (also set flag in SDL_CreateTexture above)
-    // uint32_t pixels[(FRAME_SIZE / 2) + 1];
-    // for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++)
-    //     pixels[i] = calc_color(dc.spectrum_data[i].amp, max_recorded_value);
-    // SDL_UpdateTexture(dc.waterfall_line_buffer, NULL, pixels, ((FRAME_SIZE / 2) + 1) * sizeof(uint32_t));
+    /*
+    // Static texture (also set flag in SDL_CreateTexture above)
+    uint32_t pixels[MAX_FRAME_SIZE];
+    for(int i = 0; i < spectrum_size; i++)
+        pixels[i] = calc_color(spectrum_data[i].amp, graphics_data.max_recorded_value);
+    SDL_UpdateTexture(waterfall_line_buffer, NULL, pixels, (spectrum_size * sizeof(uint32_t));
+    */
 
+    // Add new line
     lines.push_front(new_line);
 
     // Keep size bound
