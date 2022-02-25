@@ -222,8 +222,8 @@ bool Graphics::resize_window(const int w, const int h) {
 void Graphics::render_frame(const Note *const note, const EstimatorGraphics *const estimator_graphics) {
     render_black_screen();
 
-    GraphicsData gd = {.max_display_frequency = max_display_frequency,
-                       .max_recorded_value = max_recorded_value};
+    const GraphicsData gd = {.max_display_frequency = max_display_frequency,
+                             .max_recorded_value = max_recorded_value};
     estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
 
     render_current_note(note);

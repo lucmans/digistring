@@ -79,6 +79,7 @@ class EstimatorGraphics {
 
     protected:
         // Mutable, so Estimator can return a const EstimatorGraphics pointer, so that the data used for graphics can only be altered by an Estimator
+        // cur_plot should only be changed in the const member function render() to set it back to 0 if value is invalid
         mutable int cur_plot;
 };
 

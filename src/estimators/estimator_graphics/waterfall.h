@@ -24,6 +24,7 @@ class Waterfall {
 
 
     private:
+        // Mutable, as rendering should be const (these members are only for caching)
         mutable std::list<SDL_Texture *> lines;
 
         mutable double last_max_display_frequency;

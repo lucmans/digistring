@@ -13,12 +13,12 @@ class Spectrogram {
         Spectrogram();
         ~Spectrogram();
 
-        void render_spectrogram(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &spectrum_data) const;
-        void render_envelope(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &envelope) const;
-        void render_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const std::vector<double> &peaks) const;
+        void draw_spectrogram(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &spectrum_data) const;
+        void draw_envelope(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &envelope) const;
+        void draw_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const std::vector<double> &peaks) const;
 
         // Draw line for note location in graphics
-        void render_note_lines(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const;
+        void draw_note_lines(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const;
 
         void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum) const;
         void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum, const Spectrum &envelope, const std::vector<double> &peaks) const;

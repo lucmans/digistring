@@ -21,7 +21,7 @@ Spectrogram::~Spectrogram() {
 }
 
 
-void Spectrogram::render_spectrogram(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &spectrum_data) const {
+void Spectrogram::draw_spectrogram(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &spectrum_data) const {
     int prev_x = 0;
     int prev_y = dst.h - 1;
     unsigned int i;
@@ -59,7 +59,7 @@ void Spectrogram::render_spectrogram(SDL_Renderer *const renderer, const SDL_Rec
 }
 
 
-void Spectrogram::render_envelope(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &envelope) const {
+void Spectrogram::draw_envelope(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &envelope) const {
     if(envelope.size() == 0)
         return;
 
@@ -91,7 +91,7 @@ void Spectrogram::render_envelope(SDL_Renderer *const renderer, const SDL_Rect &
 }
 
 
-void Spectrogram::render_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const std::vector<double> &peaks) const {
+void Spectrogram::draw_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const std::vector<double> &peaks) const {
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
     for(double peak_f : peaks) {
         if(peak_f > graphics_data.max_display_frequency)
@@ -103,7 +103,7 @@ void Spectrogram::render_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst
 }
 
 
-void Spectrogram::render_note_lines(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const {
+void Spectrogram::draw_note_lines(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const {
     for(double f = LOWEST_NOTE.freq; f < graphics_data.max_display_frequency; f *= exp2(1.0 / 12.0)) {
         SDL_SetRenderDrawColor(renderer, 0x30, 0x70, 0x35, 0xff);
         const int x = (f / graphics_data.max_display_frequency) * dst.w;
@@ -116,9 +116,9 @@ void Spectrogram::render(SDL_Renderer *const renderer, const SDL_Rect &dst, cons
     const SpectrumData spectrum_data = spectrum.get_data();
 
     if constexpr(DISPLAY_NOTE_LINES)
-        render_note_lines(renderer, dst, graphics_data);
+        draw_note_lines(renderer, dst, graphics_data);
 
-    render_spectrogram(renderer, dst, graphics_data, spectrum_data);
+    draw_spectrogram(renderer, dst, graphics_data, spectrum_data);
 }
 
 void Spectrogram::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum, const Spectrum &envelope, const std::vector<double> &peaks) const {
@@ -126,13 +126,13 @@ void Spectrogram::render(SDL_Renderer *const renderer, const SDL_Rect &dst, cons
     const SpectrumData envelope_data = envelope.get_data();
 
     if constexpr(DISPLAY_NOTE_LINES)
-        render_note_lines(renderer, dst, graphics_data);
+        draw_note_lines(renderer, dst, graphics_data);
 
     if constexpr(RENDER_PEAKS)
-        render_peaks(renderer, dst, graphics_data, peaks);
+        draw_peaks(renderer, dst, graphics_data, peaks);
 
     if constexpr(RENDER_ENVELOPE)
-        render_envelope(renderer, dst, graphics_data, envelope_data);
+        draw_envelope(renderer, dst, graphics_data, envelope_data);
 
-    render_spectrogram(renderer, dst, graphics_data, spectrum_data);
+    draw_spectrogram(renderer, dst, graphics_data, spectrum_data);
 }

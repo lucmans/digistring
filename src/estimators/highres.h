@@ -79,6 +79,7 @@ class HighResGraphics : public EstimatorGraphics {
             }
         };
 
+        // These should only be called by the HighRes estimator in perform()
         Spectrum &get_spectrum() {return spectrum;};
         Spectrum &get_envelope() {return envelope;};
         std::vector<double> &get_peaks() {return peak_frequencies;};
