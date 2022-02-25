@@ -121,8 +121,9 @@ Graphics::~Graphics() {
 
 
 void Graphics::set_max_recorded_value(const double new_max) {
-    if(new_max > -0.00001 && new_max < 0.00001) {
-        warning("Can't set max_recorded_value to 0.0, keeping old value '" + STR(max_recorded_value) + '\'');
+    if(new_max < 1.0) {
+        warning("Can't set max_recorded_value lower than 1.0; setting it to 1.0...");
+        max_recorded_value = 1.0;
         return;
     }
 
