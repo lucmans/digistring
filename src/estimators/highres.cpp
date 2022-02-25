@@ -73,11 +73,13 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     for(int i = 0; i < KERNEL_WIDTH; i++)
         gaussian[i] = exp(-M_PI * ((double)(i - MID) / ((double)MID * SIGMA)) * ((double)(i - MID) / ((double)MID * SIGMA)));
 
-    estimator_graphics = new HighResGraphics();
+    if constexpr(HEADLESS)
+        estimator_graphics = new HighResGraphics();
 }
 
 HighRes::~HighRes() {
-    delete estimator_graphics;
+    if constexpr(HEADLESS)
+        delete estimator_graphics;
 
     fftwf_destroy_plan(p);
     fftwf_free(out);
