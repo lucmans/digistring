@@ -140,13 +140,9 @@ double Graphics::get_max_recorded_value() const {
 
 
 void Graphics::add_max_display_frequency(const double d_f) {
-    if(max_display_frequency + d_f > MAX_FOURIER_FREQUENCY) {
-        warning("Can't set maximum displayed frequency greater than " + STR(MAX_FOURIER_FREQUENCY) + " Hz; setting it to maximum");
-        max_display_frequency = MAX_FOURIER_FREQUENCY;
-    }
-    else if(max_display_frequency + d_f < MIN_FOURIER_FREQUENCY) {
-        warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
-        max_display_frequency = MIN_FOURIER_FREQUENCY;
+    if(max_display_frequency + d_f < MIN_MAX_DISPLAY_FREQUENCY) {
+        warning("Can't set maximum displayed frequency lower than " + STR(MIN_MAX_DISPLAY_FREQUENCY) + "; setting it to minimum");
+        max_display_frequency = MIN_MAX_DISPLAY_FREQUENCY;
     }
     else {
         max_display_frequency += d_f;
@@ -159,13 +155,9 @@ void Graphics::add_max_display_frequency(const double d_f) {
 }
 
 void Graphics::set_max_display_frequency(const double f) {
-    if(f > MAX_FOURIER_FREQUENCY) {
-        warning("Can't set maximum displayed frequency greater than " + STR(MAX_FOURIER_FREQUENCY) + " Hz; setting it to maximum");
-        max_display_frequency = MAX_FOURIER_FREQUENCY;
-    }
-    else if(f < MIN_FOURIER_FREQUENCY) {
-        warning("Can't set maximum displayed frequency lower than " + STR(MIN_FOURIER_FREQUENCY) + "; setting it to minimum");
-        max_display_frequency = MIN_FOURIER_FREQUENCY;
+    if(f < MIN_MAX_DISPLAY_FREQUENCY) {
+        warning("Can't set maximum displayed frequency lower than " + STR(MIN_MAX_DISPLAY_FREQUENCY) + "; setting it to minimum");
+        max_display_frequency = MIN_MAX_DISPLAY_FREQUENCY;
     }
     else {
         max_display_frequency = f;

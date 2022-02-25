@@ -38,8 +38,7 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
 void print_program_config_info() {
     std::cout << "Frame size: " << FRAME_SIZE << '\n'
               << "Frame time: " << ((double)FRAME_SIZE * 1000.0) / (double)SAMPLE_RATE << " ms\n"
-              << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz\n"
-              << "Maximum Fourier frequency: " << MAX_FOURIER_FREQUENCY << " Hz\n";
+              << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz\n";
 
     if(DO_OVERLAP)
         std::cout << "Overlap ratio: " << OVERLAP_RATIO << '\n';

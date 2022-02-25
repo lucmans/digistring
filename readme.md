@@ -61,7 +61,6 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 Set cache directory location based on project root instead of relative to rsc directory.  
 Ability to cache FFTW3 knowledge.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
-Allow max_display_frequency > MAX_FOURIER_FREQUENCY (and remove audio config include in graphics config).  
 Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
 Use correct rendering destination when rendering Bins, Spectrogram and Waterfall (only uses width and height, not x/y offset).  
