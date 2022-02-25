@@ -1,6 +1,5 @@
-
-#ifndef CONFIG_GRAPHICS_H
-#define CONFIG_GRAPHICS_H
+#ifndef DIGISTRING_CONFIG_GRAPHICS_H
+#define DIGISTRING_CONFIG_GRAPHICS_H
 
 
 // For disabling graphics
@@ -41,4 +40,4 @@ constexpr unsigned int MAX_PIXELS_WATERFALL_LINE = 16384;
 constexpr bool WATERFALL_FLOW_DOWN = true;
 
 
-#endif  // CONFIG_GRAPHICS_H
+#endif  // DIGISTRING_CONFIG_GRAPHICS_H

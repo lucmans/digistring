@@ -1,4 +1,3 @@
-
 #include "note_generator.h"
 
 #include "note.h"

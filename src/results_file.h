@@ -1,6 +1,5 @@
-
-#ifndef RESULTS_FILE_H
-#define RESULTS_FILE_H
+#ifndef DIGISTRING_RESULTS_FILE_H
+#define DIGISTRING_RESULTS_FILE_H
 
 
 #include <string>
@@ -50,4 +49,4 @@ class ResultsFile {
 };
 
 
-#endif  // RESULTS_FILE_H
+#endif  // DIGISTRING_RESULTS_FILE_H

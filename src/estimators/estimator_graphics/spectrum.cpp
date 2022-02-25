@@ -1,4 +1,3 @@
-
 #include "spectrum.h"
 
 #include <vector>

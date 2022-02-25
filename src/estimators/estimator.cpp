@@ -1,4 +1,3 @@
-
 #include "estimator.h"
 
 #include "estimator_graphics/spectrum.h"

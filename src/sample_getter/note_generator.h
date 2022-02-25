@@ -1,6 +1,5 @@
-
-#ifndef GENERATE_NOTE_H
-#define GENERATE_NOTE_H
+#ifndef DIGISTRING_SAMPLE_GETTER_NOTE_GENERATOR_H
+#define DIGISTRING_SAMPLE_GETTER_NOTE_GENERATOR_H
 
 
 #include "sample_getter.h"
@@ -30,4 +29,4 @@ class NoteGenerator : public SampleGetter {
 };
 
 
-#endif  // GENERATE_NOTE_H
+#endif  // DIGISTRING_SAMPLE_GETTER_NOTE_GENERATOR_H

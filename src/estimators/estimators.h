@@ -1,6 +1,5 @@
-
-#ifndef ESTIMATORS_H
-#define ESTIMATORS_H
+#ifndef DIGISTRING_ESTIMATORS_ESTIMATORS_H
+#define DIGISTRING_ESTIMATORS_ESTIMATORS_H
 
 
 // Base class
@@ -11,4 +10,4 @@
 #include "tuned.h"
 
 
-#endif  // ESTIMATORS_H
+#endif  // DIGISTRING_ESTIMATORS_ESTIMATORS_H

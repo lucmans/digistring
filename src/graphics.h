@@ -1,6 +1,5 @@
-
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#ifndef DIGISTRING_GRAPHICS_H
+#define DIGISTRING_GRAPHICS_H
 
 
 #include "note.h"
@@ -67,4 +66,4 @@ class Graphics {
 };
 
 
-#endif  // GRAPHICS_H
+#endif  // DIGISTRING_GRAPHICS_H

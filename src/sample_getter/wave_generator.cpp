@@ -1,4 +1,3 @@
-
 #include "wave_generator.h"
 
 #include "error.h"

@@ -1,4 +1,3 @@
-
 #include "increment.h"
 
 #include "config/transcription.h"

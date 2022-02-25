@@ -1,6 +1,5 @@
-
-#ifndef ESTIMATION_FUNC_H
-#define ESTIMATION_FUNC_H
+#ifndef DIGISTRING_ESTIMATORS_ESTIMATION_FUNC_H
+#define DIGISTRING_ESTIMATORS_ESTIMATION_FUNC_H
 
 
 #include <fftw3.h>
@@ -15,5 +14,4 @@ void calc_norms_db(const fftwf_complex values[], double norms[], const int n);
 void calc_norms_db(const fftwf_complex values[], double norms[], const int n, double &max_norm, double &power);
 
 
-
-#endif  // ESTIMATION_FUNC_H
+#endif  // DIGISTRING_ESTIMATORS_ESTIMATION_FUNC_H

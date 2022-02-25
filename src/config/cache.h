@@ -1,6 +1,5 @@
-
-#ifndef CONFIG_CACHE_H
-#define CONFIG_CACHE_H
+#ifndef DIGISTRING_CONFIG_CACHE_H
+#define DIGISTRING_CONFIG_CACHE_H
 
 
 #include <string>
@@ -14,4 +13,4 @@ const std::string CACHE_DIR_FROM_RSC_DIR = "../cache/";
 const std::string DOLPH_WINDOW_FILENAME = "dolph_window_%_$.txt";
 
 
-#endif  // CONFIG_CACHE_H
+#endif  // DIGISTRING_CONFIG_CACHE_H

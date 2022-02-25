@@ -1,4 +1,3 @@
-
 #include "audio_file.h"
 
 #include "quit.h"

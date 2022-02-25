@@ -1,4 +1,3 @@
-
 #include "bins.h"
 
 #include "spectrum.h"

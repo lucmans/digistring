@@ -1,4 +1,3 @@
-
 #include "sample_getter.h"
 
 #include "config/audio.h"
@@ -23,6 +22,7 @@ unsigned long SampleGetter::get_played_samples() const {
     return played_samples;
 }
 
+
 double SampleGetter::get_played_time() const {
     return (double)played_samples / (double)SAMPLE_RATE;
 }
@@ -39,6 +39,7 @@ void SampleGetter::calc_and_paste_overlap(float *&in, int &n_samples) const {
     in += n_overlap;
     n_samples -= n_overlap;
 }
+
 
 void SampleGetter::copy_overlap(float *const in, const int n_samples) {
     // Clamp so at least one sample is overlapped or kept between frames

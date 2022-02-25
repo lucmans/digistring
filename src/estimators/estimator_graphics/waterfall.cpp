@@ -1,4 +1,3 @@
-
 #include "waterfall.h"
 
 #include "spectrum.h"

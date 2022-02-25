@@ -1,6 +1,5 @@
-
-#ifndef PERFORMANCE_H
-#define PERFORMANCE_H
+#ifndef DIGISTRING_PERFORMANCE_H
+#define DIGISTRING_PERFORMANCE_H
 
 
 #include <utility>  // std::pair
@@ -50,4 +49,4 @@ extern Performance perf;
 std::ostream& operator<<(std::ostream &s, const Performance &p);
 
 
-#endif  // PERFORMANCE_H
+#endif  // DIGISTRING_PERFORMANCE_H

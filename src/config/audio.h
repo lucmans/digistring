@@ -1,6 +1,5 @@
-
-#ifndef CONFIG_AUDIO_H
-#define CONFIG_AUDIO_H
+#ifndef DIGISTRING_CONFIG_AUDIO_H
+#define DIGISTRING_CONFIG_AUDIO_H
 
 
 #include <SDL2/SDL.h>
@@ -31,4 +30,4 @@ constexpr bool ENABLE_ARPEGGIATOR = false;
 constexpr double NOTE_TIME = 100.0;  // ms
 
 
-#endif  // CONFIG_AUDIO_H
+#endif  // DIGISTRING_CONFIG_AUDIO_H

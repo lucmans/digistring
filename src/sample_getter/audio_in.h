@@ -1,6 +1,5 @@
-
-#ifndef AUDIO_IN
-#define AUDIO_IN
+#ifndef DIGISTRING_SAMPLE_GETTER_AUDIO_IN_H
+#define DIGISTRING_SAMPLE_GETTER_AUDIO_IN_H
 
 
 #include "sample_getter.h"
@@ -37,4 +36,4 @@ class AudioIn : public SampleGetter {
 };
 
 
-#endif  // AUDIO_IN
+#endif  // DIGISTRING_SAMPLE_GETTER_AUDIO_IN_H

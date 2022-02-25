@@ -1,4 +1,3 @@
-
 #include "window_func.h"
 
 #include <cmath>

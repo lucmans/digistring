@@ -1,4 +1,3 @@
-
 #include "graphics_func.h"
 
 #include "quit.h"

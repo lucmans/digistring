@@ -1,9 +1,8 @@
-
 #include "note.h"
 
 #include "error.h"
 
-#include <cmath>
+#include <cmath>  // log10()
 #include <string>
 #include <ostream>
 #include <iomanip>  // std::setw()

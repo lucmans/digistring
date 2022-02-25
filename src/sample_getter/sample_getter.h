@@ -1,6 +1,5 @@
-
-#ifndef SAMPLE_GETTER_H
-#define SAMPLE_GETTER_H
+#ifndef DIGISTRING_SAMPLE_GETTER_SAMPLE_GETTER_H
+#define DIGISTRING_SAMPLE_GETTER_SAMPLE_GETTER_H
 
 
 #include "config/transcription.h"
@@ -61,4 +60,4 @@ class SampleGetter {
 };
 
 
-#endif  // SAMPLE_GETTER_H
+#endif  // DIGISTRING_SAMPLE_GETTER_SAMPLE_GETTER_H

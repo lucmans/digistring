@@ -1,4 +1,3 @@
-
 #include "parse_cli_args.h"
 #include "generate_completions.cpp"
 

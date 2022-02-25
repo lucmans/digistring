@@ -1,6 +1,5 @@
-
-#ifndef BINS_H
-#define BINS_H
+#ifndef DIGISTRING_ESTIMATORS_ESTIMATOR_GRAPHICS_BINS_H
+#define DIGISTRING_ESTIMATORS_ESTIMATOR_GRAPHICS_BINS_H
 
 
 #include "spectrum.h"
@@ -22,4 +21,4 @@ class Bins {
 };
 
 
-#endif  // BINS_H
+#endif  // DIGISTRING_ESTIMATORS_ESTIMATOR_GRAPHICS_BINS_H

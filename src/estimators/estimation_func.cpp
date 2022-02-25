@@ -1,4 +1,3 @@
-
 #include "estimation_func.h"
 
 #include <fftw3.h>
@@ -24,6 +23,7 @@ void calc_norms(const fftwf_complex values[], double norms[], const int n, doubl
             max_norm = norms[i];
     }
 }
+
 
 // dB ref: https://www.kvraudio.com/forum/viewtopic.php?t=276092
 void calc_norms_db(const fftwf_complex values[], double norms[], const int n) {

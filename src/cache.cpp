@@ -1,4 +1,3 @@
-
 #include "cache.h"
 
 #include <error.h>
@@ -83,6 +82,7 @@ std::string Cache::get_dolph_filename(const int size, const double attenuation) 
     return out;
 }
 
+
 std::string Cache::get_dolph_path() {
     return cache_dir;
 }
@@ -115,6 +115,7 @@ void Cache::save_dolph_window(const float in[], const int size, const double att
         dolph_file << in[i] << '\n';
     dolph_file << std::endl;
 }
+
 
 bool Cache::load_dolph_window(double out[], const int size, const double attenuation) {
     const std::string filename = get_dolph_filename(size, attenuation);

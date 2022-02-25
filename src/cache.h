@@ -1,6 +1,5 @@
-
-#ifndef CACHE
-#define CACHE
+#ifndef DIGISTRING_CACHE_H
+#define DIGISTRING_CACHE_H
 
 
 #include <string>
@@ -32,4 +31,4 @@ class Cache {
 };
 
 
-#endif  // CACHE
+#endif  // DIGISTRING_CACHE_H

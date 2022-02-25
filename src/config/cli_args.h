@@ -1,6 +1,5 @@
-
-#ifndef CONFIG_CLI_ARGS
-#define CONFIG_CLI_ARGS
+#ifndef DIGISTRING_CONFIG_CLI_ARGS_H
+#define DIGISTRING_CONFIG_CLI_ARGS_H
 
 
 #include "note.h"
@@ -40,4 +39,4 @@ struct CLIArgs {
 extern CLIArgs cli_args;
 
 
-#endif  // CONFIG_CLI_ARGS
+#endif  // DIGISTRING_CONFIG_CLI_ARGS_H

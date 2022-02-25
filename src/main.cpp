@@ -1,4 +1,3 @@
-
 #include "parse_cli_args.h"
 #include "program.h"
 #include "graphics.h"

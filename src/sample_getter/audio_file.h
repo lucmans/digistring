@@ -1,6 +1,5 @@
-
-#ifndef AUDIO_FILE
-#define AUDIO_FILE
+#ifndef DIGISTRING_SAMPLE_GETTER_AUDIO_FILE_H
+#define DIGISTRING_SAMPLE_GETTER_AUDIO_FILE_H
 
 
 #include "sample_getter.h"
@@ -27,4 +26,4 @@ class AudioFile : public SampleGetter {
 };
 
 
-#endif  // AUDIO_FILE
+#endif  // DIGISTRING_SAMPLE_GETTER_AUDIO_FILE_H

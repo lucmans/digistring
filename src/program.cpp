@@ -1,4 +1,3 @@
-
 #include "program.h"
 
 #include "graphics.h"

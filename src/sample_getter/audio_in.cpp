@@ -1,4 +1,3 @@
-
 #include "audio_in.h"
 
 #include "performance.h"
@@ -157,6 +156,7 @@ void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, con
     in += n_overlap;
     n_samples -= n_overlap;
 }
+
 
 void AudioIn::copy_nonblocking_overlap(float *const in, const int n_samples) {
     // TODO: Copy less

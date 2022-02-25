@@ -1,4 +1,3 @@
-
 #include "spectrogram.h"
 
 #include "spectrum.h"

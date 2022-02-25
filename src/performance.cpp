@@ -1,4 +1,3 @@
-
 #include "performance.h"
 
 #include "error.h"

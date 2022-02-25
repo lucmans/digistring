@@ -1,4 +1,3 @@
-
 #include "quit.h"
 
 #include "error.h"

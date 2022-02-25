@@ -1,6 +1,5 @@
-
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef DIGISTRING_ERROR_H
+#define DIGISTRING_ERROR_H
 
 
 #include "performance.h"
@@ -10,7 +9,6 @@
 #include <cstring>
 #include <string>
 #include <iostream>
-// #include <unistd.h>  // isatty
 #include <stdexcept>
 #include <source_location>
 
@@ -108,4 +106,4 @@ inline void debug(const std::string &msg, const std::source_location location = 
 }
 
 
-#endif  // ERROR_H
+#endif  // DIGISTRING_ERROR_H

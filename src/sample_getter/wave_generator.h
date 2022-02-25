@@ -1,6 +1,5 @@
-
-#ifndef WAVE_GENERATOR_H
-#define WAVE_GENERATOR_H
+#ifndef DIGISTRING_SAMPLE_GETTER_WAVE_GENERATOR_H
+#define DIGISTRING_SAMPLE_GETTER_WAVE_GENERATOR_H
 
 
 #include "sample_getter.h"
@@ -29,4 +28,4 @@ class WaveGenerator : public SampleGetter {
 };
 
 
-#endif  // WAVE_GENERATOR_H
+#endif  // DIGISTRING_SAMPLE_GETTER_WAVE_GENERATOR_H

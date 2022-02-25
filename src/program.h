@@ -1,6 +1,5 @@
-
-#ifndef PROGRAM_H
-#define PROGRAM_H
+#ifndef DIGISTRING_PROGRAM_H
+#define DIGISTRING_PROGRAM_H
 
 
 #include "graphics.h"
@@ -76,4 +75,4 @@ class Program {
 };
 
 
-#endif  // PROGRAM_H
+#endif  // DIGISTRING_PROGRAM_H

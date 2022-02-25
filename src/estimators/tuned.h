@@ -1,6 +1,5 @@
-
-#ifndef TUNED_H
-#define TUNED_H
+#ifndef DIGISTRING_ESTIMATORS_TUNED_H
+#define DIGISTRING_ESTIMATORS_TUNED_H
 
 
 #include "estimator.h"
@@ -31,4 +30,4 @@ class Tuned : public Estimator {
 };
 
 
-#endif  // TUNED_H
+#endif  // DIGISTRING_ESTIMATORS_TUNED_H

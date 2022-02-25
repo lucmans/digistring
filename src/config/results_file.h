@@ -1,6 +1,5 @@
-
-#ifndef CONFIG_RESULTS_FILE_H
-#define CONFIG_RESULTS_FILE_H
+#ifndef DIGISTRING_CONFIG_RESULTS_FILE_H
+#define DIGISTRING_CONFIG_RESULTS_FILE_H
 
 
 #include <string>
@@ -11,4 +10,4 @@ constexpr int INDENT_AMOUNT = 4;  // Number of spaces per indent
 constexpr bool WRITE_SILENCE = true;
 
 
-#endif  // CONFIG_RESULTS_FILE_H
+#endif  // DIGISTRING_CONFIG_RESULTS_FILE_H

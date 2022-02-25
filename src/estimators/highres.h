@@ -1,6 +1,5 @@
-
-#ifndef HIGHRES_H
-#define HIGHRES_H
+#ifndef DIGISTRING_ESTIMATORS_HIGHRES_H
+#define DIGISTRING_ESTIMATORS_HIGHRES_H
 
 
 #include "estimator.h"
@@ -97,4 +96,4 @@ class HighResGraphics : public EstimatorGraphics {
 };
 
 
-#endif  // HIGHRES_H
+#endif  // DIGISTRING_ESTIMATORS_HIGHRES_H

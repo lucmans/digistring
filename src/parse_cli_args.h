@@ -1,6 +1,5 @@
-
-#ifndef PARSE_CLI_ARGS_H
-#define PARSE_CLI_ARGS_H
+#ifndef DIGISTRING_PARSE_CLI_ARGS_H
+#define DIGISTRING_PARSE_CLI_ARGS_H
 
 
 #include <map>
@@ -33,10 +32,14 @@ class ArgParser {
 
 
     private:
-        int cur_arg;  // Holds what index in argv will be returned by the next fetch_arg() call
+        // Holds what index in argv will be returned by the next fetch_arg() call
+        int cur_arg;
 
         const int argc;
         const char *const *const argv;  // TODO: Conform constructor
+
+        // Maps flag strings to functions which parse the flag
+        static const std::map<const std::string, const ParseObj> flag_to_func;
 
 
         void parse_fullscreen();
@@ -50,8 +53,6 @@ class ArgParser {
         void parse_resolution();
         void parse_rsc_dir();
         void parse_generate_sine();
-
-        static const std::map<const std::string, const ParseObj> flag_to_func;
 };
 
 
@@ -73,4 +74,4 @@ struct ParseObj {
 };
 
 
-#endif  // PARSE_CLI_ARGS_H
+#endif  // DIGISTRING_PARSE_CLI_ARGS_H

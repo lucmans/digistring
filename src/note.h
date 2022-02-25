@@ -1,6 +1,5 @@
-
-#ifndef NOTE_H
-#define NOTE_H
+#ifndef DIGISTRING_NOTE_H
+#define DIGISTRING_NOTE_H
 
 
 #include <vector>
@@ -82,4 +81,4 @@ void print_overtones(const Note &note, const int n_overtones);
 Note string_to_note(const std::string &in_string);
 
 
-#endif  // NOTE_H
+#endif  // DIGISTRING_NOTE_H

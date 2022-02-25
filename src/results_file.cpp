@@ -1,4 +1,3 @@
-
 #include "results_file.h"
 
 #include "error.h"

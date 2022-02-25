@@ -1,4 +1,3 @@
-
 #include "highres.h"
 
 #include "error.h"

@@ -1,6 +1,5 @@
-
-#ifndef ESTIMATOR_H
-#define ESTIMATOR_H
+#ifndef DIGISTRING_ESTIMATORS_ESTIMATOR_H
+#define DIGISTRING_ESTIMATORS_ESTIMATOR_H
 
 
 #include "note.h"
@@ -84,4 +83,4 @@ class EstimatorGraphics {
 };
 
 
-#endif  // ESTIMATOR_H
+#endif  // DIGISTRING_ESTIMATORS_ESTIMATOR_H

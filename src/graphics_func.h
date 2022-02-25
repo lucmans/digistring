@@ -1,6 +1,5 @@
-
-#ifndef GRAPHICS_FUNC_H
-#define GRAPHICS_FUNC_H
+#ifndef DIGISTRING_GRAPHICS_FUNC_H
+#define DIGISTRING_GRAPHICS_FUNC_H
 
 
 #include <SDL2/SDL.h>
@@ -15,4 +14,4 @@ constexpr void fit_center(SDL_Rect &src, const SDL_Rect &dst, const int padding/
 SDL_Texture *create_txt_texture(SDL_Renderer *const renderer, const std::string &text, TTF_Font *const font, const SDL_Color &color);
 
 
-#endif  // GRAPHICS_FUNC_H
+#endif  // DIGISTRING_GRAPHICS_FUNC_H

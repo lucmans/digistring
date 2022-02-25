@@ -1,6 +1,5 @@
-
-#ifndef INCREMENT_H
-#define INCREMENT_H
+#ifndef DIGISTRING_SAMPLE_GETTER_INCREMENT_H
+#define DIGISTRING_SAMPLE_GETTER_INCREMENT_H
 
 
 #include "sample_getter.h"
@@ -24,4 +23,4 @@ class Increment : public SampleGetter {
 };
 
 
-#endif  // INCREMENT_H
+#endif  // DIGISTRING_SAMPLE_GETTER_INCREMENT_H
