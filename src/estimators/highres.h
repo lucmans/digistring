@@ -7,6 +7,7 @@
 
 #include "estimator_graphics/spectrogram.h"
 #include "estimator_graphics/bins.h"
+#include "estimator_graphics/waterfall.h"
 
 #include "config/transcription.h"
 #include "config/graphics.h"
@@ -59,6 +60,8 @@ class HighRes : public Estimator {
 class HighResGraphics : public EstimatorGraphics {
     public:
         void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const override {
+            waterfall.make_line(renderer, dst, graphics_data, spectrum);
+
             switch(cur_plot) {
                 default:
                     cur_plot = 0;
@@ -69,6 +72,10 @@ class HighResGraphics : public EstimatorGraphics {
 
                 case 1:
                     bins.render(renderer, dst, graphics_data, spectrum);
+                    break;
+
+                case 2:
+                    waterfall.render(renderer, dst, graphics_data, spectrum);
                     break;
             }
         };
@@ -81,7 +88,9 @@ class HighResGraphics : public EstimatorGraphics {
     private:
         Spectrogram spectrogram;
         Bins bins;
+        Waterfall waterfall;
 
+        // These get set during a perform() call
         Spectrum spectrum;
         Spectrum envelope;
         std::vector<double> peak_frequencies;

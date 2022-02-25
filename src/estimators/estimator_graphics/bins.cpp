@@ -11,11 +11,11 @@
 
 
 Bins::Bins() {
-    
+
 }
 
 Bins::~Bins() {
-    
+
 }
 
 

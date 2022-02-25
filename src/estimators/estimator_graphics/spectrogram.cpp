@@ -14,11 +14,11 @@
 
 
 Spectrogram::Spectrogram() {
-    
+
 }
 
 Spectrogram::~Spectrogram() {
-    
+
 }
 
 
@@ -51,7 +51,7 @@ void Spectrogram::render_spectrogram(SDL_Renderer *const renderer, const SDL_Rec
         const int y = dst.h - ((spectrum_data[i].amp / graphics_data.max_recorded_value) * dst.h);
         SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
         SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
-        
+
         if constexpr(DRAW_MEASURED_POINTS) {
             SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0xff, 0xff);
             SDL_RenderDrawPoint(renderer, prev_x, prev_y);
