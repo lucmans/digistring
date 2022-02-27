@@ -18,14 +18,14 @@
 #include <vector>
 
 
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
-//     const double a = log2(norms[max_idx - 1]),
-//                  b = log2(norms[max_idx]),
-//                  c = log2(norms[max_idx + 1]);
-//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+    const double a = log2(norms[max_idx - 1]),
+                 b = log2(norms[max_idx]),
+                 c = log2(norms[max_idx + 1]);
+    const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
 
-//     return max_idx + p;
-// }
+    return max_idx + p;
+}
 
 inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
     const double a = log2(norms[max_idx - 1]),
@@ -73,12 +73,12 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     for(int i = 0; i < KERNEL_WIDTH; i++)
         gaussian[i] = exp(-M_PI * ((double)(i - MID) / ((double)MID * SIGMA)) * ((double)(i - MID) / ((double)MID * SIGMA)));
 
-    if constexpr(HEADLESS)
+    if constexpr(!HEADLESS)
         estimator_graphics = new HighResGraphics();
 }
 
 HighRes::~HighRes() {
-    if constexpr(HEADLESS)
+    if constexpr(!HEADLESS)
         delete estimator_graphics;
 
     fftwf_destroy_plan(p);

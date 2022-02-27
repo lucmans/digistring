@@ -88,9 +88,15 @@ Tuned::Tuned(float *&input_buffer, int &buffer_size) {
 
     // Allocate norms here instead of VLA in perform()
     norms = new double[(n_samples / 2) + 1];
+
+    if constexpr(!HEADLESS)
+        estimator_graphics = new TunedGraphics();
 }
 
 Tuned::~Tuned() {
+    if constexpr(!HEADLESS)
+        delete estimator_graphics;
+
     for(int i = 0; i < 12; i++)
         fftwf_destroy_plan(plans[i]);
 
@@ -134,7 +140,11 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
     perf.push_time_point("Fourier transforms performed");
 
     // Calculate the amplitudes of each measured frequency
-    // spectrum.clear();
+    TunedGraphics *tuned_graphics = nullptr;  // Assign nullptr to prevent warning (it's only set and used when not in headless mode)
+    if constexpr(!HEADLESS) {
+        tuned_graphics = static_cast<TunedGraphics *>(estimator_graphics);
+        tuned_graphics->get_spectrum().clear();
+    }
     for(int i = 0; i < 12; i++) {
         // double norms[(buffer_sizes[i] / 2) + 1];
         double power;
@@ -147,22 +157,27 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
         // std::cout << max_norm << std::endl;
 
         // Graphics
-        // if constexpr(!HEADLESS) {
-        //     // if(i != 11)
-        //     //     continue;
+        if constexpr(!HEADLESS) {
+            Spectrum &spectrum = tuned_graphics->get_spectrum();
+            // if(i != 11)
+            //     continue;
 
-        //     // Start at j = 1 to skip rendering DC offset
-        //     for(int j = 1; j < (buffer_sizes[i] / 2) + 1; j++)
-        //         spectrum.add_data(j * ((double)SAMPLE_RATE / (double)buffer_sizes[i]), norms[j], (double)SAMPLE_RATE / (double)buffer_sizes[i]);
-        // }
+            // Start at j = 1 to skip rendering DC offset
+            for(int j = 1; j < (buffer_sizes[i] / 2) + 1; j++)
+                spectrum.add_data(j * ((double)SAMPLE_RATE / (double)buffer_sizes[i]), norms[j], (double)SAMPLE_RATE / (double)buffer_sizes[i]);
+        }
     }
-    // if constexpr(!HEADLESS) {
-    //     spectrum.add_data(0.0, 0.0, 0.0);  // Make graph start at (0, 0)
-    //     spectrum.sort();
-    // }
+    if constexpr(!HEADLESS) {
+        Spectrum &spectrum = tuned_graphics->get_spectrum();
+        spectrum.add_data(0.0, 0.0, 0.0);  // Make graph start at (0, 0)
+        spectrum.sort();
+    }
 
     perf.push_time_point("Norms calculated");
 
 
     note_events.clear();
+
+    // if(max_norm > 10)
+    //     note_events.push_back(NoteEvent(Note(Notes::E, 5), 0.0));
 }

@@ -8,6 +8,10 @@
 
 #include "note.h"
 
+#include "estimator_graphics/spectrum.h"
+#include "estimator_graphics/spectrogram.h"
+#include "estimator_graphics/bins.h"
+
 
 class Tuned : public Estimator {
     public:
@@ -27,6 +31,40 @@ class Tuned : public Estimator {
 
         double *norms;
         float *window_funcs[12];
+};
+
+
+class TunedGraphics : public EstimatorGraphics {
+    public:
+        void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const override {
+            switch(cur_plot) {
+                default:
+                    cur_plot = 0;
+                    __attribute__ ((fallthrough));
+                case 0:
+                    spectrogram.render(renderer, dst, graphics_data, spectrum);
+                    break;
+
+                case 1:
+                    bins.render(renderer, dst, graphics_data, spectrum);
+                    break;
+            }
+        };
+
+        // These should only be called by the Tuned estimator in perform()
+        Spectrum &get_spectrum() {return spectrum;};
+        // Spectrum &get_envelope() {return envelope;};
+        // std::vector<double> &get_peaks() {return peak_frequencies;};
+
+
+    private:
+        Spectrogram spectrogram;
+        Bins bins;
+
+        // These get set during a perform() call
+        Spectrum spectrum;
+        // Spectrum envelope;
+        // std::vector<double> peak_frequencies;
 };
 
 
