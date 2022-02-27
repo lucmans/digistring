@@ -69,14 +69,36 @@ def correct_incorrect_missed_notes(digistring_noteevents: ne.NoteEvents, annotat
     return correct, incorrect, missed
 
 
-def filter_transient_errors(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> ne.NoteEvents:
+def transient_errors(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> ne.NoteEvents:
     correct, incorrect, _ = correct_incorrect_missed_notes(digistring_noteevents, annotation_noteevents)
-    filtered = ne.NoteEvents()
+    t_errors = ne.NoteEvents()
 
-    for event in incorrect:
-        pass
+    for a_event in annotation_noteevents:
+        t_errors.copy_add_events(incorrect.get_events_containing_timepoint(a_event.onset))
 
-    print("Warning: Transient error filtering not yet implemented (returning all incorrect note events)")
-    filtered = incorrect
+    return t_errors
 
-    return filtered
+
+def seconds_correct_missed_overshot(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> tuple[float, float]:
+    correct = 0.0
+    missed = 0.0
+    overshot = 0.0
+
+    # Same as correct filter, but instead of adding correct notes to a set, add the missed and overshot seconds to totals
+    for a_event in annotation_noteevents:
+        c_events = digistring_noteevents.get_events_containing_timeframe(a_event.onset, a_event.offset)
+        for p_event in c_events:
+            if p_event.pitch == a_event.pitch:
+                correct += p_event.offset - p_event.onset
+
+                if p_event.onset > a_event.onset:
+                    missed += p_event.onset - a_event.onset
+                elif p_event.onset < a_event.onset:
+                    overshot += a_event.onset - p_event.onset
+
+                if p_event.offset < a_event.offset:
+                    missed += a_event.offset - p_event.offset
+                elif p_event.offset > a_event.offset:
+                    overshot += p_event.offset - a_event.offset
+
+    return correct, missed, overshot

@@ -8,11 +8,18 @@ import note_events_grapher
 import gen_completions
 
 import os
+import signal
+import sys
 
 
 FRAUNHOFER = "fraunhofer"
 MDB_STEM_SYNTH = "MDB-stem-synth"
 DATASET_NAMES = [FRAUNHOFER, MDB_STEM_SYNTH]
+
+
+def signal_handler(signal, frame):
+    print(f"\nReceived signal {signal}, quitting...")
+    exit(0)
 
 
 def generate_report(dataset_name: str, dataset_annotations: str, digistring_results: str, report_filename: str) -> None:
@@ -33,33 +40,47 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
         exit(1)
     print(f"Total Digistring events: {len(digistring_noteevents)}")
 
-    # Filter transient errors
+    # Correct = true positives
+    # Incorrect = false positives
+    # Missed = false negatives
     digistring_correct, digistring_incorrect, digistring_missed = note_events_filter.correct_incorrect_missed_notes(digistring_noteevents, dataset_noteevents)
     print(f"  - Correct: {len(digistring_correct)}")
     print(f"  - Incorrect: {len(digistring_incorrect)}")
     print(f"  - Missed: {len(digistring_missed)}")
     print()
 
-    # Correct = true positives
-    # Incorrect = false positives
-    # Missed = false negatives
     precision = len(digistring_correct) / (len(digistring_correct) + len(digistring_incorrect))
     recall = len(digistring_correct) / (len(digistring_correct) + len(digistring_missed))
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall: {recall:.4f}")
-    if precision + recall == 0:
-        f1 = 0
+    print("Performance measures:")
+    print(f"  - Precision: {precision:.4f}")
+    print(f"  - Recall: {recall:.4f}")
+    if precision + recall == 0.0:
+        f1 = 0.0
     else:
-        f1 = 2 * ((precision * recall) / (precision + recall))
-    print(f"F1: {f1:.4f}")
+        f1 = 2.0 * ((precision * recall) / (precision + recall))
+    print(f"  - F1: {f1:.4f}")
     print()
 
-    # digistring_filtered = note_events_filter.filter_transient_errors(digistring_noteevents, dataset_noteevents)
-    # print(f"Without transient errors: {len(digistring_filtered)}")
+    total_digistring_s = digistring_noteevents.total_note_time()
+    total_dataset_s = dataset_noteevents.total_note_time()
+    print("Total note time:")
+    print(f"  - Digistring: {total_digistring_s:.3f} s")
+    print(f"  - Annotations: {total_dataset_s:.3f} s")
+    print()
+
+    correct_s, missed_s, overshot_s = note_events_filter.seconds_correct_missed_overshot(digistring_noteevents, dataset_noteevents)
+    print("Total time estimated...")
+    print(f"  - Correct: {correct_s:.3f} s")
+    print(f"  - Missed: {missed_s:.3f} s")
+    print(f"  - Overshot: {overshot_s:.3f} s")
+    print()
+
+    digistring_transient = note_events_filter.transient_errors(digistring_noteevents, dataset_noteevents)
+    print(f"Transient errors: {len(digistring_transient)}")
 
     # Plot the note events (note that this call blocks until the UI is closed)
     note_events_grapher.graph([
-            # note_events_grapher.make_plot("Filtered", digistring_filtered, "C2"),
+            note_events_grapher.make_plot("Transient", digistring_transient, "C5"),
             note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
             # note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
             note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1"),
@@ -85,6 +106,9 @@ def print_help() -> None:
 
 
 def main(args: list[str]) -> int:
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     # DEBUG
     if len(args) == 2:
         if args[1] == "1":
@@ -101,6 +125,7 @@ def main(args: list[str]) -> int:
 
         else:
             print(f"'{args[1]}' not defined; doing nothing...")
+            print_help()
 
         exit(0)
 

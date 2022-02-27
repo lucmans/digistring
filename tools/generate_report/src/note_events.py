@@ -93,6 +93,14 @@ class NoteEvents:
         return not self.is_monophonic()
 
 
+    def total_note_time(self) -> float:
+        total = 0.0
+        for event in self.note_events:
+            total += event.offset - event.onset
+
+        return total
+
+
     ### Get methods ###
     # TODO: More efficient approach for get methods based on note_events being sorted on onset
     # Get methods always return a list (except explicit index getter, which should only be used internally)
@@ -127,6 +135,17 @@ class NoteEvents:
         ret = []
         for event in self.note_events:
             if event.onset >= start_time and event.offset <= stop_time:
+                ret.append(event)
+
+        return ret
+
+    def get_events_containing_note_event(self, c_event: Event) -> list[Event]:
+        if self.sorted == False:
+            self.sort_events()
+
+        ret = []
+        for event in self.note_events:
+            if event.onset >= c_event.onset and event.offset <= c_event.offset:
                 ret.append(event)
 
         return ret
