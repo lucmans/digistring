@@ -222,9 +222,16 @@ bool Graphics::resize_window(const int w, const int h) {
 void Graphics::render_frame(const Note *const note, const EstimatorGraphics *const estimator_graphics) {
     render_black_screen();
 
-    const GraphicsData gd = {.max_display_frequency = max_display_frequency,
-                             .max_recorded_value = max_recorded_value};
-    estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
+    static bool warning_printed = false;
+    if(estimator_graphics != nullptr) {
+        const GraphicsData gd = {.max_display_frequency = max_display_frequency,
+                                 .max_recorded_value = max_recorded_value};
+        estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
+    }
+    else if(!warning_printed) {
+        warning("No plotter defined for current estimator");
+        warning_printed = true;
+    }
 
     render_current_note(note);
     render_max_displayed_frequency();

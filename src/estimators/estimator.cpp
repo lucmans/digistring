@@ -14,6 +14,7 @@
 
 Estimator::Estimator() {
     max_norm = 0.0;
+    estimator_graphics = nullptr;
 }
 
 Estimator::~Estimator() {
