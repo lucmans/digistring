@@ -9,7 +9,7 @@ Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output 
 The build requirements of the individual tools can be found in the tool's readme.  
 Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in de respective directory for its requirements.
 
-On Ubuntu Linux:
+On Ubuntu Linux:  
 `sudo apt install libsdl2-dev libsdl2_ttf-dev libfftw3-dev`
 
 On Arch Linux:  
