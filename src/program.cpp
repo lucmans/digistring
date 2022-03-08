@@ -37,6 +37,10 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         error("Read buffer is larger than maximum frame size");
         exit(EXIT_FAILURE);
     }
+    if(input_buffer == NULL) {
+        error("Estimator did not create an input buffer");
+        exit(EXIT_FAILURE);
+    }
     if(input_buffer_n_samples == -1) {
         error("Estimator did not set number of samples in input buffer");
         exit(EXIT_FAILURE);
