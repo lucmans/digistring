@@ -30,11 +30,15 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
 
     // We let the estimator create the input buffer for optimal size and better alignment
     input_buffer = NULL;
-    // int input_buffer_n_samples;
+    input_buffer_n_samples = -1;
     // estimator = new Tuned(input_buffer, input_buffer_n_samples);
     estimator = new HighRes(input_buffer, input_buffer_n_samples);
     if(input_buffer_n_samples > MAX_FRAME_SIZE) {
         error("Read buffer is larger than maximum frame size");
+        exit(EXIT_FAILURE);
+    }
+    if(input_buffer_n_samples == -1) {
+        error("Estimator did not set number of samples in input buffer");
         exit(EXIT_FAILURE);
     }
 
