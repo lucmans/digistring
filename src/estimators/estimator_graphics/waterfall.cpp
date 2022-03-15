@@ -108,9 +108,9 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
 
         SDL_Rect dst_rect;
         if constexpr(WATERFALL_FLOW_DOWN)
-            dst_rect = {0, i, dst.w, 1};
+            dst_rect = {dst.x, i + dst.y, dst.w, 1};
         else
-            dst_rect = {0, dst.h - i, dst.w, 1};
+            dst_rect = {dst.x, (dst.h - i) + dst.y, dst.w, 1};
 
         SDL_RenderCopy(renderer, *it, &src_rect, &dst_rect);
         it++;

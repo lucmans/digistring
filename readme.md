@@ -66,7 +66,6 @@ Ability to cache FFTW3 knowledge.
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
-Use correct rendering destination when rendering Bins, Spectrogram and Waterfall (only uses width and height, not x/y offset).  
 Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure)
 
 

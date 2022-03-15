@@ -22,15 +22,15 @@ Spectrogram::~Spectrogram() {
 
 
 void Spectrogram::draw_spectrogram(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const SpectrumData &spectrum_data) const {
-    int prev_x = 0;
-    int prev_y = dst.h - 1;
+    int prev_x = dst.x;
+    int prev_y = (dst.h + dst.y) - 1;
     unsigned int i;
     for(i = 0; i < spectrum_data.size(); i++) {
         if(spectrum_data[i].freq > graphics_data.max_display_frequency)
             break;
 
-        const int x = (spectrum_data[i].freq / graphics_data.max_display_frequency) * dst.w;
-        const int y = dst.h - ((spectrum_data[i].amp / graphics_data.max_recorded_value) * dst.h);
+        const int x = ((spectrum_data[i].freq / graphics_data.max_display_frequency) * dst.w) + dst.x;
+        const int y = (dst.h - ((spectrum_data[i].amp / graphics_data.max_recorded_value) * dst.h)) + dst.y;
 
         SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
         SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
@@ -46,8 +46,8 @@ void Spectrogram::draw_spectrogram(SDL_Renderer *const renderer, const SDL_Rect 
 
     // Plot one point behind screen so graph exits screen correctly
     if(i < spectrum_data.size()) {
-        const int x = (spectrum_data[i].freq / graphics_data.max_display_frequency) * dst.w;
-        const int y = dst.h - ((spectrum_data[i].amp / graphics_data.max_recorded_value) * dst.h);
+        const int x = ((spectrum_data[i].freq / graphics_data.max_display_frequency) * dst.w) + dst.x;
+        const int y = (dst.h - ((spectrum_data[i].amp / graphics_data.max_recorded_value) * dst.h)) + dst.y;
         SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 0xff);
         SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
 
@@ -65,15 +65,15 @@ void Spectrogram::draw_envelope(SDL_Renderer *const renderer, const SDL_Rect &ds
 
     SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
 
-    int prev_x = (envelope[0].freq / graphics_data.max_display_frequency) * dst.w;
-    int prev_y = dst.h - ((envelope[0].amp / graphics_data.max_recorded_value) * dst.h);
+    int prev_x = ((envelope[0].freq / graphics_data.max_display_frequency) * dst.w) + dst.x;
+    int prev_y = (dst.h - ((envelope[0].amp / graphics_data.max_recorded_value) * dst.h)) + dst.y;
     unsigned int i;
     for(i = 1; i < envelope.size(); i++) {
         if(envelope[i].freq > graphics_data.max_display_frequency)
             break;
 
-        const int x = (envelope[i].freq / graphics_data.max_display_frequency) * dst.w;
-        const int y = dst.h - ((envelope[i].amp / graphics_data.max_recorded_value) * dst.h);
+        const int x = ((envelope[i].freq / graphics_data.max_display_frequency) * dst.w) + dst.x;
+        const int y = (dst.h - ((envelope[i].amp / graphics_data.max_recorded_value) * dst.h)) + dst.y;
 
         SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
 
@@ -83,8 +83,8 @@ void Spectrogram::draw_envelope(SDL_Renderer *const renderer, const SDL_Rect &ds
 
     // Plot one point behind screen so graph exits screen correctly
     if(i < envelope.size()) {
-        const int x = (envelope[i].freq / graphics_data.max_display_frequency) * dst.w;
-        const int y = dst.h - ((envelope[i].amp / graphics_data.max_recorded_value) * dst.h);
+        const int x = ((envelope[i].freq / graphics_data.max_display_frequency) * dst.w) + dst.x;
+        const int y = (dst.h - ((envelope[i].amp / graphics_data.max_recorded_value) * dst.h)) + dst.y;
 
         SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
     }
@@ -97,8 +97,8 @@ void Spectrogram::draw_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, 
         if(peak_f > graphics_data.max_display_frequency)
             break;
 
-        const int x = (peak_f / graphics_data.max_display_frequency) * dst.w;
-        SDL_RenderDrawLine(renderer, x, 0, x, dst.h);
+        const int x = ((peak_f / graphics_data.max_display_frequency) * dst.w) + dst.x;
+        SDL_RenderDrawLine(renderer, x, dst.y, x, dst.h + dst.y);
     }
 }
 
@@ -106,8 +106,8 @@ void Spectrogram::draw_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, 
 void Spectrogram::draw_note_lines(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const {
     for(double f = LOWEST_NOTE.freq; f < graphics_data.max_display_frequency; f *= exp2(1.0 / 12.0)) {
         SDL_SetRenderDrawColor(renderer, 0x30, 0x70, 0x35, 0xff);
-        const int x = (f / graphics_data.max_display_frequency) * dst.w;
-        SDL_RenderDrawLine(renderer, x, 0, x, dst.h);
+        const int x = ((f / graphics_data.max_display_frequency) * dst.w) + dst.x;
+        SDL_RenderDrawLine(renderer, x, dst.y, x, dst.h + dst.y);
     }
 }
 
