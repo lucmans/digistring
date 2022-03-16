@@ -75,12 +75,16 @@ def generate_report(dataset_name: str, dataset_annotations: str, digistring_resu
     print(f"  - Overshot: {overshot_s:.3f} s")
     print()
 
-    digistring_transient = note_events_filter.transient_errors(digistring_noteevents, dataset_noteevents)
+    digistring_transient, digistring_tr_incorrect = note_events_filter.transient_errors(digistring_noteevents, dataset_noteevents)
     print(f"Transient errors: {len(digistring_transient)}")
+    print(f"Transient inc: {len(digistring_tr_incorrect)}")
+    print()
 
     # Plot the note events (note that this call blocks until the UI is closed)
     note_events_grapher.graph([
+            # note_events_grapher.make_plot("Transient", digistring_transient, "C5"),
             note_events_grapher.make_plot("Transient", digistring_transient, "C5"),
+            note_events_grapher.make_plot("Tr inc", digistring_tr_incorrect, "C6"),
             note_events_grapher.make_plot("Correct", digistring_correct, "C2"),
             # note_events_grapher.make_plot("Digistring", digistring_noteevents, "C0"),
             note_events_grapher.make_plot("Annotations", dataset_noteevents, "C1"),

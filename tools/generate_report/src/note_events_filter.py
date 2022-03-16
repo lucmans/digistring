@@ -71,12 +71,17 @@ def correct_incorrect_missed_notes(digistring_noteevents: ne.NoteEvents, annotat
 
 def transient_errors(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> ne.NoteEvents:
     correct, incorrect, _ = correct_incorrect_missed_notes(digistring_noteevents, annotation_noteevents)
-    t_errors = ne.NoteEvents()
+    t_errors = ne.NoteEvents()  # Transient errors (error due to transient)
+    r_errors = ne.NoteEvents()  # Real errors
 
     for a_event in annotation_noteevents:
         t_errors.copy_add_events(incorrect.get_events_containing_timepoint(a_event.onset))
 
-    return t_errors
+    for i_event in incorrect:
+        if i_event not in t_errors:
+            r_errors.copy_add_event(i_event)
+
+    return t_errors, r_errors
 
 
 def seconds_correct_missed_overshot(digistring_noteevents: ne.NoteEvents, annotation_noteevents: ne.NoteEvents) -> tuple[float, float]:
