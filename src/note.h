@@ -67,18 +67,27 @@ std::ostream& operator<<(std::ostream &s, const Note &note);
 std::string note_to_string(const Note &note);
 std::string note_to_string_ascii(const Note &note);  // Octave number without lowercase
 
-
-typedef std::vector<Note> NoteSet;
-
-std::ostream& operator<<(std::ostream &s, const NoteSet &noteset);
-
-
 void print_overtones(const Note &note, const int n_overtones);
-
 
 // Throws std::string with error description on invalid strings
 // A valid in_string consists of a note name (A-G), with optional accidental ('#' or 'd' for sharp, 'b' for flat) and an integer denoting the octave
 Note string_to_note(const std::string &in_string);
+
+
+struct NoteEvent {
+    Note note;
+
+    // double length;  // Length of NoteEvent in seconds
+    double d_t;  // Displacement of note start from beginning of frame in seconds
+
+    constexpr NoteEvent(const Note &_n, const double _d_t) : note(_n), d_t(_d_t) {};
+    // constexpr NoteEvent(const Note &_n, const double _length, const double _d_t) : note(_n), length(_length), d_t(_d_t) {};
+};
+typedef std::vector<NoteEvent> NoteEvents;
+
+
+typedef std::vector<Note> NoteSet;
+std::ostream& operator<<(std::ostream &s, const NoteSet &noteset);
 
 
 #endif  // DIGISTRING_NOTE_H

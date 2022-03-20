@@ -12,18 +12,6 @@
 #include <vector>
 
 
-struct NoteEvent {
-    Note note;
-
-    // double length;  // Length of NoteEvent in seconds
-    double d_t;  // Displacement of note start from beginning of frame in seconds
-
-    constexpr NoteEvent(const Note &_n, const double _d_t) : note(_n), d_t(_d_t) {};
-    // constexpr NoteEvent(const Note &_n, const double _length, const double _d_t) : note(_n), length(_length), d_t(_d_t) {};
-};
-typedef std::vector<NoteEvent> NoteEvents;
-
-
 /* When adding a new estimator, don't forget to include the file in estimators.h */
 // Different estimator algorithms types
 enum class Estimators {
@@ -35,7 +23,7 @@ enum class Estimators {
 const std::map<const Estimators, const std::string> EstimatorString = {{Estimators::highres, "highres"},
                                                                        {Estimators::tuned, "tuned"}};
 
-class EstimatorGraphics;  // Declared Estimator class in this file
+class EstimatorGraphics;  // Declared below Estimator class in this file
 class Estimator {
     public:
         Estimator();
