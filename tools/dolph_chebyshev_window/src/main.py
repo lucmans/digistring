@@ -1,5 +1,5 @@
 from scipy import signal
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 import warnings
 
@@ -38,6 +38,7 @@ def main(args):
             f.write(str(n) + "\n")
 
     # # Show plot for debugging
+    # print("Close the plot window for the program to continue...")
     # plt.plot(win)
     # plt.show();
 
