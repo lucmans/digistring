@@ -89,6 +89,9 @@ std::string Cache::get_dolph_path() {
 
 
 void Cache::save_dolph_window(const double in[], const int size, const double attenuation) {
+    if constexpr(DISABLE_CACHE)
+        return;
+
     const std::string filename = get_dolph_filename(size, attenuation);
 
     std::fstream dolph_file(cache_dir + filename, std::ios::out);
@@ -103,6 +106,9 @@ void Cache::save_dolph_window(const double in[], const int size, const double at
 }
 
 void Cache::save_dolph_window(const float in[], const int size, const double attenuation) {
+    if constexpr(DISABLE_CACHE)
+        return;
+
     const std::string filename = get_dolph_filename(size, attenuation);
 
     std::fstream dolph_file(cache_dir + filename, std::ios::out);
@@ -118,6 +124,9 @@ void Cache::save_dolph_window(const float in[], const int size, const double att
 
 
 bool Cache::load_dolph_window(double out[], const int size, const double attenuation) {
+    if constexpr(DISABLE_CACHE)
+        return false;
+
     const std::string filename = get_dolph_filename(size, attenuation);
     if(!std::filesystem::exists(cache_dir + filename))
         return false;
@@ -130,6 +139,9 @@ bool Cache::load_dolph_window(double out[], const int size, const double attenua
 }
 
 bool Cache::load_dolph_window(float out[], const int size, const double attenuation) {
+    if constexpr(DISABLE_CACHE)
+        return false;
+
     const std::string filename = get_dolph_filename(size, attenuation);
     if(!std::filesystem::exists(cache_dir + filename))
         return false;

@@ -5,6 +5,9 @@
 #include <string>
 
 
+// Disables reading and writing to/from the cache
+constexpr bool DISABLE_CACHE = false;
+
 // Cache directory relative from resource directory
 const std::string CACHE_DIR_FROM_RSC_DIR = "../cache/";
 
