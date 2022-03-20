@@ -256,7 +256,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
 
     // note_events.clear();
     if(noteset.size() > 0)
-        note_events.push_back(NoteEvent(noteset[0], /*(double)FRAME_SIZE / (double)SAMPLE_RATE,*/ 0.0));
+        note_events.push_back(NoteEvent(noteset[0], (double)FRAME_SIZE / (double)SAMPLE_RATE, 0.0));
         // note_events.push_back(NoteEvent(noteset[0], (double)FRAME_SIZE / (double)SAMPLE_RATE, ((double)FRAME_SIZE / (double)SAMPLE_RATE) / 2.0));
 
 
