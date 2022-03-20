@@ -144,6 +144,7 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
     if constexpr(!HEADLESS) {
         tuned_graphics = static_cast<TunedGraphics *>(estimator_graphics);
         tuned_graphics->get_spectrum().clear();
+        tuned_graphics->get_note_channel_data().clear();
     }
     for(int i = 0; i < 12; i++) {
         // double norms[(buffer_sizes[i] / 2) + 1];
@@ -158,6 +159,9 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
 
         // Graphics
         if constexpr(!HEADLESS) {
+            NoteChannelData &ncd = tuned_graphics->get_note_channel_data();
+            ncd.push_back(NoteChannelDataPoint(power));
+
             Spectrum &spectrum = tuned_graphics->get_spectrum();
             // if(i != 11)
             //     continue;

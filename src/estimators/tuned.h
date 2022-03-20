@@ -11,6 +11,7 @@
 #include "estimator_graphics/spectrum.h"
 #include "estimator_graphics/spectrogram.h"
 #include "estimator_graphics/bins.h"
+#include "estimator_graphics/note_channels.h"
 
 
 class Tuned : public Estimator {
@@ -42,10 +43,14 @@ class TunedGraphics : public EstimatorGraphics {
                     cur_plot = 0;
                     __attribute__ ((fallthrough));
                 case 0:
-                    spectrogram.render(renderer, dst, graphics_data, spectrum);
+                    note_channels.render(renderer, dst, graphics_data, note_channel_data);
                     break;
 
                 case 1:
+                    spectrogram.render(renderer, dst, graphics_data, spectrum);
+                    break;
+
+                case 2:
                     bins.render(renderer, dst, graphics_data, spectrum);
                     break;
             }
@@ -55,16 +60,19 @@ class TunedGraphics : public EstimatorGraphics {
         Spectrum &get_spectrum() {return spectrum;};
         // Spectrum &get_envelope() {return envelope;};
         // std::vector<double> &get_peaks() {return peak_frequencies;};
+        NoteChannelData &get_note_channel_data() {return note_channel_data;};
 
 
     private:
         Spectrogram spectrogram;
         Bins bins;
+        NoteChannels note_channels;
 
         // These get set during a perform() call
         Spectrum spectrum;
         // Spectrum envelope;
         // std::vector<double> peak_frequencies;
+        NoteChannelData note_channel_data;
 };
 
 
