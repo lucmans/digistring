@@ -6,8 +6,8 @@ The thesis accompanying this project can be found in the thesis branch.
 # Build instructions
 ## Requirements
 Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
-The build requirements of the individual tools can be found in the tool's readme.  
-Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in de respective directory for its requirements.
+The build requirements of the individual tools can be found in the tool's respective readme.  
+Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in the its directory for the requirements.
 
 On Ubuntu Linux:  
 `sudo apt install libsdl2-dev libsdl2_ttf-dev libfftw3-dev`
@@ -23,13 +23,13 @@ Run `make help` for more information on all build targets and make scripts.
 
 # Usage instructions
 Digistring can be started by running the binary.  
-If the current directory is not the root of the project, set the resource directory using the `-rsc` flag.
+If the current directory is not the root of the project, set the resource directory using the `--rsc` flag.
 
-Digistring comes with tab completion, which can be used in the current session after running:  
+Digistring comes with tab completion, which can be used in the current session by running:  
 `source completions.sh`
 
 Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully exit as soon as possible.  
-Sending `SIGINT` or `SIGTERM` twice will immediately stop Digistring.
+Sending `SIGINT` or `SIGTERM` a second time will immediately stop Digistring.
 
 ## Command line arguments
 Argument parameters in <> are required and in [] are optional.  
@@ -72,4 +72,4 @@ Plot freezing? (Was implemented before; code still partially there, but there is
 
 
 # BUGS
-Can't build project using "make digistring" directly due to build folder dependencies.
+Can't build project using "make digistring" directly due to build directory dependencies.
