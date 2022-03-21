@@ -31,8 +31,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     // We let the estimator create the input buffer for optimal size and better alignment
     input_buffer = NULL;
     input_buffer_n_samples = -1;
-    estimator = new Tuned(input_buffer, input_buffer_n_samples);
-    // estimator = new HighRes(input_buffer, input_buffer_n_samples);
+    // estimator = new Tuned(input_buffer, input_buffer_n_samples);
+    estimator = new HighRes(input_buffer, input_buffer_n_samples);
     if(input_buffer_n_samples > MAX_FRAME_SIZE) {
         error("Read buffer is larger than maximum frame size");
         exit(EXIT_FAILURE);
@@ -315,6 +315,12 @@ void Program::synthesize_audio(const NoteEvents &notes) {
     if(SDL_QueueAudio(*out_dev, synth_buffer, input_buffer_n_samples * sizeof(float))) {
         error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
+    }
+
+    // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
+    if(audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+        warning("Audio overrun (too much audio to play); clearing buffer...");
+        SDL_ClearQueuedAudio(*out_dev);
     }
 
     // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
