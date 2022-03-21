@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
     SDL_AudioDeviceID in_dev, out_dev;
     print_audio_devices(cli_args.playback);
-    init_audio_devices(in_dev, out_dev, cli_args.playback);
+    init_audio_devices(in_dev, out_dev, cli_args.playback || cli_args.synth);
 
     print_program_config_info();
 
