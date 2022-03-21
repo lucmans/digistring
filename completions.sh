@@ -58,7 +58,7 @@ function _generate_digistring_compl() {
                     COMPREPLY=($(compgen -W "Please enter a note name (e.g. A#4) or type '-' for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth -f -g -h -n -o -p -r -s" -- $cur`)
                 elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then
                     COMPREPLY=(${cur})
                 elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then
@@ -102,7 +102,7 @@ function _generate_digistring_compl() {
                     COMPREPLY=($(compgen -W "Please enter an integer or type '-' for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth -f -g -h -n -o -p -r -s" -- $cur`)
                 elif [[ $cur =~ ^-?[0123456789]+$ ]]; then
                     COMPREPLY=(${cur})
                 else
@@ -126,7 +126,7 @@ function _generate_digistring_compl() {
                     COMPREPLY=($(compgen -W "Please enter an integer or type '-' for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth -f -g -h -n -o -p -r -s" -- $cur`)
                 elif [[ $cur =~ ^-?[0123456789]+$ ]]; then
                     COMPREPLY=(${cur})
                 else
@@ -163,7 +163,7 @@ function _generate_digistring_compl() {
         esac
     fi
 
-    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc -f -g -h -n -o -p -r -s" -- $cur`)
+    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth -f -g -h -n -o -p -r -s" -- $cur`)
     return 0
 }
 

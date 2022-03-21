@@ -20,8 +20,9 @@ struct CLIArgs {
     // Print performance measurements every frame
     bool output_performance = false;
 
-    // Play recorded audio
+    // Play recorded audio or synthesize audio based on estimated note
     bool playback = false;
+    bool synth = false;
 
     // Generate sine instead of using audio input
     bool generate_sine = false;

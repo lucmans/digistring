@@ -37,7 +37,8 @@ const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
     {"--perf",                  ParseObj(&ArgParser::parse_print_performance,   {})},
     {"-r",                      ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
     {"--rsc",                   ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
-    {"-s",                      ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})}
+    {"-s",                      ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
+    {"--synth",                 ParseObj(&ArgParser::parse_synth,               {})}
 };
 
 void print_help() {
@@ -53,6 +54,7 @@ void print_help() {
               << "  -r <w> <h>           - Start GUI with given resolution\n"
               << "  --rsc <path>         - Set alternative resource directory location\n"
               << "  -s [f]               - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
+              << "  --synth              - Output sine wave based on note estimation from audio input\n"
               << std::endl;
 }
 
@@ -245,6 +247,11 @@ void ArgParser::parse_print_overtone() {
 }
 
 void ArgParser::parse_playback() {
+    if(cli_args.synth) {
+        error("Can't playback input audio while synthesizing");
+        exit(EXIT_FAILURE);
+    }
+
     cli_args.playback = true;
 
     if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
@@ -366,4 +373,14 @@ void ArgParser::parse_generate_sine() {
         exit(EXIT_FAILURE);
     }
     cli_args.generate_sine_freq = f;
+}
+
+
+void ArgParser::parse_synth() {
+    if(cli_args.playback) {
+        error("Can't synthesize sound while playing back input");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.synth = true;
 }

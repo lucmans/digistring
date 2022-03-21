@@ -53,6 +53,7 @@ class ArgParser {
         void parse_resolution();
         void parse_rsc_dir();
         void parse_generate_sine();
+        void parse_synth();
 };
 
 

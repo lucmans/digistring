@@ -8,6 +8,7 @@
 #include "note.h"
 #include "estimators/estimators.h"
 #include "sample_getter/sample_getters.h"
+#include "synth/synths.h"
 
 #include <SDL2/SDL.h>
 
@@ -36,6 +37,9 @@ class Program {
 
         SampleGetter *sample_getter;
         bool audio_in;
+
+        Synth *synth;
+        float *synth_buffer;
 
         // Frame limiting (graphics)
         std::chrono::duration<double, std::milli> frame_time;
@@ -68,6 +72,8 @@ class Program {
 
         // This function should only be called if HEADLESS is false
         void update_graphics(const NoteEvents &note_events);
+
+        void synthesize_audio(const NoteEvents &notes);
 
         void arpeggiate();
 

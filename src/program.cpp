@@ -31,8 +31,8 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     // We let the estimator create the input buffer for optimal size and better alignment
     input_buffer = NULL;
     input_buffer_n_samples = -1;
-    // estimator = new Tuned(input_buffer, input_buffer_n_samples);
-    estimator = new HighRes(input_buffer, input_buffer_n_samples);
+    estimator = new Tuned(input_buffer, input_buffer_n_samples);
+    // estimator = new HighRes(input_buffer, input_buffer_n_samples);
     if(input_buffer_n_samples > MAX_FRAME_SIZE) {
         error("Read buffer is larger than maximum frame size");
         exit(EXIT_FAILURE);
@@ -65,6 +65,16 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         audio_in = true;
     }
 
+    // Sanity check
+    if(cli_args.playback && cli_args.synth) {
+        error("Can't both play back input audio and synthesize audio based on estimation");
+        exit(EXIT_FAILURE);
+    }
+    if(cli_args.synth) {
+        synth_buffer = new float[input_buffer_n_samples];
+        synth = new Sine();
+    }
+
     mouse_clicked = false;
 
     if(cli_args.output_file)
@@ -79,6 +89,11 @@ Program::~Program() {
     if(cli_args.output_file)
         delete results_file;
 
+    if(cli_args.synth) {
+        delete[] synth_buffer;
+        delete synth;
+    }
+
     delete sample_getter;
     delete estimator;
 }
@@ -89,7 +104,7 @@ void Program::main_loop() {
     if(audio_in)
         SDL_PauseAudioDevice(*in_dev, 0);
 
-    if(cli_args.playback)
+    if(cli_args.playback || cli_args.synth)
         SDL_PauseAudioDevice(*out_dev, 0);
 
     if(cli_args.output_file) {
@@ -125,6 +140,10 @@ void Program::main_loop() {
         NoteEvents note_events;
         estimator->perform(input_buffer, note_events);
         perf.push_time_point("Performed estimation");
+
+        // Arg parser disallows both cli_args.playback and cli_args.synth to be true (sanity checked in constructor)
+        if(cli_args.synth)
+            synthesize_audio(note_events);
 
         // Print note estimation to CLI
         // print_results(note_events);
@@ -243,8 +262,15 @@ void Program::write_results(const NoteEvents &note_events) {
 
 
 void Program::print_results(const NoteEvents &note_events) {
-    if(note_events.size() > 0)
-        std::cout << note_events[0].note << "  (" << note_events[0].note.freq << " Hz, " << note_events[0].note.amp << " dB, " << note_events[0].note.error << " cent)" << "     \r" << std::flush;
+    if(note_events.size() == 0)
+        return;
+
+    if(note_events.size() > 1) {
+        warning("Polyphonic result printing is not yet supported");  // TODO: Support
+        return;
+    }
+
+    std::cout << note_events[0].note << "  (" << note_events[0].note.freq << " Hz, " << note_events[0].note.amp << " dB, " << note_events[0].note.error << " cent)" << "     \r" << std::flush;
 }
 
 
@@ -276,6 +302,24 @@ void Program::update_graphics(const NoteEvents &note_events) {
 
         prev_frame = std::chrono::steady_clock::now();
     }
+}
+
+
+void Program::synthesize_audio(const NoteEvents &notes) {
+    if constexpr(PRINT_AUDIO_UNDERRUNS)
+        if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
+            warning("Audio underrun; no audio left to play");
+
+    synth->synthesize(notes, synth_buffer, input_buffer_n_samples);
+
+    if(SDL_QueueAudio(*out_dev, synth_buffer, input_buffer_n_samples * sizeof(float))) {
+        error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
+        exit(EXIT_FAILURE);
+    }
+
+    // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
+    while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
+        handle_sdl_events();
 }
 
 

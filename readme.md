@@ -43,7 +43,8 @@ Argument parameters in <> are required and in [] are optional.
 `--perf`: Print performance stats to stdout.  
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
-`-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.
+`-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
+`--synth`: Output sine wave based on note estimation from audio input.
 
 All command line arguments can also be printed by running Digistring with `-h`/`--help`.
 
@@ -61,6 +62,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
+Use NoteEvent timing information in Synth subclasses.  
 Set cache directory location based on project root instead of relative to rsc directory.  
 Ability to cache FFTW3 knowledge.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
