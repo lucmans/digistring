@@ -33,16 +33,8 @@ Tuned::Tuned(float *&input_buffer, int &buffer_size) {
     buffer_size = n_samples;
 
     // Calculate the sizes of the transform buffers
-    int o = 0;  // Octave offset
-    for(int i = 0; i < 12; i++) {
-        Notes new_note = static_cast<Notes>((LOWEST_NOTE.note + i) % 12);
-        if(new_note == Notes::C)
-            o++;
-
-        buffer_sizes[i] = fourier_size(Note(new_note, LOWEST_NOTE.octave + o));
-        // std::cout << buffer_sizes[i] << std::endl;
-    }
-    // std::cout << std::endl;
+    for(int i = 0; i < 12; i++)
+        buffer_sizes[i] = fourier_size(Note(LOWEST_NOTE.midi_number + i));
 
     // Sanity check
     if(buffer_size != buffer_sizes[0]) {
@@ -146,11 +138,18 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
         tuned_graphics->get_spectrum().clear();
         tuned_graphics->get_note_channel_data().clear();
     }
+    int max_power_channel_idx = 0;
+    double max_power = -1.0;
     for(int i = 0; i < 12; i++) {
         // double norms[(buffer_sizes[i] / 2) + 1];
         double power;
         double tmp_max_norm = 0.0;
         calc_norms(outs[i], norms, (buffer_sizes[i] / 2) + 1, tmp_max_norm, power);
+
+        if(power > max_power) {
+            max_power = power;
+            max_power_channel_idx = i;
+        }
 
         if(tmp_max_norm > max_norm)
             max_norm = tmp_max_norm;
@@ -181,6 +180,7 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
 
 
     note_events.clear();
+    note_events.push_back(NoteEvent(Note(LOWEST_NOTE.midi_number + max_power_channel_idx), (double)buffer_sizes[0] / (double)SAMPLE_RATE, 0.0));
 
     // if(max_norm > 10)
     //     note_events.push_back(NoteEvent(Note(Notes::E, 5), 0.0));
