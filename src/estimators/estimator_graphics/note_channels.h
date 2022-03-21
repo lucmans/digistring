@@ -27,7 +27,9 @@ class NoteChannels {
 
 
     private:
-        //
+        // Mutable, as rendering should be const (these members are only for caching)
+        mutable double last_max_recorded_value;
+        mutable double max_power;
 };
 
 

@@ -2,9 +2,6 @@
 
 #include "estimators/estimator.h"
 
-// #include "config/graphics.h"
-// #include "config/transcription.h"
-
 #include <SDL2/SDL.h>
 
 #include <algorithm>
@@ -16,7 +13,8 @@ constexpr int CHANNEL_MAX_HEIGHT = 500;  // Pixels
 
 
 NoteChannels::NoteChannels() {
-
+    last_max_recorded_value = 0.0;
+    max_power = -1.0;
 }
 
 NoteChannels::~NoteChannels() {
@@ -28,7 +26,12 @@ void NoteChannels::render(SDL_Renderer *const renderer, const SDL_Rect &dst, con
     const int n_channels = note_channel_data.size();
     const int channel_div_width = dst.w / n_channels;
 
-    double max_power = -1;
+    // graphics_data.max_recorded_value should only >= every call, so if <, max_recorded_value has reset and max_power should too
+    if(last_max_recorded_value > graphics_data.max_recorded_value)
+        max_power = -1.0;
+    last_max_recorded_value = graphics_data.max_recorded_value;
+
+    // Check for higher max_power
     for(int i = 0; i < n_channels; i++)
         if(note_channel_data[i].power > max_power)
             max_power = note_channel_data[i].power;
@@ -43,9 +46,4 @@ void NoteChannels::render(SDL_Renderer *const renderer, const SDL_Rect &dst, con
         // std::cout << channel_bar.x << ' ' << channel_bar.y << ' ' << channel_bar.w << ' ' << channel_bar.h << ' ' << note_channel_data[i].power << std::endl;
     }
     // std::cout << std::endl;
-
-
-    // Prevent warning
-    return;
-    max_power = graphics_data.max_recorded_value;
 }
