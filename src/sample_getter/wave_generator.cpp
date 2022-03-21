@@ -45,10 +45,10 @@ void WaveGenerator::get_frame(float *const in, const int n_samples) {
         calc_and_paste_overlap(overlap_in, overlap_n_samples);
 
 
-    for(int i = 0; i < overlap_n_samples; i++) {
-        const double offset = (last_phase * ((double)SAMPLE_RATE / generated_wave_freq));
+    const double offset = (last_phase * ((double)SAMPLE_RATE / generated_wave_freq));
+    for(int i = 0; i < overlap_n_samples; i++)
         overlap_in[i] = sinf((2.0 * M_PI * ((double)i + offset) * generated_wave_freq) / (double)SAMPLE_RATE);
-    }
+
     last_phase = fmod(last_phase + (generated_wave_freq / ((double)SAMPLE_RATE / (double)overlap_n_samples)), 1.0);
 
     played_samples += overlap_n_samples;
