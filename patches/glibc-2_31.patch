@@ -1,6 +1,6 @@
 --- /dev/null	2022-03-24 17:12:58.991758000 +0100
 +++ src/quit.cpp	2022-03-24 18:11:38.802861533 +0100
-@@ -10,12 +10,12 @@
+@@ -10,14 +10,18 @@
  
  void signal_handler(const int signum) {
      if(quit) {
@@ -14,4 +14,10 @@
 +    info("Signal received; quitting...");
  
      set_quit();
++
++    // Prevent warning
++    return;
++    int i = signum; i++;
  }
+ 
+ 
