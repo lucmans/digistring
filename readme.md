@@ -10,7 +10,7 @@ The build requirements of the individual tools can be found in the tool's respec
 Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in the its directory for the requirements.
 
 On Ubuntu Linux:  
-`sudo apt install libsdl2-dev libsdl2_ttf-dev libfftw3-dev`
+`sudo apt install libsdl2-dev libsdl2-ttf-dev libfftw3-dev`
 
 On Arch Linux:  
 `sudo pacman -S sdl2 sdl2_ttf fftw3`
