@@ -30,7 +30,7 @@ ALL_OBJ = $(patsubst src/%.cpp, obj/%.o, $(wildcard $(patsubst src%/, src%/*.cpp
 FILTER_OBJ = obj/generate_completions.o
 OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
-.PHONY: all sanitize force fresh clean cacheclean outputclean valgrind lines grep grepl debug todo trailing_spaces help
+.PHONY: all sanitize force fresh clean cacheclean outputclean valgrind check_patches lines grep grepl debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -100,6 +100,10 @@ valgrind: all
 # 	../gen_val_suppress.py
 
 
+check_patches:
+	@tools/patch_tools/check.sh
+
+
 lines:
 	@echo -e "\033[1mPython tools\033[0m"
 	wc -l tools/generate_report/src/*.py
@@ -137,6 +141,7 @@ help:
 	@echo \"make sanitize\" builds with -fsanitize=address. Do not forget to run \"make force\" to remove sanitize.
 	@echo
 	@echo Furthermore, some often used command are added to the makefile:
+	@echo \"make check_patches\" checks if all patches are still applicable (does not check if code still compiles/runs).
 	@echo \"make lines\" counts the number of lines in all source files.
 	@echo \"make grep pat=\'pattern\'\" searches for pattern in all source files.
 	@echo \"make grepl pat=\'pattern\'\" is the same as \"make grep\" but with fixed string patterns \(no regex\).

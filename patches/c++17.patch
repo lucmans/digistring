@@ -1,5 +1,5 @@
---- /dev/null    2022-03-24 17:12:58.978425000 +0100
-+++ Makefile 2022-03-24 17:06:24.193850000 +0100
+--- Makefile
++++ Makefile
 @@ -7,9 +7,8 @@
  BIN = digistring
  
@@ -13,8 +13,8 @@
  # FLAGS = -DCOLORED
 
 
---- /dev/null 2022-03-24 17:12:58.988425000 +0100
-+++ src/error.h  2022-03-24 17:06:50.994160000 +0100
+--- src/error.h
++++ src/error.h
 @@ -10,7 +10,6 @@
  #include <string>
  #include <iostream>
@@ -61,8 +61,10 @@
  }
  
  
---- /dev/null    2022-03-24 17:12:58.991758000 +0100
-+++ src/graphics.cpp 2022-03-24 17:12:12.551220000 +0100
+
+
+--- src/graphics.cpp
++++ src/graphics.cpp
 @@ -224,8 +224,9 @@
  
      static bool warning_printed = false;
