@@ -20,5 +20,5 @@ C++20 is currently only used for printing debug information and designated initi
 Affected files: `Makefile` `src/error.h` `src/graphics.cpp`
 
 ## glibc 2.31 support (`glibc-2_31.patch`)
-In order to get the name of a signal number, the function `sigabbrev_np()` is used. This function first appeared in glibc version 2.32. We can simply omit printing the signal name.
+In order to get the name of a signal number, the function `sigabbrev_np()` is used. This function first appeared in glibc version 2.32. We can simply omit printing the signal name.  
 Affected files: `src/quit.cpp`
