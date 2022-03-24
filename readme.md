@@ -20,6 +20,9 @@ Run `make` in the root directory of the project to build the binary `digistring`
 In case of build failures after updating, try running `make fresh`.  
 Run `make help` for more information on all build targets and make scripts.
 
+## Patches
+On older systems, building may fail as Digistring uses the newest features from its dependencies. Not all of these new features are necessary and some features may still be used through an older interface. To accommodate older systems, we provide some patches. These are located in the `patches` directory, along with a readme with information on when and how to use the patches.
+
 
 # Usage instructions
 Digistring can be started by running the binary.  

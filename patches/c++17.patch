@@ -1,0 +1,77 @@
+--- /dev/null    2022-03-24 17:12:58.978425000 +0100
++++ Makefile 2022-03-24 17:06:24.193850000 +0100
+@@ -7,9 +7,8 @@
+ BIN = digistring
+ 
+ # General compiler flags
+-# c++20 is required for std::source_location (error.h)
+ CXX = g++
+-CXXFLAGS = -std=c++20 -g
++CXXFLAGS = -std=c++17 -g
+ DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
+ WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
+ # FLAGS = -DCOLORED
+
+
+--- /dev/null 2022-03-24 17:12:58.988425000 +0100
++++ src/error.h  2022-03-24 17:06:50.994160000 +0100
+@@ -10,7 +10,6 @@
+ #include <string>
+ #include <iostream>
+ #include <stdexcept>
+-#include <source_location>
+ 
+ 
+ constexpr bool TIMES = false;  // Display timestamp in CLI messages
+@@ -82,27 +81,27 @@
+ #define STR(x)              __str(x)
+ 
+ 
+-inline void ex_msg(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-    __ex_msg(location.file_name(), location.line(), msg);
++inline void ex_msg(const std::string &msg) {
++    __ex_msg(__FILE__, __LINE__, msg);
+ }
+ 
+-inline void error(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-    __msg("Error", RED, location.file_name(), location.line(), msg);
++inline void error(const std::string &msg) {
++    __msg("Error", RED, __FILE__, __LINE__, msg);
+ }
+ 
+-inline void warning(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-    __msg("Warning", YELLOW, location.file_name(), location.line(), msg);
++inline void warning(const std::string &msg) {
++    __msg("Warning", YELLOW, __FILE__, __LINE__, msg);
+ }
+ 
+-// inline void info(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-//     __msg("Info", GREEN, location.file_name(), location.line(), msg);
++// inline void info(const std::string &msg) {
++//     __msg("Info", GREEN, __FILE__, __LINE__, msg);
+ // }
+ inline void info(const std::string &msg) {
+     __info_msg(msg);  // Prints to std::cout and does not print file:line
+ }
+ 
+-inline void debug(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-    __msg("Debug", BLUE, location.file_name(), location.line(), msg);
++inline void debug(const std::string &msg) {
++    __msg("Debug", BLUE, __FILE__, __LINE__, msg);
+ }
+ 
+ 
+--- /dev/null    2022-03-24 17:12:58.991758000 +0100
++++ src/graphics.cpp 2022-03-24 17:12:12.551220000 +0100
+@@ -224,8 +224,9 @@
+ 
+     static bool warning_printed = false;
+     if(estimator_graphics != nullptr) {
+-        const GraphicsData gd = {.max_display_frequency = max_display_frequency,
+-                                 .max_recorded_value = max_recorded_value};
++        GraphicsData gd;
++        gd.max_display_frequency = max_display_frequency;
++        gd.max_recorded_value = max_recorded_value;
+         estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
+     }
+     else if(!warning_printed) {

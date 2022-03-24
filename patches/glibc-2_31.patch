@@ -1,0 +1,17 @@
+--- /dev/null	2022-03-24 17:12:58.991758000 +0100
++++ src/quit.cpp	2022-03-24 18:11:38.802861533 +0100
+@@ -10,12 +10,12 @@
+ 
+ void signal_handler(const int signum) {
+     if(quit) {
+-        info("Received signal 'SIG" + std::string(sigabbrev_np(signum)) + "' while quitting; will now force quit");
++        info("Received signal while quitting; will now force quit");
+         exit(-2);
+     }
+ 
+     std::cout << std::endl;
+-    info("Signal 'SIG" + std::string(sigabbrev_np(signum)) + "' received; quitting...");
++    info("Signal received; quitting...");
+ 
+     set_quit();
+ }
