@@ -127,6 +127,34 @@ void HighRes::envelope_peaks(const double norms[(FRAME_SIZE / 2) + 1], const dou
 }
 
 
+void HighRes::min_dy_peaks(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks) {
+    bool was_peak = false;  // If last extreme value was a peak
+    int extreme_value_idx = 0;
+
+    for(int i = 1; i < (FRAME_SIZE / 2); i++) {
+        if(was_peak) {
+            // If previous extreme value was a peak, look for a valley
+            if(norms[i - 1] > norms[i] && norms[i] < norms[i + 1]) {
+                // If difference in y is significant enough
+                was_peak = false;
+                extreme_value_idx = i;
+            }
+        }
+        else {
+            // If previous extreme value was a valley, look for a peak
+            if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]) {
+                // If difference in y is significant enough
+                if(abs(norms[extreme_value_idx] - norms[i]) > 1.0) {
+                    peaks.push_back(extreme_value_idx);
+                }
+                was_peak = true;
+                extreme_value_idx = i;
+            }
+        }
+    }
+}
+
+
 void HighRes::interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE / 2) + 1], const std::vector<int> &peaks) {
     for(int peak : peaks) {
         // Check if the interpolation will be in-bounds
@@ -243,6 +271,10 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     std::vector<int> peaks;
     if(power > POWER_THRESHOLD)
         envelope_peaks(norms, envelope, peaks);
+
+    // // Find peaks on min-dy
+    // std::vector<int> peaks;
+    // min_dy_peaks(norms, peaks);
 
     // Interpolate peak locations
     NoteSet candidate_notes;

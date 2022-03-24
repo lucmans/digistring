@@ -48,6 +48,8 @@ class HighRes : public Estimator {
         void all_max(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
         void envelope_peaks(const double norms[(FRAME_SIZE / 2) + 1], const double envelope[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
 
+        void min_dy_peaks(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
+
         void interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE / 2) + 1], const std::vector<int> &peaks);
 
         void get_loudest_peak(NoteSet &out_notes, const NoteSet &candidate_notes);
