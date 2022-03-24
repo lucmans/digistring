@@ -13,6 +13,8 @@
 struct NoteChannelDataPoint {
     // Note note;
     double power;
+
+    NoteChannelDataPoint(const double _p) : power(_p) {};
 };
 
 typedef std::vector<NoteChannelDataPoint> NoteChannelData;
