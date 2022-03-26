@@ -12,7 +12,7 @@ class Sine : public Synth {
         Sine();
         ~Sine() override;
 
-        void synthesize(const NoteEvents &notes, float *const synth_buffer, const int n_samples);
+        void synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples);
 
 
     private:
