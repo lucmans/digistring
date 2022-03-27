@@ -141,7 +141,7 @@ help:
 	@echo \"make sanitize\" builds with -fsanitize=address. Do not forget to run \"make force\" to remove sanitize.
 	@echo
 	@echo Furthermore, some often used command are added to the makefile:
-	@echo \"make check_patches\" checks if all patches are still applicable (does not check if code still compiles/runs).
+	@echo \"make check_patches\" checks if all patches are still applicable \(does not check if code still compiles/runs\).
 	@echo \"make lines\" counts the number of lines in all source files.
 	@echo \"make grep pat=\'pattern\'\" searches for pattern in all source files.
 	@echo \"make grepl pat=\'pattern\'\" is the same as \"make grep\" but with fixed string patterns \(no regex\).
