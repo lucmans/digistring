@@ -9,7 +9,7 @@
 
 // Different synth types
 enum class Synths {
-    sine
+    sine, square
 };
 
 

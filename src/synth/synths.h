@@ -5,8 +5,9 @@
 // Base class
 #include "synth.h"
 
-// Different synths
+// Basic waveform synths
 #include "sine.h"
+#include "square.h"
 
 
 #endif  // DIGISTRING_SYNTH_SYNTHS_H
