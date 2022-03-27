@@ -286,10 +286,8 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // get_lowest_peak(noteset, candidate_notes);
     get_likeliest_note(noteset, candidate_notes);
 
-    // note_events.clear();
     if(noteset.size() > 0)
-        note_events.push_back(NoteEvent(noteset[0], (double)FRAME_SIZE / (double)SAMPLE_RATE, 0.0));
-        // note_events.push_back(NoteEvent(noteset[0], (double)FRAME_SIZE / (double)SAMPLE_RATE, ((double)FRAME_SIZE / (double)SAMPLE_RATE) / 2.0));
+        note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
 
 
     // Graphics

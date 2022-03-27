@@ -179,9 +179,8 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
     perf.push_time_point("Norms calculated");
 
 
-    note_events.clear();
-    note_events.push_back(NoteEvent(Note(LOWEST_NOTE.midi_number + max_power_channel_idx), (double)buffer_sizes[0] / (double)SAMPLE_RATE, 0.0));
+    note_events.push_back(NoteEvent(Note(LOWEST_NOTE.midi_number + max_power_channel_idx), buffer_sizes[0], 0));
 
     // if(max_norm > 10)
-    //     note_events.push_back(NoteEvent(Note(Notes::E, 5), 0.0));
+    //     note_events.push_back(NoteEvent(Note(Notes::E, 5), buffer_sizes[0], 0));
 }

@@ -65,7 +65,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         audio_in = true;
     }
 
-    // Sanity check
+    // DEBUG: Sanity check
     if(cli_args.playback && cli_args.synth) {
         error("Can't both play back input audio and synthesize audio based on estimation");
         exit(EXIT_FAILURE);
@@ -233,8 +233,7 @@ void Program::write_results(const NoteEvents &note_events) {
     if(n_notes == 0) {
         if constexpr(WRITE_SILENCE) {
             results_file->write_double("t (s)", start_frame_time);
-            // results_file->write_double("t (s)", start_frame_time + (((double)input_buffer_n_samples / (double)SAMPLE_RATE) / 2.0));  // Halfway between begin and end of frame
-            // results_file->write_null("duration (s)");  // TODO
+            results_file->write_null("duration (s)");
             results_file->write_null("note");
             results_file->write_null("frequency");
             results_file->write_null("amplitude");
@@ -245,8 +244,8 @@ void Program::write_results(const NoteEvents &note_events) {
 
     else if(n_notes == 1) {
         const std::string note = note_to_string_ascii(note_events[0].note);
-        results_file->write_double("t (s)", start_frame_time + note_events[0].d_t);
-        // results_file->write_double("duration (s)", note_events[0].length);  // TODO
+        results_file->write_double("t (s)", start_frame_time + ((double)note_events[0].offset / (double)SAMPLE_RATE));
+        results_file->write_double("duration (s)", (double)note_events[0].length / (double)SAMPLE_RATE);
         results_file->write_string("note", note);
         results_file->write_double("frequency", note_events[0].note.freq);
         results_file->write_double("amplitude", note_events[0].note.amp);

@@ -27,4 +27,5 @@ Running `source completions.sh` adds the completions to the current shell.
 
 
 # TODOs
+Use note event duration information instead of only using next note event for note termination.  
 Use NoteEvents being sorted for more efficient `is_monophonic()`, `is_polyphonic()` and time based getters.
