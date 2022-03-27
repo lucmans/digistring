@@ -9,6 +9,8 @@ Usage: `tools/patch_tools/apply.sh [revert] <patch_file>`
 
 This script simply calls `patch -u -p0 -i <patch_file>` (also adds `-R` when revert was passed). In case of script failures, try running that command manually from the project's root directory.
 
+It is advised to rebuild Digistring with `make force` after applying any patches.
+
 
 # create.sh
 Creates patch files which can be used through `apply.sh`.  

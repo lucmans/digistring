@@ -7,7 +7,7 @@ The thesis accompanying this project can be found in the thesis branch.
 ## Requirements
 Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
 The build requirements of the individual tools can be found in the tool's respective readme.  
-Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in the its directory for the requirements.
+Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in its directory for the requirements.
 
 On Ubuntu Linux:  
 `sudo apt install libsdl2-dev libsdl2-ttf-dev libfftw3-dev`
@@ -21,7 +21,7 @@ In case of build failures after updating, try running `make fresh`.
 Run `make help` for more information on all build targets and make scripts.
 
 ## Patches
-On older systems, building may fail as Digistring uses the newest features from its dependencies. Not all of these new features are necessary and some features may still be used through an older interface. To accommodate older systems, we provide some patches. These are located in the `patches` directory, along with a readme with information on when and how to use the patches.
+On older systems, building may fail as Digistring uses the newest features from its dependencies. Not all of these new features are necessary and some features may still be used through an older interface. To accommodate older systems, we provide some patches. These are located in the `patches` directory, along with a readme with information on when and how to use the patches. It is advised to rebuild Digistring with `make force` after applying any patches.
 
 
 # Usage instructions
@@ -71,7 +71,8 @@ Ability to cache FFTW3 knowledge.
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
-Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure)
+Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).  
+Estimator graphics data wipe after frame (now have to manually .clear() old data).
 
 
 # BUGS
