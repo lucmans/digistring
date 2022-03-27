@@ -3,6 +3,8 @@
 #include "parse_cli_args.h"
 #include "error.h"
 
+#include "synth/synth.h"  // Note not synths.h
+
 #include "config/results_file.h"
 
 #include <map>
@@ -39,6 +41,11 @@ void ArgParser::generate_completions() {
     // Remove trailing space
     if(all_flags.size() > 0)
         all_flags.pop_back();
+
+    // Generate list of all synth types
+    std::string all_synths;
+    for(const auto &[key, value] : parse_synth_string)
+        all_synths += key + " ";
 
     // Generate rules for when expecting something else than a flag
     for(size_t i = 1; i <= max_number_of_opts; i++) {
@@ -164,6 +171,17 @@ void ArgParser::generate_completions() {
 
                 case OptType::last_arg:
                     ss << indent(4) << "return 0;;\n";
+                    break;
+
+                case OptType::opt_synth:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_synths + " -\" -- $cur`)\n"
+                       << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_synths + "\" -- $cur`)\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 default:

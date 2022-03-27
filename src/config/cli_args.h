@@ -3,6 +3,7 @@
 
 
 #include "note.h"
+#include "synth/synth.h"  // Note not synths.h
 
 #include <string>
 
@@ -23,6 +24,7 @@ struct CLIArgs {
     // Play recorded audio or synthesize audio based on estimated note
     bool playback = false;
     bool synth = false;
+    Synths synth_type = Synths::sine;
 
     // Generate sine instead of using audio input
     bool generate_sine = false;

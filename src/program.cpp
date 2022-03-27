@@ -72,7 +72,19 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     }
     if(cli_args.synth) {
         synth_buffer = new float[input_buffer_n_samples];
-        synth = new Sine();
+        switch(cli_args.synth_type) {
+            case Synths::sine:
+                synth = new Sine();
+                break;
+
+            case Synths::square:
+                synth = new Square();
+                break;
+
+            default:
+                error("Switch block which creates synth instance doesn't recognize synth type");
+                exit(EXIT_FAILURE);
+        }
     }
 
     mouse_clicked = false;

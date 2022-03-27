@@ -4,6 +4,8 @@
 #include "note.h"
 #include "error.h"
 
+#include "synth/synth.h"  // Note not synths.h
+
 #include "config/cli_args.h"
 #include "config/audio.h"
 #include "config/transcription.h"
@@ -38,7 +40,8 @@ const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
     {"-r",                      ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
     {"--rsc",                   ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
     {"-s",                      ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
-    {"--synth",                 ParseObj(&ArgParser::parse_synth,               {})}
+    {"--synth",                 ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
+    {"--synths",                ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})}
 };
 
 void print_help() {
@@ -54,7 +57,8 @@ void print_help() {
               << "  -r <w> <h>           - Start GUI with given resolution\n"
               << "  --rsc <path>         - Set alternative resource directory location\n"
               << "  -s [f]               - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
-              << "  --synth              - Output sine wave based on note estimation from audio input\n"
+              << "  --synth [synth]      - Synthesize sound based on note estimation from audio input (default synth is sine)\n"
+              << "  --synths             - List available synthesizers\n"
               << std::endl;
 }
 
@@ -108,7 +112,7 @@ void ArgParser::parse_args() {
             parse_func(*this);
         }
         catch(const std::out_of_range &oor) {
-            std::cout << "Incorrect usage; flag '" + std::string(arg) + "' not known\n" << std::endl;
+            error("Incorrect usage; flag '" + std::string(arg) + "' not known\n");
             print_help();
             exit(EXIT_FAILURE);
         }
@@ -123,6 +127,7 @@ void ArgParser::parse_args() {
 void ArgParser::parse_fullscreen() {
     cli_args.fullscreen = true;
 }
+
 
 void ArgParser::parse_file() {
     const char *arg;
@@ -149,10 +154,12 @@ void ArgParser::parse_file() {
     cli_args.play_file_name = arg;
 }
 
+
 void ArgParser::parse_help() {
     print_help();
     exit(EXIT_SUCCESS);
 }
+
 
 void ArgParser::parse_generate_note() {
     if(cli_args.play_file) {
@@ -178,6 +185,7 @@ void ArgParser::parse_generate_note() {
         exit(EXIT_FAILURE);
     }
 }
+
 
 void ArgParser::parse_output_file() {
     const char *filename;
@@ -214,6 +222,7 @@ void ArgParser::parse_output_file() {
     cli_args.output_filename = g_filename;
 }
 
+
 void ArgParser::parse_print_overtone() {
     const char *note_string;
     if(!fetch_opt(note_string)) {
@@ -246,6 +255,7 @@ void ArgParser::parse_print_overtone() {
     exit(EXIT_SUCCESS);
 }
 
+
 void ArgParser::parse_playback() {
     if(cli_args.synth) {
         error("Can't playback input audio while synthesizing");
@@ -269,9 +279,11 @@ void ArgParser::parse_playback() {
     }
 }
 
+
 void ArgParser::parse_print_performance() {
     cli_args.output_performance = true;
 }
+
 
 void ArgParser::parse_resolution() {
     const char *w_string, *h_string;
@@ -312,6 +324,7 @@ void ArgParser::parse_resolution() {
     cli_args.res_h = n;
 }
 
+
 void ArgParser::parse_rsc_dir() {
     const char *path_string;
     if(!fetch_opt(path_string)) {
@@ -343,6 +356,7 @@ void ArgParser::parse_rsc_dir() {
 
     cli_args.rsc_dir = path.string();
 }
+
 
 void ArgParser::parse_generate_sine() {
     if(cli_args.play_file) {
@@ -383,4 +397,26 @@ void ArgParser::parse_synth() {
     }
 
     cli_args.synth = true;
+
+    // Select right synth if specified
+    const char *synth_string;
+    if(!fetch_opt(synth_string))
+        return;  // Default is set in config.cli_args.h
+
+    try {
+        cli_args.synth_type = parse_synth_string.at(synth_string);
+    }
+    catch(const std::out_of_range &oor) {
+        error("Unknown synth type '" + std::string(synth_string) + "'");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+void ArgParser::parse_synths() {
+    std::cout << "Available synthesizers:" << std::endl;
+    for(const auto &[key, value] : parse_synth_string)
+        std::cout << "  - " << key << std::endl;
+
+    exit(EXIT_SUCCESS);
 }
