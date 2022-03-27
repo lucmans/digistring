@@ -6,6 +6,7 @@ if [ "$0" != "tools/patch_tools/check.sh" ]; then
     exit 1
 fi
 
+# Check singular patch
 if [ $# -eq 1 ]; then
     if [ ! -e "$1" ]; then
         echo "Given patch does not exist"
@@ -26,6 +27,7 @@ elif [ $# -gt 1 ]; then
     exit 1
 fi
 
+# Check all patches
 PROBLEMS=0
 for i in patches/*.patch; do
     echo "Checking '$i'"
