@@ -1,4 +1,4 @@
-Digistring is a program that converts notes played on a guitar to a digital representation in real-time.  
+Digistring is a program that converts notes played on a guitar to a digital representation in real-time, as well as a framework to aid development and research of real-time pitch estimation methods.  
 Note that Digistring is still under heavy development and the head of master may not always be stable.  
 The thesis accompanying this project can be found in the thesis branch.
 
