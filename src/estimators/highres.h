@@ -16,13 +16,6 @@
 #include <vector>
 
 
-// Gaussian average settings (for peak picking)
-const int KERNEL_WIDTH = 47;  // Choose odd value
-const int MID = KERNEL_WIDTH / 2;
-
-const double SIGMA = 1.2;  // Higher values of sigma make values close to kernel center weight more
-
-
 class HighRes : public Estimator {
     public:
         HighRes(float *&input_buffer, int &buffer_size);

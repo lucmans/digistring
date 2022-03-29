@@ -121,7 +121,7 @@ void HighRes::envelope_peaks(const double norms[(FRAME_SIZE / 2) + 1], const dou
     for(int i = 5; i < (FRAME_SIZE / 2); i++) {
         if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]  // A local maximum
            && norms[i] > envelope[i]  // Higher than envelope
-           && envelope[i] > 0.1)  // Filter quiet peaks
+           && envelope[i] > ENVELOPE_MIN)  // Filter quiet peaks
             peaks.push_back(i);
     }
 }
@@ -144,7 +144,7 @@ void HighRes::min_dy_peaks(const double norms[(FRAME_SIZE / 2) + 1], std::vector
             // If previous extreme value was a valley, look for a peak
             if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]) {
                 // If difference in y is significant enough
-                if(abs(norms[extreme_value_idx] - norms[i]) > 1.0) {
+                if(abs(norms[extreme_value_idx] - norms[i]) > MIN_PEAK_DY) {
                     peaks.push_back(extreme_value_idx);
                 }
                 was_peak = true;

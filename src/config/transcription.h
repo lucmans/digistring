@@ -23,7 +23,17 @@ constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected over
 constexpr int MAX_FRAME_SIZE = FRAME_SIZE;
 // constexpr int MAX_FRAME_SIZE = std::max(FRAME_SIZE, (int)round((double)SAMPLE_RATE / LOWEST_NOTE.freq));
 
+// Dolph Chebyshev attanuation
 constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
+
+// Gaussian average settings (for peak picking)
+constexpr int KERNEL_WIDTH = 47;  // Choose odd value
+constexpr int MID = KERNEL_WIDTH / 2;
+constexpr double SIGMA = 1.2;  // Higher values of sigma make values close to kernel center weight more
+constexpr double ENVELOPE_MIN = 0.1;  // Minimum height of envelope at peaks
+
+// Min difference in Y value between last valley to be a peak
+constexpr double MIN_PEAK_DY = 1.0;
 
 
 /* Overlapping read buffers */
