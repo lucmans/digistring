@@ -17,6 +17,9 @@ class Sine : public Synth {
 
     private:
         double last_phase;
+
+        bool prev_frame_silent;
+        double prev_frame_freq;
 };
 
 
