@@ -30,10 +30,15 @@ constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
 constexpr int KERNEL_WIDTH = 47;  // Choose odd value
 constexpr int MID = KERNEL_WIDTH / 2;
 constexpr double SIGMA = 1.2;  // Higher values of sigma make values close to kernel center weight more
-constexpr double ENVELOPE_MIN = 0.1;  // Minimum height of envelope at peaks
+// constexpr double ENVELOPE_MIN = 0.1;  // Minimum height of envelope at peaks
+constexpr double ENVELOPE_MIN = 0.25;  // Minimum height of envelope at peaks
 
 // Min difference in Y value between last valley to be a peak
 constexpr double MIN_PEAK_DY = 1.0;
+
+// Transient filtering
+constexpr bool TRANSIENT_FILTER = false;
+constexpr double TRANSIENT_FILTER_POWER = 0.3;  // Extra signal power over previous frame before frame has a transient
 
 
 /* Overlapping read buffers */

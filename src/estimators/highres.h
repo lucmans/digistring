@@ -35,6 +35,8 @@ class HighRes : public Estimator {
         float window_func[FRAME_SIZE];
         double gaussian[KERNEL_WIDTH];
 
+        double prev_power;
+
 
         void calc_envelope(const double norms[(FRAME_SIZE / 2) + 1], double envelope[(FRAME_SIZE / 2) + 1]);
 

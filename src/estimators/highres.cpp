@@ -75,6 +75,8 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
 
     if constexpr(!HEADLESS)
         estimator_graphics = new HighResGraphics();
+
+    prev_power = 0.0;
 }
 
 HighRes::~HighRes() {
@@ -241,6 +243,10 @@ void HighRes::get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_no
     if(candidate_notes[max_idx].amp < 0.0)
         return;
 
+    // Filter transients
+    // if(candidate_notes.size() > n_harmonics[max_idx] * 2)
+    //     return;
+
     out_notes.push_back(candidate_notes[max_idx]);
 }
 
@@ -262,6 +268,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     double power;
     calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
+
 
     // Compute Gaussian envelope
     double envelope[(FRAME_SIZE / 2) + 1];
@@ -286,8 +293,15 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // get_lowest_peak(noteset, candidate_notes);
     get_likeliest_note(noteset, candidate_notes);
 
-    if(noteset.size() > 0)
-        note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
+    if(noteset.size() > 0) {
+        if constexpr(TRANSIENT_FILTER) {
+            if(power + TRANSIENT_FILTER_POWER < prev_power)
+                note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
+        }
+        else
+            note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
+    }
+    prev_power = power;
 
 
     // Graphics
