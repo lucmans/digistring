@@ -7,8 +7,6 @@
 
 #include <fftw3.h>
 
-#include <map>
-#include <string>
 #include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
 
 
