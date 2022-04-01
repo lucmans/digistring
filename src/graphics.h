@@ -39,8 +39,6 @@ class Graphics {
         SDL_Renderer *renderer;
         SDL_Texture *frame_buffer;
 
-        double max_recorded_value;
-
         //
         TTF_Font *info_font;
         SDL_Texture *note_text, *note_freq_text, *note_error_text, *note_amp_text;
@@ -48,9 +46,13 @@ class Graphics {
         SDL_Texture *n_samples_text;
         int queued_samples;
 
-        double max_display_frequency;  // Maximum frequency to display; should only be set by *max_display_frequency() functions
+        double max_display_frequency;  // Maximum frequency to display; should only be set by *_max_display_frequency() functions
         SDL_Texture *max_display_frequency_text;  // Rendered static text
         SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
+
+        double max_recorded_value;  // Should only be set by *_max_recorded_value() functions
+        SDL_Texture *max_recorded_value_text;  // Rendered static text
+        SDL_Texture *max_recorded_value_number;  // Rendered dynamic text
 
         int mouse_x, mouse_y;
         SDL_Texture *clicked_freq_text;
@@ -60,9 +62,12 @@ class Graphics {
         void render_black_screen();
 
         void render_current_note(const Note *const note);
-        void render_max_displayed_frequency();
-        void render_queued_samples();
-        void render_clicked_frequency();
+
+        void render_info();
+        void render_max_displayed_frequency(const int offset);
+        void render_max_recorded_value(const int offset);
+        void render_queued_samples(const int offset);
+        void render_clicked_frequency(const int offset);
 };
 
 
