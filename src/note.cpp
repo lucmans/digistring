@@ -134,9 +134,9 @@ void print_overtones(const Note &note, const int n_overtones) {
         Note overtone(note.freq * i, 0);
         std::cout << std::fixed << std::setprecision(3)
                   << std::setw(max_n_width) << i - 1
-                  << std::setw(max_harm_width) << note.freq * i
+                  << std::setw(max_harm_width) << overtone.freq
                   << std::setw(14 - subscript_offset(overtone.octave)) << overtone
-                  << std::setw(max_closest_width) << A4 * exp2(round(12.0 * log2((note.freq * i) / A4)) / 12.0)
+                  << std::setw(max_closest_width) << A4 * exp2(round(12.0 * log2((overtone.freq) / A4)) / 12.0)
                   << std::setw(12) << overtone.error << std::endl;
                   // << std::setw(12) << overtone.error
                   // << std::setw(13) << note.midi_number << std::endl;
