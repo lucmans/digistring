@@ -60,6 +60,7 @@ class Graphics {
 
         int mouse_x, mouse_y;
         SDL_Texture *clicked_freq_text;
+        SDL_Texture *clicked_amp_text;
 
 
         // Render functions render to framebuffer
@@ -68,10 +69,10 @@ class Graphics {
         void render_current_note(const Note *const note);
 
         void render_info();
-        void render_max_displayed_frequency(const int offset);
-        void render_max_recorded_value(const int offset);
-        void render_queued_samples(const int offset);
-        void render_clicked_frequency(const int offset);
+        void render_max_displayed_frequency(int &offset);
+        void render_max_recorded_value(int &offset);
+        void render_queued_samples(int &offset);
+        void render_clicked_location_info(int &offset);
 };
 
 

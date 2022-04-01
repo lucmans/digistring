@@ -91,6 +91,7 @@ Graphics::Graphics() {
 
     mouse_x = -1;
     clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    clicked_amp_text = create_txt_texture(renderer, "Clicked amplitude: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
     // TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
     // if(freeze_font == NULL) {
@@ -106,6 +107,7 @@ Graphics::~Graphics() {
     // SDL_DestroyTexture(freeze_txt_buffer);
 
     SDL_DestroyTexture(clicked_freq_text);
+    SDL_DestroyTexture(clicked_amp_text);
 
     SDL_DestroyTexture(n_samples_text);
 
@@ -333,18 +335,18 @@ void Graphics::render_current_note(const Note *const note) {
 void Graphics::render_info() {
     int i = 0;
 
-    render_max_displayed_frequency(i++);
+    render_max_displayed_frequency(i);
     if constexpr(DISPLAY_QUEUED_IN_SAMPLES)
         if(queued_samples != -1)
-            render_queued_samples(i++);
+            render_queued_samples(i);
 
-    render_max_recorded_value(i++);
+    render_max_recorded_value(i);
 
-    render_clicked_frequency(i++);
+    render_clicked_location_info(i);
 }
 
 
-void Graphics::render_max_displayed_frequency(const int offset) {
+void Graphics::render_max_displayed_frequency(int &offset) {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
     int w, h;
@@ -356,10 +358,12 @@ void Graphics::render_max_displayed_frequency(const int offset) {
     SDL_RenderCopy(renderer, max_display_frequency_text, NULL, &dst);
     dst = {res_w - w2 - 1, h * offset, w2, h};
     SDL_RenderCopy(renderer, max_display_frequency_number, NULL, &dst);
+
+    offset++;
 }
 
 
-void Graphics::render_queued_samples(const int offset) {
+void Graphics::render_queued_samples(int &offset) {
     SDL_Texture *n_samples_number = create_txt_texture(renderer, STR(queued_samples), info_font, {0xff, 0xff, 0xff, 0xff});
 
     int w, h;
@@ -377,10 +381,12 @@ void Graphics::render_queued_samples(const int offset) {
     SDL_RenderCopy(renderer, n_samples_number, NULL, &dst);
 
     SDL_DestroyTexture(n_samples_number);
+
+    offset++;
 }
 
 
-void Graphics::render_max_recorded_value(const int offset) {
+void Graphics::render_max_recorded_value(int &offset) {
     // Valid float comparison, as value is set to the literal -1.0
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -399,15 +405,17 @@ void Graphics::render_max_recorded_value(const int offset) {
     SDL_RenderCopy(renderer, max_recorded_value_text, NULL, &dst);
     dst = {res_w - w2 - 1, h * offset, w2, h};
     SDL_RenderCopy(renderer, max_recorded_value_number, NULL, &dst);
+
+    offset++;
 }
 
 
 
-void Graphics::render_clicked_frequency(const int offset) {
+void Graphics::render_clicked_location_info(int &offset) {
     if(mouse_x == -1)
         return;
 
-    int clicked_freq = round(((double)mouse_x / (double)res_w) * max_display_frequency);
+    const int clicked_freq = round(((double)mouse_x / (double)res_w) * max_display_frequency);
     SDL_Texture *clicked_freq_number = create_txt_texture(renderer, STR(clicked_freq), info_font, {0xff, 0xff, 0xff, 0xff});
 
     int w, h;
@@ -421,6 +429,24 @@ void Graphics::render_clicked_frequency(const int offset) {
     SDL_RenderCopy(renderer, clicked_freq_number, NULL, &dst);
 
     SDL_DestroyTexture(clicked_freq_number);
+
+    offset++;
+
+
+    const int clicked_amp = round(max_recorded_value - (((double)mouse_y / (double)res_h) * max_recorded_value));
+    SDL_Texture *clicked_amp_number = create_txt_texture(renderer, STR(clicked_amp), info_font, {0xff, 0xff, 0xff, 0xff});
+
+    SDL_QueryTexture(clicked_amp_text, NULL, NULL, &w, &h);
+    SDL_QueryTexture(clicked_amp_number, NULL, NULL, &w2, &h);
+
+    dst = {res_w - w - w2 - 1, h * offset, w, h};
+    SDL_RenderCopy(renderer, clicked_amp_text, NULL, &dst);
+    dst = {res_w - w2 - 1, h * offset, w2, h};
+    SDL_RenderCopy(renderer, clicked_amp_number, NULL, &dst);
+
+    SDL_DestroyTexture(clicked_amp_number);
+
+    offset++;
 }
 
 
