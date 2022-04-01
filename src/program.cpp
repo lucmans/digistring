@@ -286,9 +286,6 @@ void Program::print_results(const NoteEvents &note_events) {
 
 
 void Program::update_graphics(const NoteEvents &note_events) {
-    // Get data from estimator for graphics
-    graphics->set_max_recorded_value_if_larger(estimator->get_max_norm());
-
     // Get the pointer to the graphics object here, as it is only valid till next call to Estimator::perform()
     const EstimatorGraphics *const estimator_graphics = estimator->get_estimator_graphics();
     perf.push_time_point("Graphics parsed data");
@@ -384,7 +381,7 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_r:
-                        graphics->set_max_recorded_value(1.0);
+                        graphics->set_max_recorded_value();
                         break;
 
                     case SDLK_t:

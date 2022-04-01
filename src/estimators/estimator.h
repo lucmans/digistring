@@ -32,9 +32,6 @@ class Estimator {
         // This function should only return its type as named in Estimators
         virtual Estimators get_type() const = 0;
 
-        // Functions for retrieving graphics related data
-        double get_max_norm() const;
-
         // The estimator graphics pointer is valid till the next perform() call
         const EstimatorGraphics *get_estimator_graphics();
         void next_plot_type();
@@ -47,7 +44,6 @@ class Estimator {
         // Graphics output related variables, so only available without headless mode
         // These variables are set during perform, so relate to the last perform call
         EstimatorGraphics *estimator_graphics;
-        double max_norm;
 };
 
 
@@ -58,17 +54,22 @@ struct GraphicsData {
 
 class EstimatorGraphics {
     public:
-        EstimatorGraphics() : cur_plot(0) {};
+        EstimatorGraphics() : cur_plot(0), max_recorded_value(-1.0) {};
         virtual ~EstimatorGraphics() {};
 
         void next_plot() {cur_plot++;};
         virtual void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const = 0;
+
+        double get_max_recorded_value() const {return max_recorded_value;};
+        void set_max_recorded_value(const double new_value) {max_recorded_value = new_value;};
 
 
     protected:
         // Mutable, so Estimator can return a const EstimatorGraphics pointer, so that the data used for graphics can only be altered by an Estimator
         // cur_plot should only be changed in the const member function render() to set it back to 0 if value is invalid
         mutable int cur_plot;
+
+        double max_recorded_value;
 };
 
 

@@ -252,8 +252,6 @@ void HighRes::get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_no
 
 
 void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
-    max_norm = 0.0;
-
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
         input_buffer[i] *= window_func[i];
@@ -265,14 +263,16 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
 
     // Calculate amplitude of every frequency component
     double norms[(FRAME_SIZE / 2) + 1];
-    double power;
+    double power, max_norm;
     calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
-
 
     // Compute Gaussian envelope
     double envelope[(FRAME_SIZE / 2) + 1];
     calc_envelope(norms, envelope);
+
+    // TODO: Convex envelope
+    // Start from highest/lowest peaks, then advance both left/right to next highest peak until no peaks left
 
     // Find peaks based on envelope
     std::vector<int> peaks;
@@ -307,6 +307,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Graphics
     if constexpr(!HEADLESS) {
         HighResGraphics *highres_graphics = static_cast<HighResGraphics *>(estimator_graphics);
+        highres_graphics->set_max_recorded_value(max_norm);
 
         Spectrum &spectrum = highres_graphics->get_spectrum();
         spectrum.clear();

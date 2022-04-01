@@ -64,7 +64,7 @@ Graphics::Graphics() {
     SDL_RenderCopy(renderer, frame_buffer, NULL, NULL);
     SDL_RenderPresent(renderer);
 
-    max_recorded_value = 1.0;
+    max_recorded_value = -1.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
 
     info_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 20);
@@ -123,6 +123,10 @@ Graphics::~Graphics() {
     SDL_DestroyWindow(window);
 }
 
+
+void Graphics::set_max_recorded_value() {
+    max_recorded_value = -1.0;
+}
 
 void Graphics::set_max_recorded_value(const double new_max) {
     if(new_max < 1.0) {
@@ -237,6 +241,7 @@ void Graphics::render_frame(const Note *const note, const EstimatorGraphics *con
 
     static bool warning_printed = false;
     if(estimator_graphics != nullptr) {
+        set_max_recorded_value_if_larger(estimator_graphics->get_max_recorded_value());
         const GraphicsData gd = {.max_display_frequency = max_display_frequency,
                                  .max_recorded_value = max_recorded_value};
         estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
@@ -367,6 +372,13 @@ void Graphics::render_queued_samples(const int offset) {
 
 
 void Graphics::render_max_recorded_value(const int offset) {
+    // Valid float comparison, as value is set to the literal -1.0
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
+    if(max_recorded_value == -1.0)
+        return;
+    #pragma GCC diagnostic pop
+
     SDL_SetRenderTarget(renderer, frame_buffer);
 
     int w, h;

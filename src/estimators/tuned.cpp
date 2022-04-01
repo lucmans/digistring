@@ -113,7 +113,7 @@ Estimators Tuned::get_type() const {
 
 void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
     // Note that ins[0] = input_buffer
-    max_norm = 0.0;
+    double max_norm = 0.0;
 
     // Copy input to each array
     for(int i = 1; i < 12; i++)

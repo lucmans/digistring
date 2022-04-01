@@ -13,22 +13,11 @@
 
 
 Estimator::Estimator() {
-    max_norm = 0.0;
     estimator_graphics = nullptr;
 }
 
 Estimator::~Estimator() {
 
-}
-
-
-double Estimator::get_max_norm() const {
-    if constexpr(HEADLESS) {
-        error("This call should never occur with headless mode");
-        exit(EXIT_FAILURE);
-    }
-
-    return max_norm;
 }
 
 
