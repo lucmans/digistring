@@ -26,6 +26,8 @@ class Graphics {
         void set_queued_samples(const int n_samples);
         void set_clicked(const int x, const int y);
 
+        void toggle_show_info();
+
         // Returns if size was changed
         bool resize_window(const int w, const int h);
 
@@ -43,6 +45,7 @@ class Graphics {
         //
         TTF_Font *info_font;
         SDL_Texture *note_text, *note_freq_text, *note_error_text, *note_amp_text;
+        bool show_info;
 
         SDL_Texture *n_samples_text;
         int queued_samples;

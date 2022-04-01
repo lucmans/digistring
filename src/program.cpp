@@ -384,6 +384,10 @@ void Program::handle_sdl_events() {
                         graphics->set_max_recorded_value();
                         break;
 
+                    case SDLK_i:
+                        graphics->toggle_show_info();
+                        break;
+
                     case SDLK_t:
                         if(cli_args.playback)
                             SDL_ClearQueuedAudio(*out_dev);

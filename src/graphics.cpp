@@ -64,6 +64,8 @@ Graphics::Graphics() {
     SDL_RenderCopy(renderer, frame_buffer, NULL, NULL);
     SDL_RenderPresent(renderer);
 
+    show_info = DISPLAY_INFO;
+
     max_recorded_value = -1.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
 
@@ -207,6 +209,11 @@ void Graphics::set_clicked(const int x, const int y) {
 // }
 
 
+void Graphics::toggle_show_info() {
+    show_info = !show_info;
+}
+
+
 bool Graphics::resize_window(const int w, const int h) {
     if(w == res_w && h == res_h)
         return false;
@@ -252,7 +259,9 @@ void Graphics::render_frame(const Note *const note, const EstimatorGraphics *con
     }
 
     render_current_note(note);
-    render_info();
+
+    if(show_info)
+        render_info();
 
     // render_freeze();
 

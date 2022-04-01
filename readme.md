@@ -61,6 +61,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 `[`/`]`: Decrease/increase the maximum displayed frequency.  
 `p`: Change plot type.  
 `r`: Reset loudest recorded value.  
+`i`: Toggle showing info in top-right corner of the window.  
 `t`: Clear SDL audio playback buffer (samples sent to OS are still played).  
 `q`/`esc`: Quit Digistring.
 

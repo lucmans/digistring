@@ -11,7 +11,10 @@ constexpr double MAX_FPS = 30.0;
 // Show a vertical line at note frequencies in spectrum
 constexpr bool DISPLAY_NOTE_LINES = false;
 
-// Render the number of input samples queued, which shows audio overruns
+// Render some info in top-right corner of the window
+constexpr bool DISPLAY_INFO = true;
+
+// Render the number of input samples queued, which indicates audio overruns
 constexpr bool DISPLAY_QUEUED_IN_SAMPLES = true;
 
 // Draw a highlighted dot in spectrogram denoting a measured point
