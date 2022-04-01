@@ -186,9 +186,9 @@ void Graphics::set_max_display_frequency(const double f) {
     // info("Set maximum frequency to " + STR(max_display_frequency) + " Hz");
 }
 
-// double Graphics::get_max_display_frequency() {
-//     return max_display_frequency;
-// }
+double Graphics::get_max_display_frequency() const {
+    return max_display_frequency;
+}
 
 
 void Graphics::set_queued_samples(const int n_samples) {

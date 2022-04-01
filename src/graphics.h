@@ -21,7 +21,7 @@ class Graphics {
 
         void add_max_display_frequency(const double d_f);
         void set_max_display_frequency(const double f);
-        // double get_max_display_frequency();
+        double get_max_display_frequency() const;
 
         void set_queued_samples(const int n_samples);
         void set_clicked(const int x, const int y);
@@ -47,11 +47,11 @@ class Graphics {
         SDL_Texture *n_samples_text;
         int queued_samples;
 
-        double max_display_frequency;  // Maximum frequency to display; should only be set by *_max_display_frequency() functions
+        double max_display_frequency;  // Maximum frequency to display; should only be set by set_max_display_frequency() functions
         SDL_Texture *max_display_frequency_text;  // Rendered static text
         SDL_Texture *max_display_frequency_number;  // Rendered dynamic text
 
-        double max_recorded_value;  // Should only be set by *_max_recorded_value() functions
+        double max_recorded_value;  // Should only be set by set_max_recorded_value*() functions
         SDL_Texture *max_recorded_value_text;  // Rendered static text
         SDL_Texture *max_recorded_value_number;  // Rendered dynamic text
 
