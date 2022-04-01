@@ -44,9 +44,9 @@ struct Note {
             midi_number(12 + round(12.0 * log2(_freq / C0))) {};
 
     // If passing an integer as note, make sure it is 0 <= n < 12; otherwise, random crashes may occur
-    constexpr Note(const Notes _note, const int _octave) :
+    constexpr Note(const Notes _note, const int _octave, const double _amp = -1.0) :
             freq(C0 * exp2((double)_octave + (static_cast<double>(_note) / 12.0))),
-            amp(-1.0),
+            amp(_amp),
             note(_note),
             octave(_octave),
             error(0.0),
@@ -54,9 +54,9 @@ struct Note {
         // static_assert(static_cast<int>(_note) >= 0 && static_cast<int>(_note) < 12);
     };
 
-    constexpr Note(const int _midi_number) :
+    constexpr Note(const int _midi_number, const double _amp = -1.0) :
             freq(C0 * exp2((double)(_midi_number - 12) / 12.0)),
-            amp(-1.0),
+            amp(_amp),
             note(static_cast<Notes>((((_midi_number - 12) % 12) + 12) % 12)),
             octave(floor((double)(_midi_number - 12) / 12.0)),
             error(0.0),
