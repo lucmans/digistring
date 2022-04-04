@@ -113,7 +113,7 @@ void Spectrogram::draw_note_lines(SDL_Renderer *const renderer, const SDL_Rect &
 
 
 void Spectrogram::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum) const {
-    const SpectrumData spectrum_data = spectrum.get_data();
+    const SpectrumData &spectrum_data = spectrum.get_data();
 
     if constexpr(DISPLAY_NOTE_LINES)
         draw_note_lines(renderer, dst, graphics_data);
@@ -122,8 +122,8 @@ void Spectrogram::render(SDL_Renderer *const renderer, const SDL_Rect &dst, cons
 }
 
 void Spectrogram::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum, const Spectrum &envelope, const std::vector<double> &peaks) const {
-    const SpectrumData spectrum_data = spectrum.get_data();
-    const SpectrumData envelope_data = envelope.get_data();
+    const SpectrumData &spectrum_data = spectrum.get_data();
+    const SpectrumData &envelope_data = envelope.get_data();
 
     if constexpr(DISPLAY_NOTE_LINES)
         draw_note_lines(renderer, dst, graphics_data);
