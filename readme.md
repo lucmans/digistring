@@ -10,7 +10,8 @@ The build requirements of the individual tools can be found in the tool's respec
 Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in its directory for the requirements.
 
 On Ubuntu Linux:  
-`sudo apt install g++ libsdl2-dev libsdl2-ttf-dev libfftw3-dev`
+`sudo apt install g++ libsdl2-dev libsdl2-ttf-dev libfftw3-dev`  
+In order to compile and run Digistring on Ubuntu 20.04 LTS, the C++17 patch as well as the glibc-2_31 patch have to be applied.
 
 On Arch Linux:  
 `sudo pacman -S sdl2 sdl2_ttf fftw3`
