@@ -32,6 +32,7 @@ constexpr int MIN_RES[2] = {800, 600};
 // Set to <=0 for full display
 constexpr double DEFAULT_MAX_DISPLAY_FREQUENCY = 2000.0;
 constexpr double MIN_MAX_DISPLAY_FREQUENCY = 50.0;  // Hz
+constexpr double MIN_MAX_RECORDED_VALUE = 0.1;
 
 // Maximum number of previous data point to save in RAM for graphics (not used in headless mode)
 constexpr int MAX_HISTORY_DATAPOINTS = 2000;
