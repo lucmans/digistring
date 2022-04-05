@@ -87,6 +87,19 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
         read += ret;
     }
 
+    // static double highest = 0.0, lowest = 0.0;
+    // for(int i = 0; i < n_samples; i++) {
+    //     if(in[i] < 0.0) {
+    //         if(in[i] < lowest)
+    //             lowest = in[i];
+    //     }
+    //     else {
+    //         if(in[i] > highest)
+    //             highest = in[i];
+    //     }
+    // }
+    // debug(STR(lowest) + " " + STR(highest));
+
     played_samples += n_samples;
     perf.push_time_point("Read " + STR(n_samples) + " samples");
 }

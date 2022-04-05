@@ -92,6 +92,19 @@ AudioFile::AudioFile(const std::string &file) {
         exit(EXIT_FAILURE);
     }
 
+    // double highest = 0.0, lowest = 0.0;
+    // for(int i = 0; i < wav_buffer_samples; i++) {
+    //     if(wav_buffer[i] < 0.0) {
+    //         if(wav_buffer[i] < lowest)
+    //             lowest = wav_buffer[i];
+    //     }
+    //     else {
+    //         if(wav_buffer[i] > highest)
+    //             highest = wav_buffer[i];
+    //     }
+    // }
+    // debug(STR(lowest) + " " + STR(highest));
+
     SDL_FreeWAV(read_buffer);
 }
 
