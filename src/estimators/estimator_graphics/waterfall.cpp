@@ -57,7 +57,7 @@ void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, con
     // Calculate the color of each pixel
     uint32_t *pixels;
     int pitch;
-    SDL_LockTexture(new_line, NULL, (void **)&pixels, &pitch);
+    SDL_LockTexture(new_line, NULL, (void**)&pixels, &pitch);
     for(unsigned int i = 0; i < spectrum_size; i++)
         pixels[i] = calc_color(spectrum_data[i].amp, graphics_data.max_recorded_value);
     SDL_UnlockTexture(new_line);

@@ -133,9 +133,9 @@ void Graphics::set_max_recorded_value() {
 }
 
 void Graphics::set_max_recorded_value(const double new_max) {
-    if(new_max < 1.0) {
-        warning("Can't set max_recorded_value lower than 1.0; setting it to 1.0...");
-        max_recorded_value = 1.0;
+    if(new_max < 0.1) {
+        warning("Can't set max_recorded_value lower than 0.1; setting it to 0.1...");
+        max_recorded_value = 0.1;
         return;
     }
 
@@ -148,6 +148,12 @@ void Graphics::set_max_recorded_value(const double new_max) {
 void Graphics::set_max_recorded_value_if_larger(const double new_max) {
     if(new_max <= max_recorded_value)
         return;
+
+    if(new_max < 0.1) {
+        warning("Can't set max_recorded_value lower than 0.1; setting it to 0.1...");
+        max_recorded_value = 0.1;
+        return;
+    }
 
     max_recorded_value = new_max;
 

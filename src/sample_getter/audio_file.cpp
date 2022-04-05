@@ -23,7 +23,7 @@ AudioFile::AudioFile(const std::string &file) {
     }
 
     if(wav_spec.freq != SAMPLE_RATE) {
-        error("Internal sample rate (" + STR(SAMPLE_RATE) + ") mismatches WAV sample rate (" + STR(wav_spec.freq));
+        error("Internal sample rate (" + STR(SAMPLE_RATE) + " Hz) mismatches WAV sample rate (" + STR(wav_spec.freq) + " Hz)\nInternal sample rate can be set in src/config/audio.h");
         exit(EXIT_FAILURE);
     }
 
