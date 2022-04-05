@@ -147,7 +147,7 @@ void HighRes::min_dy_peaks(const double norms[(FRAME_SIZE / 2) + 1], std::vector
             if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]) {
                 // If difference in y is significant enough
                 if(abs(norms[extreme_value_idx] - norms[i]) > MIN_PEAK_DY) {
-                    peaks.push_back(extreme_value_idx);
+                    peaks.push_back(i);
                 }
                 was_peak = true;
                 extreme_value_idx = i;
