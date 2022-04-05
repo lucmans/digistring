@@ -68,7 +68,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
-Low passed-spectrum peak picking.  
+Convex envelope and low passed-spectrum peak picking.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Ability to cache FFTW3 knowledge.  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  
