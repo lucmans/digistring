@@ -293,12 +293,20 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // get_lowest_peak(noteset, candidate_notes);
     get_likeliest_note(noteset, candidate_notes);
 
+    // Add note to output note_events if not filtered
     if(noteset.size() > 0) {
-        if constexpr(TRANSIENT_FILTER) {
-            if(power + TRANSIENT_FILTER_POWER < prev_power)
-                note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
+        bool add_note = true;
+        if constexpr(LOW_HIGH_FILTER) {
+            if(noteset[0].midi_number < LOWEST_NOTE.midi_number && noteset[0].midi_number > HIGHEST_NOTE.midi_number)
+                add_note = false;
         }
-        else
+
+        if constexpr(TRANSIENT_FILTER) {
+            if(power > prev_power + TRANSIENT_FILTER_POWER)
+                add_note = false;
+        }
+
+        if(add_note)
             note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
     }
     prev_power = power;

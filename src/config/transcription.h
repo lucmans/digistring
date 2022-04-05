@@ -10,11 +10,13 @@
 
 // constexpr double A4 defined in note.h!
 constexpr Note LOWEST_NOTE = Note(Notes::E, 2);
+constexpr Note HIGHEST_NOTE = Note(Notes::E, 6);
 
 
 /* High Res transcriber */
 constexpr int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
-// constexpr int FRAME_SIZE = 1024 * 4 /** 2*/;  // Number of samples in Fourier frame
+// constexpr int FRAME_SIZE = 4096;  // For 48000 Hz
+// constexpr int FRAME_SIZE = 3763;  // For 44100 Hz
 constexpr double POWER_THRESHOLD = 15.0;  // Threshold of channel power before finding peaks
 constexpr double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
 constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone
@@ -35,6 +37,9 @@ constexpr double ENVELOPE_MIN = 0.25;  // Minimum height of envelope at peaks
 
 // Min difference in Y value between last valley to be a peak
 constexpr double MIN_PEAK_DY = 1.0;
+
+// Filter notes which are outside of LOWEST_NOTE and HIGHEST_NOTE
+constexpr bool LOW_HIGH_FILTER = true;
 
 // Transient filtering
 constexpr bool TRANSIENT_FILTER = false;
