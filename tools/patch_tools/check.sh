@@ -38,5 +38,6 @@ done
 if [ $PROBLEMS -eq 0 ]; then
     echo "All patches can be applied (didn't check if code still compiles/runs correctly)"
 else
+    echo -e -n "\033[1m\033[31m"
     echo "One or more patches could not be applied!"
 fi
