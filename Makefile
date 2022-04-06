@@ -35,7 +35,6 @@ OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
 # Makes all folders needed by build process and build with parallel jobs
 all: | $(BUILD_FOLDERS)
-# 	@echo $(OBJ)
 	make -j $(CORES) $(BIN)
 
 # Don't forget to run make force to remove sanitize

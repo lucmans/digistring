@@ -13,7 +13,7 @@
 #include <fstream>
 
 
-constexpr int INDENT_SPACES = 4;
+constexpr int INDENT_SPACES = 4;  // Cannot be changed, as some indents are hardcoded for code readability
 inline std::string indent(const int level) {
     return std::string(level * INDENT_SPACES, ' ');
 }
@@ -49,7 +49,7 @@ void ArgParser::generate_completions() {
 
     // Generate rules for when expecting something else than a flag
     for(size_t i = 1; i <= max_number_of_opts; i++) {
-        ss << indent(1) << "if (( $COMP_CWORD - 1 >= 1 )); then\n"
+        ss << indent(1) << "if (( $COMP_CWORD - " + std::to_string(i) + " >= 1 )); then\n"
            << indent(1) << "    case ${COMP_WORDS[COMP_CWORD - " + std::to_string(i) + "]} in\n";
         for(const auto &[key, value] : flag_to_func) {
             // Don't look more opts back than an arg accepts
@@ -60,12 +60,12 @@ void ArgParser::generate_completions() {
             ss << indent(3) << key << ")\n";
             switch(value.opt_types[i - 1]) {
                 case OptType::dir:
-                    ss << indent(4) << "COMPREPLY=(`compgen -A directory -- $cur`)\n"
+                    ss << indent(4) << "COMPREPLY=($(compgen -A directory -- $cur))\n"
                        << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::file:
-                    ss << indent(4) << "COMPREPLY=(`compgen -A file -- $cur`)\n"
+                    ss << indent(4) << "COMPREPLY=($(compgen -A file -- $cur))\n"
                        << indent(4) << "return 0;;\n";
                     break;
 
@@ -73,7 +73,7 @@ void ArgParser::generate_completions() {
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
                        << indent(4) << "    COMPREPLY=(\"" + DEFAULT_OUTPUT_FILENAME + "\")\n"
                        << indent(4) << "else\n"  // Or suggest existing files on non-empty tab
-                       << indent(4) << "    COMPREPLY=(`compgen -A file -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -A file -- $cur))\n"
                        << indent(4) << "fi\n"
                        << indent(4) << "return 0;;\n";
                     break;
@@ -82,7 +82,7 @@ void ArgParser::generate_completions() {
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
                        << indent(4) << "    COMPREPLY=(\"completions.sh\")\n"
                        << indent(4) << "else\n"  // Or suggest existing files on non-empty tab
-                       << indent(4) << "    COMPREPLY=(`compgen -A file -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -A file -- $cur))\n"
                        << indent(4) << "fi\n"
                        << indent(4) << "return 0;;\n";
                     break;
@@ -108,16 +108,16 @@ void ArgParser::generate_completions() {
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"
                        << indent(4) << "    IFS=$'\\n'\n"
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter an integer or type \'-\' for flag completions${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter an integer or type - for flag completions${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
                        << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n"
                        << indent(4) << "elif [[ $cur =~ ^-?[0123456789]+$ ]]; then\n"  // An integer is typed
                        << indent(4) << "    COMPREPLY=(${cur})\n"
                        << indent(4) << "else\n"
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"
                        << indent(4) << "    IFS=$'\\n'\n"
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not an integer or '-'${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not an integer or -${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
                        << indent(4) << "fi\n"
                        << indent(4) << "return 0;;\n";
@@ -149,10 +149,10 @@ void ArgParser::generate_completions() {
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"
                        << indent(4) << "    IFS=$'\\n'\n"
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4) or type \'-\' for flag completions${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4) or type - for flag completions${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
                        << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n"
                        << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then\n"  // Note is fully typed
                        << indent(4) << "    COMPREPLY=(${cur})\n"
                        << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then\n"  // Note is being typed
@@ -163,7 +163,7 @@ void ArgParser::generate_completions() {
                        << indent(4) << "else\n"
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"
                        << indent(4) << "    IFS=$'\\n'\n"
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not a note name (e.g. A#4) or '-'${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not a note name (e.g. A#4) or -${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
                        << indent(4) << "fi\n"
                        << indent(4) << "return 0;;\n";
@@ -175,11 +175,11 @@ void ArgParser::generate_completions() {
 
                 case OptType::opt_synth:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
-                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_synths + " -\" -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_synths + " -\" -- $cur))\n"
                        << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n"
                        << indent(4) << "else\n"
-                       << indent(4) << "    COMPREPLY=(`compgen -W \"" + all_synths + "\" -- $cur`)\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_synths + "\" -- $cur))\n"
                        << indent(4) << "fi\n"
                        << indent(4) << "return 0;;\n";
                     break;
@@ -195,7 +195,7 @@ void ArgParser::generate_completions() {
 
     // If code gets here, there was no opt expected for arg, so display all args
     if(all_flags.size() > 0)
-        ss << "    COMPREPLY=(`compgen -W \"" + all_flags + "\" -- $cur`)\n";
+        ss << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n";
 
     ss << "    return 0\n"
        << "}\n"

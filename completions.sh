@@ -5,20 +5,20 @@ function _generate_digistring_compl() {
     if (( $COMP_CWORD - 1 >= 1 )); then
         case ${COMP_WORDS[COMP_CWORD - 1]} in
             --file)
-                COMPREPLY=(`compgen -A file -- $cur`)
+                COMPREPLY=($(compgen -A file -- $cur))
                 return 0;;
             --generate-completions)
                 if [[ ${#cur} == 0 ]]; then
                     COMPREPLY=("completions.sh")
                 else
-                    COMPREPLY=(`compgen -A file -- $cur`)
+                    COMPREPLY=($(compgen -A file -- $cur))
                 fi
                 return 0;;
             --output)
                 if [[ ${#cur} == 0 ]]; then
                     COMPREPLY=("output.json")
                 else
-                    COMPREPLY=(`compgen -A file -- $cur`)
+                    COMPREPLY=($(compgen -A file -- $cur))
                 fi
                 return 0;;
             --over)
@@ -42,15 +42,15 @@ function _generate_digistring_compl() {
                 fi
                 return 0;;
             --rsc)
-                COMPREPLY=(`compgen -A directory -- $cur`)
+                COMPREPLY=($(compgen -A directory -- $cur))
                 return 0;;
             --synth)
                 if [[ ${#cur} == 0 ]]; then
-                    COMPREPLY=(`compgen -W "sine square  -" -- $cur`)
+                    COMPREPLY=($(compgen -W "sine square  -" -- $cur))
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=($(compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur))
                 else
-                    COMPREPLY=(`compgen -W "sine square " -- $cur`)
+                    COMPREPLY=($(compgen -W "sine square " -- $cur))
                 fi
                 return 0;;
             --synths)
@@ -59,17 +59,17 @@ function _generate_digistring_compl() {
                 if [[ ${#cur} == 0 ]]; then
                     COMPREPLY=("completions.sh")
                 else
-                    COMPREPLY=(`compgen -A file -- $cur`)
+                    COMPREPLY=($(compgen -A file -- $cur))
                 fi
                 return 0;;
             -n)
                 if [[ ${#cur} == 0 ]]; then
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Please enter a note name (e.g. A#4) or type '-' for flag completions${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Please enter a note name (e.g. A#4) or type - for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=($(compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur))
                 elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then
                     COMPREPLY=(${cur})
                 elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then
@@ -80,7 +80,7 @@ function _generate_digistring_compl() {
                 else
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Error: Not a note name (e.g. A#4) or '-'${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Error: Not a note name (e.g. A#4) or -${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 fi
                 return 0;;
@@ -88,7 +88,7 @@ function _generate_digistring_compl() {
                 if [[ ${#cur} == 0 ]]; then
                     COMPREPLY=("output.json")
                 else
-                    COMPREPLY=(`compgen -A file -- $cur`)
+                    COMPREPLY=($(compgen -A file -- $cur))
                 fi
                 return 0;;
             -r)
@@ -110,23 +110,23 @@ function _generate_digistring_compl() {
                 if [[ ${#cur} == 0 ]]; then
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Please enter an integer or type '-' for flag completions${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Please enter an integer or type - for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=($(compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur))
                 elif [[ $cur =~ ^-?[0123456789]+$ ]]; then
                     COMPREPLY=(${cur})
                 else
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Error: Not an integer or '-'${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Error: Not an integer or -${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 fi
                 return 0;;
         esac
     fi
 
-    if (( $COMP_CWORD - 1 >= 1 )); then
+    if (( $COMP_CWORD - 2 >= 1 )); then
         case ${COMP_WORDS[COMP_CWORD - 2]} in
             --generate-completions)
                 return 0;;
@@ -134,16 +134,16 @@ function _generate_digistring_compl() {
                 if [[ ${#cur} == 0 ]]; then
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Please enter an integer or type '-' for flag completions${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Please enter an integer or type - for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur[0]} == "-" ]]; then
-                    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur`)
+                    COMPREPLY=($(compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur))
                 elif [[ $cur =~ ^-?[0123456789]+$ ]]; then
                     COMPREPLY=(${cur})
                 else
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Error: Not an integer or '-'${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Error: Not an integer or -${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 fi
                 return 0;;
@@ -167,14 +167,14 @@ function _generate_digistring_compl() {
         esac
     fi
 
-    if (( $COMP_CWORD - 1 >= 1 )); then
+    if (( $COMP_CWORD - 3 >= 1 )); then
         case ${COMP_WORDS[COMP_CWORD - 3]} in
             --over)
                 return 0;;
         esac
     fi
 
-    COMPREPLY=(`compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur`)
+    COMPREPLY=($(compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur))
     return 0
 }
 
