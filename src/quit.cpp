@@ -11,12 +11,12 @@ static volatile bool quit;
 
 void signal_handler(const int signum) {
     if(quit) {
-        info("Received signal 'SIG" + std::string(sigabbrev_np(signum)) + "' while quitting; will now force quit");
+        info("Received signal 'SIG" + STR(sigabbrev_np(signum)) + "' while quitting; will now force quit");
         exit(-2);
     }
 
     std::cout << std::endl;
-    info("Signal 'SIG" + std::string(sigabbrev_np(signum)) + "' received; quitting application on next frame...");
+    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received; quitting application on next frame...");
 
     set_quit();
 }
