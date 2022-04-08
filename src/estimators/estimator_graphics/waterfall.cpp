@@ -51,6 +51,7 @@ void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, con
     SDL_Texture *new_line = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, spectrum_size, 1);
     if(new_line == NULL) {
         error("Failed to create line texture for waterfall plot\nSDL error: " + STR(SDL_GetError()));
+        hint("Set MAX_PIXELS_WATERFALL_LINE in config/graphics.h lower if necessary");
         exit(EXIT_FAILURE);
     }
 
