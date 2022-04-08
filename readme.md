@@ -7,14 +7,18 @@ The thesis accompanying this project can be found in the thesis branch.
 ## Requirements
 Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
 The build requirements of the individual tools can be found in the tool's respective readme.  
-Using the Dolph Chebyshev window function requires the Python program in `tools/dolph_chebyshev_window` to be able to run. See the readme in its directory for the requirements.
+Optionally, in order to use the Dolph Chebyshev window function, Digistring requires Python3 and SciPy.
 
 On Ubuntu Linux:  
 `sudo apt install g++ libsdl2-dev libsdl2-ttf-dev libfftw3-dev`  
+Optional dependency for Dolph Chebyshev windows:
+`sudo apt install python3 python3-scipy`
 In order to compile and run Digistring on Ubuntu 20.04 LTS, the C++17 patch as well as the glibc-2_31 patch have to be applied.
 
 On Arch Linux:  
 `sudo pacman -S sdl2 sdl2_ttf fftw3`
+Optional dependency for Dolph Chebyshev windows:
+`sudo pacman -S python3 python-scipy`
 
 ## Building
 Run `make` in the root directory of the project to build the binary `digistring` in the root directory of the project.  
@@ -35,6 +39,12 @@ Digistring comes with tab completion, which can be used in the current session b
 Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully exit as soon as possible.  
 Sending `SIGINT` or `SIGTERM` a second time will immediately stop Digistring.
 
+## Configuration
+Most of Digistring's configuration is done compile time to optimize performance and minimize latency. The default configuration is optimized for real-time usage (e.g. connecting a guitar to the audio input of your computer). The configuration files can be found in `src/config/`.  
+`audio.h`: Audio driver configuration, such as sample rate, samples per buffer and sample format.  
+`transcription.h`: Contains all parameters which control pitch estimation. This includes overlapping input frames configuration.  
+`graphics.h`: GUI configuration. Most important is headless mode. which ensures no graphics code is compiled into Digistring. This is important, as graphics is only useful for research/debugging and much CPU and RAM overhead. Headless mode is useful for practical usage (sound synthesis based on guitar input) and experimental usage (running performance measurements).
+
 ## Command line arguments
 Argument parameters in <> are required and in [] are optional.  
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
@@ -48,7 +58,7 @@ Argument parameters in <> are required and in [] are optional.
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
-`--synth`: Output sine wave based on note estimation from audio input.  
+`--synth`: Output sine wave based on note estimation from audio input (default is sine).  
 `--synths`: List available synthesizers.
 
 All command line arguments can also be printed by running Digistring with `-h`/`--help`.
@@ -68,6 +78,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # TODO
+Pass SampleGetter to Estimator and add get_frame_no_overlap() to base class.  
 Convex envelope and low passed-spectrum peak picking.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Ability to cache FFTW3 knowledge.  
