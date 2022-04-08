@@ -47,12 +47,12 @@ inline std::string __ex_msg(const char *file, int line, const std::string &msg) 
 }
 
 
-inline void __info_msg(const std::string msg) {
-    std::cout << BOLD;
+inline void __msg(const char *type, const char *color, const std::string &msg) {
+    std::cerr << BOLD;
     if constexpr(TIMES)
-        std::cout << "[" << perf.get_program_time() << "] ";
+        std::cerr << "[" << perf.get_program_time() << "] ";
 
-    std::cout << GREEN << "Info" << RESET << ": " << msg << std::endl;
+    std::cerr << color << type << RESET << ": " << msg << std::endl;
 }
 
 inline void __msg(const char *type, const char *color, const char *file, const int line, const std::string &msg) {
@@ -98,11 +98,15 @@ inline void warning(const std::string &msg, const std::source_location location 
 //     __msg("Info", GREEN, location.file_name(), location.line(), msg);
 // }
 inline void info(const std::string &msg) {
-    __info_msg(msg);  // Prints to std::cout and does not print file:line
+    __msg("Info", GREEN, msg);  // Prints to std::cout and does not print file:line
 }
 
 inline void debug(const std::string &msg, const std::source_location location = std::source_location::current()) {
     __msg("Debug", BLUE, location.file_name(), location.line(), msg);
+}
+
+inline void hint(const std::string &msg) {
+    __msg("Hint", BLUE, msg);
 }
 
 
