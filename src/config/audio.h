@@ -23,6 +23,13 @@ static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Aud
 constexpr unsigned int N_CHANNELS = 1;  // Mono
 constexpr unsigned int SAMPLES_PER_BUFFER = 512;
 
+// When reading samples from audio in, Digistring sleeps the time it takes to have enough samples ready from the audio driver
+// To prevent sleeping too long, which leads to more latency, we only sleep SLEEP_FACTOR times wait required time
+// Setting a lower factor increases the length of the burst of high CPU usage before full frame is read
+// We still let the CPU burst to minimize the latency between the driver having the buffer ready and reading it in Digistring
+// Set to 0.0 to not sleep at all
+constexpr double SLEEP_FACTOR = 0.85;
+
 
 /* Easter egg constant time arpeggiator */
 // Don't forget to use a low frame size, as audio is played per frame

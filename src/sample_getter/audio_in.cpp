@@ -2,6 +2,7 @@
 
 #include "performance.h"
 #include "error.h"
+#include "quit.h"
 
 #include "config/audio.h"
 #include "config/transcription.h"
@@ -66,6 +67,12 @@ void AudioIn::read_increment(float *const in, const int n_samples) {
 void AudioIn::read_frame_float32_audio_device(float *const in, const int n_samples) {
     perf.push_time_point("Start waiting for frame");
 
+    // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
+    const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(float));
+    const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
+    // debug("Sleeping for " + STR((int)sample_left_time));
+    std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
+
     uint32_t read = 0;
     while(read < n_samples * sizeof(float)) {
         const uint32_t ret = SDL_DequeueAudio(*in_dev, in + (read / sizeof(float)), (n_samples * sizeof(float)) - read);
@@ -78,15 +85,22 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
             exit(EXIT_FAILURE);
         }
 
-        // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
-        // Sleep to prevent 100% CPU usage
-        if(ret == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
+        /* Disabled, as this function mostly blocks on sleep at the start of function
+        // For quiting during long blocking due to waiting for samples from SDL_DequeueAudio()
+        if(poll_quit())
+            return;
+        */
 
         read += ret;
+
+        // A full means enough samples were ready to be retrieved, which implies we could've read earlier (less latency)
+        if(ret == n_samples * sizeof(float)) {
+            warning("Full read; implies sleeping too long before first SDL_DequeueAudio()");
+            hint("Try lowering SLEEP_FACTOR in config/audio.h");
+        }
     }
 
+    // For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
     // static double highest = 0.0, lowest = 0.0;
     // for(int i = 0; i < n_samples; i++) {
     //     if(in[i] < 0.0) {
@@ -111,6 +125,12 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
     if(conv_buf == nullptr)
         conv_buf = new int32_t[n_samples];
 
+    // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
+    const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(uint32_t));
+    const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
+    // debug("Sleeping for " + STR((int)sample_left_time));
+    std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
+
     uint32_t read = 0;
     while(read < n_samples * sizeof(int32_t)) {
         const uint32_t ret = SDL_DequeueAudio(*in_dev, conv_buf, (n_samples * sizeof(int32_t)) - read);
@@ -123,15 +143,11 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
             exit(EXIT_FAILURE);
         }
 
-        // TODO: IMPORTANT! Calculate lower limit for wait time till enough samples are ready (and sleep this time)
-        // Sleep to prevent 100% CPU usage
-        if(ret == 0) {
-            // std::cout << "Sleeping" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            // const int samples_left = n_samples - (read / sizeof(int32_t));
-            // const int sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
-            // std::this_thread::sleep_for(std::chrono::milliseconds(sample_left_time - 1));
-        }
+        /* Disabled, as this function mostly blocks on sleep at the start of function
+        // For quiting during long blocking due to waiting for samples from SDL_DequeueAudio()
+        if(poll_quit())
+            return;
+        */
 
         // // Experiment: Comment this for extra performance
         // if(read + ret == n_samples * sizeof(int32_t))
@@ -143,6 +159,12 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
             in[(read / sizeof(int32_t)) + i] = (float)conv_buf[i];
 
         read += ret;
+
+        // A full means enough samples were ready to be retrieved, which implies we could've read earlier (less latency)
+        if(ret == n_samples * sizeof(uint32_t)) {
+            warning("Full read; implies sleeping too long before first SDL_DequeueAudio()");
+            hint("Try lowering SLEEP_FACTOR in config/audio.h");
+        }
     }
 
     played_samples += n_samples;
