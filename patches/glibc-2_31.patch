@@ -1,8 +1,8 @@
 --- src/quit.cpp
 +++ src/quit.cpp
-@@ -3,21 +3,24 @@
- #include "error.h"
+@@ -4,19 +4,18 @@
  
+ #include <iostream>
  #include <string>
 -#include <cstring>  // sigabbrev_np()
  
@@ -11,20 +11,14 @@
  
  void signal_handler(const int signum) {
      if(quit) {
--        info("Received signal 'SIG" + std::string(sigabbrev_np(signum)) + "' while quitting; will now force quit");
-+        info("Received signal while quitting; will now force quit");
+-        info("Received signal 'SIG" + STR(sigabbrev_np(signum)) + "' while quitting; will now force quit");
++        info("Received signal number " + STR(signum) + " while quitting; will now force quit");
          exit(-2);
      }
  
      std::cout << std::endl;
--    info("Signal 'SIG" + std::string(sigabbrev_np(signum)) + "' received; quitting...");
-+    info("Signal received; quitting...");
+-    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received; quitting application on next frame...");
++    info("Signal number " + STR(signum) + " received; quitting application on next frame...");
  
      set_quit();
-+
-+    // Prevent warning
-+    return;
-+    int i = signum; i++;
  }
- 
- 
