@@ -2,6 +2,7 @@
 
 #include "error.h"
 
+#include <iostream>
 #include <string>
 #include <cstring>  // sigabbrev_np()
 
@@ -15,7 +16,7 @@ void signal_handler(const int signum) {
     }
 
     std::cout << std::endl;
-    info("Signal 'SIG" + std::string(sigabbrev_np(signum)) + "' received; quitting...");
+    info("Signal 'SIG" + std::string(sigabbrev_np(signum)) + "' received; quitting application on next frame...");
 
     set_quit();
 }
@@ -26,7 +27,6 @@ bool poll_quit() {
 }
 
 void set_quit() {
-    info("Quitting application...");
     quit = true;
 }
 
