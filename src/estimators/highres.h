@@ -27,7 +27,6 @@ class HighRes : public Estimator {
 
 
     private:
-        // int in_size;
         float *in;
         fftwf_complex *out;
         fftwf_plan p;
