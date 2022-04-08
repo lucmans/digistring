@@ -10,7 +10,25 @@
 +CXXFLAGS = -std=c++17 -g
  DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
  WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
- # FLAGS = -DCOLORED
+ OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
+
+
+--- src/graphics.cpp
++++ src/graphics.cpp
+@@ -257,8 +257,11 @@
+     static bool warning_printed = false;
+     if(estimator_graphics != nullptr) {
+         set_max_recorded_value_if_larger(estimator_graphics->get_max_recorded_value());
+-        const GraphicsData gd = {.max_display_frequency = max_display_frequency,
+-                                 .max_recorded_value = max_recorded_value};
++
++        GraphicsData gd;
++        gd.max_display_frequency = max_display_frequency;
++        gd.max_recorded_value = max_recorded_value;
++
+         estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
+     }
+     else if(!warning_printed) {
 
 
 --- src/error.h
@@ -23,7 +41,7 @@
  
  
  constexpr bool TIMES = false;  // Display timestamp in CLI messages
-@@ -82,27 +81,27 @@
+@@ -91,27 +90,27 @@
  #define STR(x)              __str(x)
  
  
@@ -51,7 +69,7 @@
 +//     __msg("Info", GREEN, __FILE__, __LINE__, msg);
  // }
  inline void info(const std::string &msg) {
-     __info_msg(msg);  // Prints to std::cout and does not print file:line
+     __msg("Info", GREEN, msg);  // Prints to std::cout and does not print file:line
  }
  
 -inline void debug(const std::string &msg, const std::source_location location = std::source_location::current()) {
@@ -60,23 +78,4 @@
 +    __msg("Debug", BLUE, __FILE__, __LINE__, msg);
  }
  
- 
-
-
---- src/graphics.cpp
-+++ src/graphics.cpp
-@@ -251,8 +251,11 @@
-     static bool warning_printed = false;
-     if(estimator_graphics != nullptr) {
-         set_max_recorded_value_if_larger(estimator_graphics->get_max_recorded_value());
--        const GraphicsData gd = {.max_display_frequency = max_display_frequency,
--                                 .max_recorded_value = max_recorded_value};
-+        
-+        GraphicsData gd;
-+        gd.max_display_frequency = max_display_frequency;
-+        gd.max_recorded_value = max_recorded_value;
-+        
-         estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
-     }
-     else if(!warning_printed) {
-
+ inline void hint(const std::string &msg) {
