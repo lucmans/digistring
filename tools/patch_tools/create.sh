@@ -27,7 +27,7 @@ fi
 # Need a patch_name, original file and patched file at minimum
 if [ $# -lt 3 ]; then
     echo "Not enough arguments specified"
-    echo "Usage: tools/patch_tools/create.sh patch_name original_file1 patched_file1 [original_file2 patched_file2 ...]"
+    echo "Usage: tools/patch_tools/create.sh <patch_name> <original_file1> <patched_file1> [original_file2 patched_file2 ...]"
     exit 1
 fi
 

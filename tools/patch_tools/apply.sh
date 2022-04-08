@@ -8,6 +8,7 @@ fi
 
 if [ $# -eq 0 ]; then
     echo "No patch specified"
+    echo "Usage: tools/patch_tools/apply.sh patches/<patch_name>"
     exit 1
 fi
 
