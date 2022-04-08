@@ -15,12 +15,21 @@
 
 constexpr bool TIMES = false;  // Display timestamp in CLI messages
 
-const char GREEN[] = "\033[32m";
-const char BLUE[] = "\033[34m";
-const char YELLOW[] = "\033[33m";
-const char RED[] = "\033[31m";
-const char BOLD[] = "\033[1m";
-const char RESET[] = "\033[0m";
+#ifndef NO_COLORS
+    const char GREEN[] = "\033[32m";
+    const char BLUE[] = "\033[34m";
+    const char YELLOW[] = "\033[33m";
+    const char RED[] = "\033[31m";
+    const char BOLD[] = "\033[1m";
+    const char RESET[] = "\033[0m";
+#else
+    const char GREEN[] = "";
+    const char BLUE[] = "";
+    const char YELLOW[] = "";
+    const char RED[] = "";
+    const char BOLD[] = "";
+    const char RESET[] = "";
+#endif  // NO_COLORS
 
 
 // Exception message

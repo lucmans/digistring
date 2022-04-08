@@ -12,11 +12,14 @@ CXX = g++
 CXXFLAGS = -std=c++20 -g
 DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
 WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
-# FLAGS = -DCOLORED
 OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
 LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
 INCL = -Isrc/ -Ilib/include/
 CORES = 20
+
+# Compile time config; run "make force" after change
+# -DNO_COLORS: Don't output escape sequences used for coloring in terminal
+COMPILE_CONFIG =
 
 SRC_FOLDERS = $(patsubst %, %/, $(shell find src -type d -print))
 # SRC_FILES = $(patsubst src%/, src%/*.h, $(SRC_FOLDERS)) $(patsubst src%/, src%/*.cpp, $(SRC_FOLDERS))
@@ -75,7 +78,7 @@ $(BUILD_FOLDERS):
 
 # Object file rule. Also makes dependency files using $(DEPFLAGS)
 obj/%.o: src/%.cpp
-	$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCL) $(WARNINGS) $(FLAGS) $(OPTIMIZATIONS) -c $< -o $@
+	$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCL) $(WARNINGS) $(COMPILE_CONFIG) $(OPTIMIZATIONS) -c $< -o $@
 
 # Include the dependencies
 include $(wildcard $(patsubst obj/%.o, dep/%.d, $(OBJ)))
