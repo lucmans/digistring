@@ -11,13 +11,13 @@ Optionally, in order to use the Dolph Chebyshev window function, Digistring requ
 
 On Ubuntu Linux:  
 `sudo apt install g++ libsdl2-dev libsdl2-ttf-dev libfftw3-dev`  
-Optional dependency for Dolph Chebyshev windows:
-`sudo apt install python3 python3-scipy`
+Optional dependency for Dolph Chebyshev windows:  
+`sudo apt install python3 python3-scipy`  
 In order to compile and run Digistring on Ubuntu 20.04 LTS, the C++17 patch as well as the glibc-2_31 patch have to be applied.
 
 On Arch Linux:  
-`sudo pacman -S sdl2 sdl2_ttf fftw3`
-Optional dependency for Dolph Chebyshev windows:
+`sudo pacman -S sdl2 sdl2_ttf fftw3`  
+Optional dependency for Dolph Chebyshev windows:  
 `sudo pacman -S python3 python-scipy`
 
 ## Building
