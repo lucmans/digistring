@@ -22,6 +22,9 @@
 #include <string>
 #include <iostream>
 
+#include <sstream>  // This and iomanip are for double->string formatting
+#include <iomanip>
+
 
 void print_audio_settings(SDL_AudioSpec &specs, bool input) {
     std::cout << "Audio " << (input ? "input" : "output") << " config:\n"
@@ -184,7 +187,10 @@ int main(int argc, char *argv[]) {
 
     // Main program starts now, so init is done
     perf.set_init_time();
-    info("Start-up time: " + STR(perf.get_init_time()) + " ms");
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(3) << perf.get_init_time();
+    info("Start-up time: " + ss.str() + " ms");
 
     program->main_loop();
 

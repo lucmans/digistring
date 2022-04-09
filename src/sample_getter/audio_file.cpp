@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <cstring>  // memcpy(), memset()
 
+#include <sstream>  // This and iomanip are for double->string formatting
+#include <iomanip>
+
 
 AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : SampleGetter(input_buffer_size) {
     uint8_t *read_buffer;
@@ -92,6 +95,10 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         exit(EXIT_FAILURE);
     }
 
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(3) << (double)wav_buffer_samples / (double)SAMPLE_RATE;
+    info("WAV file loaded, " + ss.str() + " seconds long");
+
     // debug("File is " + STR((double)wav_buffer_samples / (double)SAMPLE_RATE) + " seconds; " + STR(wav_buffer_samples) + " samples");
 
     // DEBUG: For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
@@ -157,6 +164,10 @@ void AudioFile::seek(const int d_samples) {
     }
 
     // debug("Seeked to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
+}
+
+double AudioFile::current_time() {
+    return (double)played_samples / (double)SAMPLE_RATE;
 }
 
 

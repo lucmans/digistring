@@ -13,6 +13,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <sstream>  // This and iomanip are for double->string formatting
+#include <iomanip>
+#include <string>
+
 
 Graphics::Graphics() {
     // if(SDL_SetHintWithPriority("SDL_HINT_RENDER_SCALE_QUALITY", "2", SDL_HINT_OVERRIDE) == SDL_FALSE) {
@@ -93,6 +97,9 @@ Graphics::Graphics() {
     clicked_freq_text = create_txt_texture(renderer, "Clicked frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
     clicked_amp_text = create_txt_texture(renderer, "Clicked amplitude: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
+    file_played_time = -1.0;
+    seconds_text = create_txt_texture(renderer, " s", info_font, {0xff, 0xff, 0xff, 0xff});
+
     // TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
     // if(freeze_font == NULL) {
     //     error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
@@ -105,6 +112,8 @@ Graphics::Graphics() {
 
 Graphics::~Graphics() {
     // SDL_DestroyTexture(freeze_txt_buffer);
+
+    SDL_DestroyTexture(seconds_text);
 
     SDL_DestroyTexture(clicked_freq_text);
     SDL_DestroyTexture(clicked_amp_text);
@@ -208,6 +217,11 @@ void Graphics::set_queued_samples(const int n_samples) {
 void Graphics::set_clicked(const int x, const int y) {
     mouse_x = x;
     mouse_y = y;
+}
+
+
+void Graphics::set_file_played_time(const double t) {
+    file_played_time = t;
 }
 
 
@@ -348,6 +362,9 @@ void Graphics::render_info() {
 
     render_max_recorded_value(i);
 
+    if(cli_args.play_file)
+        render_file_played_time(i);
+
     render_clicked_location_info(i);
 }
 
@@ -415,6 +432,26 @@ void Graphics::render_max_recorded_value(int &offset) {
     offset++;
 }
 
+
+void Graphics::render_file_played_time(int &offset) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2) << file_played_time;
+    SDL_Texture *file_played_time_number = create_txt_texture(renderer, ss.str(), info_font, {0xff, 0xff, 0xff, 0xff});
+
+    int w, h;
+    SDL_QueryTexture(seconds_text, NULL, NULL, &w, &h);
+    int w2;
+    SDL_QueryTexture(file_played_time_number, NULL, NULL, &w2, &h);
+
+    SDL_Rect dst = {res_w - w - 1, h * offset, w, h};
+    SDL_RenderCopy(renderer, seconds_text, NULL, &dst);
+    dst = {res_w - w2 - w - 1, h * offset, w2, h};
+    SDL_RenderCopy(renderer, file_played_time_number, NULL, &dst);
+
+    SDL_DestroyTexture(file_played_time_number);
+
+    offset++;
+}
 
 
 void Graphics::render_clicked_location_info(int &offset) {

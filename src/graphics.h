@@ -25,6 +25,7 @@ class Graphics {
 
         void set_queued_samples(const int n_samples);
         void set_clicked(const int x, const int y);
+        void set_file_played_time(const double t);  // in seconds
 
         void toggle_show_info();
 
@@ -62,6 +63,8 @@ class Graphics {
         SDL_Texture *clicked_freq_text;
         SDL_Texture *clicked_amp_text;
 
+        double file_played_time;
+        SDL_Texture *seconds_text;
 
         // Render functions render to framebuffer
         void render_black_screen();
@@ -72,6 +75,7 @@ class Graphics {
         void render_max_displayed_frequency(int &offset);
         void render_max_recorded_value(int &offset);
         void render_queued_samples(int &offset);
+        void render_file_played_time(int &offset);
         void render_clicked_location_info(int &offset);
 };
 

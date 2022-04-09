@@ -295,6 +295,8 @@ void Program::update_graphics(const NoteEvents &note_events) {
 
         if(audio_in)
             graphics->set_queued_samples(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8));
+        else if(cli_args.play_file)
+            graphics->set_file_played_time((dynamic_cast<AudioFile *>(sample_getter))->current_time());
 
         const int n_notes = note_events.size();
         if(n_notes == 0)
