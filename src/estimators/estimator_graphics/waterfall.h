@@ -28,7 +28,7 @@ class Waterfall {
         mutable std::list<SDL_Texture *> lines;
 
         mutable double last_max_display_frequency;
-        mutable int n_pixels_per_line;
+        mutable unsigned int n_pixels_per_line;
 };
 
 

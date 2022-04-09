@@ -32,10 +32,17 @@ inline uint32_t calc_color(const double data, const double max_value) {
     return rgba;
 }
 
-inline unsigned int get_spectrum_size(const SpectrumData &spectrum) {
+inline unsigned int get_spectrum_size(const SpectrumData &spectrum, const bool print_warning = true) {
     const unsigned int size = spectrum.size();
+
+    if(size == 0) {
+        error("Spectrum passed to waterfall graphics can't be empty");
+        exit(EXIT_FAILURE);
+    }
+
     if(size > MAX_PIXELS_WATERFALL_LINE) {
-        warning("Number of points in the spectrum for the waterfall plot is greater than MAX_PIXELS_WATERFALL_LINE (" + STR(MAX_PIXELS_WATERFALL_LINE) + ")\nLimiting to " + STR(MAX_PIXELS_WATERFALL_LINE));
+        if(print_warning)
+            warning("Number of points in the generated spectrum is greater than MAX_PIXELS_WATERFALL_LINE (" + STR(size) + " > " + STR(MAX_PIXELS_WATERFALL_LINE) + ")\nLimiting to waterfall plot to " + STR(MAX_PIXELS_WATERFALL_LINE) + " spectrum points (" + STR((int)spectrum[MAX_PIXELS_WATERFALL_LINE - 1].freq) + "/" + STR((int)spectrum.back().freq) + " Hz)");
         return MAX_PIXELS_WATERFALL_LINE;
     }
 
@@ -46,6 +53,11 @@ void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, con
     const SpectrumData spectrum_data = spectrum.get_data();
     static const unsigned int spectrum_size = get_spectrum_size(spectrum_data);
 
+    // DEBUG
+    const unsigned int current_spectrum_size = get_spectrum_size(spectrum_data, false);
+    if(spectrum_size != current_spectrum_size)
+        warning("Spectrum size has changed!");
+
     // Create line texture
     // SDL_Texture *new_line = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, spectrum_size, 1);
     SDL_Texture *new_line = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, spectrum_size, 1);
@@ -55,7 +67,9 @@ void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, con
         exit(EXIT_FAILURE);
     }
 
-    // Calculate the color of each pixel
+
+    /* Calculate the color of each pixel */
+    // Dynamic texture (SDL_TEXTUREACCESS_STREAMING)
     uint32_t *pixels;
     int pitch;
     SDL_LockTexture(new_line, NULL, (void**)&pixels, &pitch);
@@ -86,11 +100,13 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
     const SpectrumData spectrum_data = spectrum.get_data();
 
     // Calculate the number of pixels from the buffer to show
+    // Assume that the frequency at every point in the spectrum is the same as every previous spectra
     // Ignore float-equal warning, as we want to run this code on any change of graphics_data.max_display_frequency
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
     if(last_max_display_frequency != graphics_data.max_display_frequency) {
-        const unsigned int spectrum_size = spectrum_data.size();
+        // const unsigned int spectrum_size = spectrum_data.size();
+        const unsigned int spectrum_size = get_spectrum_size(spectrum_data, false);
         unsigned int i;
         for(i = 0; i < spectrum_size; i++)
             if(spectrum_data[i].freq > graphics_data.max_display_frequency)
@@ -98,6 +114,17 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
 
         n_pixels_per_line = i;
         last_max_display_frequency = graphics_data.max_display_frequency;
+
+        // TODO: Take second look at
+        // debug(STR(graphics_data.max_display_frequency) + " " + STR(spectrum_data[spectrum_size - 1].freq));
+        // debug(STR(n_pixels_per_line) + " " + STR(MAX_PIXELS_WATERFALL_LINE));
+        // debug("");
+        // Both sides of the or should always be both true or both false
+        // if(graphics_data.max_display_frequency > spectrum_data[spectrum_size - 1].freq || n_pixels_per_line >= spectrum_size) {
+        if(n_pixels_per_line >= spectrum_size) {  // n_pixels_per_line shouldn't be > spectrum_size; only ==
+            warning("Full spectrum is on screen, so 'max displayed frequency' and 'clicked frequency' might be incorrect");
+            hint("Real 'max displayed frequency' is " + STR(spectrum_data[spectrum_size - 1].freq) + " Hz");
+        }
     }
     #pragma GCC diagnostic pop
 
@@ -105,7 +132,7 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
     std::list<SDL_Texture *>::iterator it = lines.begin();
     const int n_lines = lines.size();
     for(int i = 0; i < n_lines && i < dst.h; i++) {
-        SDL_Rect src_rect = {0, 0, n_pixels_per_line, 1};
+        SDL_Rect src_rect = {0, 0, (int)n_pixels_per_line, 1};
 
         SDL_Rect dst_rect;
         if constexpr(WATERFALL_FLOW_DOWN)
