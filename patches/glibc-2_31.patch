@@ -17,8 +17,8 @@
      }
  
      std::cout << std::endl;
--    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received; quitting application on next frame...");
-+    info("Signal number " + STR(signum) + " received; quitting application on next frame...");
+-    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received");
++    info("Signal number " + STR(signum) + " received");
  
      set_quit();
  }

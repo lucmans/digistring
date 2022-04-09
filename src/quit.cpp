@@ -16,7 +16,7 @@ void signal_handler(const int signum) {
     }
 
     std::cout << std::endl;
-    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received; quitting application on next frame...");
+    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received");
 
     set_quit();
 }
@@ -27,6 +27,7 @@ bool poll_quit() {
 }
 
 void set_quit() {
+    info("Quitting application on next cycle...");
     quit = true;
 }
 
