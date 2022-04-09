@@ -41,6 +41,7 @@ class HighRes : public Estimator {
 
         void all_max(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
         void envelope_peaks(const double norms[(FRAME_SIZE / 2) + 1], const double envelope[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
+        void envelope_peaks(const double norms[(FRAME_SIZE / 2) + 1], const double envelope[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks, const int max_norm);
 
         void min_dy_peaks(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
 

@@ -127,6 +127,16 @@ void HighRes::envelope_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], co
     }
 }
 
+void HighRes::envelope_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], const double envelope[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int max_norm) {
+    for(int i = 5; i < (FRAME_SIZE_PADDED / 2); i++) {
+        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]  // A local maximum
+           && norms[i] > envelope[i]  // Higher than envelope
+           && envelope[i] > ENVELOPE_MIN  // Filter quiet peaks
+           && norms[i] > max_norm * SIGNAL_TO_NOISE_FILTER)
+            peaks.push_back(i);
+    }
+}
+
 
 void HighRes::min_dy_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks) {
     bool was_peak = false;  // If last extreme value was a peak
@@ -251,6 +261,7 @@ void HighRes::get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_no
 
 
 void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
+    /* Fourier transform */
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
         input_buffer[i] *= window_func[i];
@@ -266,6 +277,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     calc_norms(out, norms, (FRAME_SIZE_PADDED / 2) + 1, max_norm, power);
     perf.push_time_point("Norms calculated");
 
+    /* Peak picking */
     // Compute Gaussian envelope
     double envelope[(FRAME_SIZE_PADDED / 2) + 1];
     calc_envelope(norms, envelope);
@@ -276,12 +288,13 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Find peaks based on envelope
     std::vector<int> peaks;
     if(power > POWER_THRESHOLD)
-        envelope_peaks(norms, envelope, peaks);
+        envelope_peaks(norms, envelope, peaks, max_norm);
 
     // // Find peaks on min-dy
     // std::vector<int> peaks;
     // min_dy_peaks(norms, peaks);
 
+    /* Note estimation from peaks */
     // Interpolate peak locations
     NoteSet candidate_notes;
     interpolate_peaks(candidate_notes, norms, peaks);
