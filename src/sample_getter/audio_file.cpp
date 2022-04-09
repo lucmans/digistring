@@ -13,7 +13,7 @@
 #include <cstring>  // memcpy(), memset()
 
 
-AudioFile::AudioFile(const std::string &file) {
+AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : SampleGetter(input_buffer_size) {
     uint8_t *read_buffer;
     uint32_t read_buffer_bytes;
 
@@ -92,6 +92,9 @@ AudioFile::AudioFile(const std::string &file) {
         exit(EXIT_FAILURE);
     }
 
+    // debug("File is " + STR((double)wav_buffer_samples / (double)SAMPLE_RATE) + " seconds; " + STR(wav_buffer_samples) + " samples");
+
+    // DEBUG: For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
     // double highest = 0.0, lowest = 0.0;
     // for(int i = 0; i < wav_buffer_samples; i++) {
     //     if(wav_buffer[i] < 0.0) {
@@ -118,12 +121,52 @@ SampleGetters AudioFile::get_type() const {
 }
 
 
+void AudioFile::seek(const int d_samples) {
+    played_samples += d_samples;
+
+    // If seeked behind start
+    if(played_samples <= 0) {
+        played_samples = 0;
+        memset(overlap_buffer, 0, overlap_buffer_size * sizeof(float));
+
+        // debug("Seeked to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
+        return;
+    }
+
+    if(played_samples > wav_buffer_samples) {
+        info("File ended after seek");
+        set_quit();
+        return;
+    }
+
+    // Fill overlap buffer with correct part of the file
+    if constexpr(DO_OVERLAP) {
+        // Copy as much before played_samples into overlap_buffer to enable seeking while overlapping
+        const int samples_needed_before_file = overlap_buffer_size - played_samples;
+
+        if(samples_needed_before_file > 0) {
+            // Zero start of buffer
+            memset(overlap_buffer, 0, samples_needed_before_file * sizeof(float));
+
+            // Copy as much from file as possible
+            memcpy(overlap_buffer + samples_needed_before_file, wav_buffer, played_samples * sizeof(float));
+        }
+        else
+            // Copy as much from file as possible
+            memcpy(overlap_buffer, wav_buffer + played_samples - overlap_buffer_size, overlap_buffer_size * sizeof(float));
+    }
+
+    // debug("Seeked to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
+}
+
+
 void AudioFile::get_frame(float *const in, const int n_samples) {
-    int overlap_n_samples = n_samples;
+    int overlap_n_samples = n_samples;  // n_samples to get after accounting for overlap
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
         calc_and_paste_overlap(overlap_in, overlap_n_samples);
 
+    // debug("At to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
 
     // If file end doesn't align with a frame, we need to read less then n_samples
     const int n_read_samples = std::clamp(overlap_n_samples, 0, std::max(wav_buffer_samples - played_samples, 0));

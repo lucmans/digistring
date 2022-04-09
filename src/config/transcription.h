@@ -21,11 +21,8 @@ constexpr double POWER_THRESHOLD = 15.0;  // Threshold of channel power before f
 constexpr double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
 constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone
 
-constexpr double ZERO_PAD_FACTOR = 4.0;  // Calculates number of zeros to pad; choose a power of two for optimal efficiency
+constexpr double ZERO_PAD_FACTOR = 4.0;  // Calculates number of zeros to pad; choose a power of two for optimal efficiency (0.0 to disable)
 constexpr int FRAME_SIZE_PADDED = FRAME_SIZE + (FRAME_SIZE * ZERO_PAD_FACTOR);  // Size of the frame with padding
-
-// Determines the memory usage of overlap buffer (and waterfall plot lines when using static textures)
-constexpr int MAX_FRAME_SIZE = FRAME_SIZE;
 
 // Dolph Chebyshev attanuation
 constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
@@ -49,12 +46,14 @@ constexpr bool LOW_HIGH_FILTER = true;
 constexpr bool TRANSIENT_FILTER = false;
 constexpr double TRANSIENT_FILTER_POWER = 0.3;  // Extra signal power over previous frame before frame has a transient
 
+constexpr double SIGNAL_TO_NOISE_FILTER = 0.05;  // Minimum height of peak compared to highest peak
+
 
 /* Overlapping read buffers */
 // Overlap is only supported if the same number of samples is requested every call to the SampleGetter
 constexpr bool DO_OVERLAP = false;
 // 0.0 < OVERLAP < 1.0: Ratio of old to new buffer, where higher numbers use more old buffer
-constexpr double OVERLAP_RATIO = 0.1;
+constexpr double OVERLAP_RATIO = 0.95;
 static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should be between 0.0 and 1.0");
 
 // When reading from audio in, instead of reading a fixed ratio, read as many samples as possible without blocking

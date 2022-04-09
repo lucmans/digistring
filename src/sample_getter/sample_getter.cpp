@@ -1,5 +1,7 @@
 #include "sample_getter.h"
 
+#include "error.h"
+
 #include "config/audio.h"
 #include "config/transcription.h"
 
@@ -7,14 +9,31 @@
 #include <algorithm>  // std::clamp()
 
 
-SampleGetter::SampleGetter() {
+SampleGetter::SampleGetter(const int input_buffer_size) {
     played_samples = 0;
 
-    memset(overlap_buffer, 0, MAX_FRAME_SIZE * sizeof(float));
+    overlap_buffer = nullptr;
+    overlap_buffer_size = 0;
+    if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
+        if constexpr(DO_OVERLAP)
+            overlap_buffer_size = input_buffer_size * OVERLAP_RATIO;
+        else if constexpr(DO_OVERLAP_NONBLOCK)
+            // TODO: use MIN_NEW_SAMPLES_NONBLOCK and MAX_NEW_SAMPLES_NONBLOCK for optimal size
+            overlap_buffer_size = input_buffer_size;
+
+        overlap_buffer = new (std::nothrow) float[overlap_buffer_size];
+        if(overlap_buffer == nullptr) {
+            error("Failed to create overlap buffer");
+            hint("Setting a lower value for OVERLAP_RATIO in config/transcription.h or disable overlapping completely");
+            exit(EXIT_FAILURE);
+        }
+
+        memset(overlap_buffer, 0, overlap_buffer_size * sizeof(float));
+    }
 }
 
 SampleGetter::~SampleGetter() {
-
+    delete[] overlap_buffer;
 }
 
 
@@ -31,6 +50,15 @@ double SampleGetter::get_played_time() const {
 void SampleGetter::calc_and_paste_overlap(float *&in, int &n_samples) const {
     // Clamp so at least one sample is overlapped or kept between frames
     const int n_overlap = std::clamp((int)(n_samples * OVERLAP_RATIO), 1, n_samples - 1);
+
+    // DEBUG
+    if(n_overlap > overlap_buffer_size) {
+        error("Calculated number of overlapping samples is bigger that overlap buffer");
+        hint("Size of input buffer may never increase");
+        exit(EXIT_FAILURE);
+    }
+    else if(n_overlap != overlap_buffer_size)
+        warning("overlap_buffer_size != n_overlap");
 
     // Paste the overlap to start of 'in'
     memcpy(in, overlap_buffer, n_overlap * sizeof(float));

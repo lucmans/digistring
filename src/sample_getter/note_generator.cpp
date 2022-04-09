@@ -10,13 +10,13 @@
 #include <iostream>
 
 
-NoteGenerator::NoteGenerator(const Note &note) : generated_note(note) {
+NoteGenerator::NoteGenerator(const int input_buffer_size, const Note &note) : SampleGetter(input_buffer_size), generated_note(note) {
     generated_note_number = generated_note.midi_number;
 
     last_phase = 0.0;
 }
 
-NoteGenerator::NoteGenerator(const int note_number) : generated_note(note_number) {
+NoteGenerator::NoteGenerator(const int input_buffer_size, const int note_number) : SampleGetter(input_buffer_size), generated_note(note_number) {
     generated_note = Note(generated_note_number);
 
     last_phase = 0.0;

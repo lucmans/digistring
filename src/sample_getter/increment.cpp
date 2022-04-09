@@ -3,7 +3,7 @@
 #include "config/transcription.h"
 
 
-Increment::Increment() {
+Increment::Increment(const int input_buffer_size) : SampleGetter(input_buffer_size) {
     played_samples = 1;
 }
 

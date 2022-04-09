@@ -9,7 +9,7 @@
 #include <iostream>
 
 
-WaveGenerator::WaveGenerator(const double freq) {
+WaveGenerator::WaveGenerator(const int input_buffer_size, const double freq) : SampleGetter(input_buffer_size) {
     generated_wave_freq = freq;
 
     last_phase = 0.0;

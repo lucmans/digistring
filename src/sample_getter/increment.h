@@ -10,7 +10,7 @@
 // In other words, first sample is 1, every next sample is +1
 class Increment : public SampleGetter {
     public:
-        Increment();
+        Increment(const int input_buffer_size);
         ~Increment() override;
 
         SampleGetters get_type() const override;

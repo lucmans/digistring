@@ -26,7 +26,7 @@ const std::map<const SampleGetters, const std::string> SampleGetterString = {{Sa
 
 class SampleGetter {
     public:
-        SampleGetter();
+        SampleGetter(const int input_buffer_size);
         virtual ~SampleGetter();
 
         // This function should only return its type as named in SampleGetters
@@ -44,7 +44,7 @@ class SampleGetter {
 
         /* Overlap function
          * Note that n_samples has to be the same every call for overlapping to work!
-         * Furthermore, n_samples < MAX_FRAME_SIZE should always hold */
+         * Furthermore, n_samples should never exceed overlap_buffer_size, given on construction */
         // Pastes the overlapping part of previous frame and sets 'in' to new start and sets n_samples to remaining space
         // By changing the passed arguments, the caller can continue working with in and n_samples as if nothing happened
         void calc_and_paste_overlap(float *&in, int &n_samples) const;
@@ -56,7 +56,9 @@ class SampleGetter {
     protected:
         int played_samples;
 
-        float overlap_buffer[MAX_FRAME_SIZE];
+        // Only available if DO_OVERLAP or DO_OVERLAP_NON_BLOCK
+        float *overlap_buffer;
+        int overlap_buffer_size;
 };
 
 

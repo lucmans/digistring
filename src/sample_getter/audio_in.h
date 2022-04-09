@@ -9,7 +9,7 @@
 
 class AudioIn : public SampleGetter {
     public:
-        AudioIn(SDL_AudioDeviceID *const _in);
+        AudioIn(const int input_buffer_size, SDL_AudioDeviceID *const _in);
         ~AudioIn() override;
 
         SampleGetters get_type() const override;
@@ -30,9 +30,11 @@ class AudioIn : public SampleGetter {
         SDL_AudioDeviceID *in_dev;
 
         int32_t *conv_buf;
+        int conv_buf_size;
 
-        // float overlap_buffer[MAX_FRAME_SIZE];  // Declared in SampleGetter
-        // int last_overlap_size;
+        // Declared in SampleGetter; but explicitly listed as non-blocking overlap accesses these
+        // Only set if DO_OVERLAP or DO_OVERLAP_NON_BLOCK
+        // float *overlap_buffer;
 };
 
 

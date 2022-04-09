@@ -9,8 +9,8 @@
 
 class NoteGenerator : public SampleGetter {
     public:
-        NoteGenerator(const Note &note);
-        NoteGenerator(const int note_number);
+        NoteGenerator(const int input_buffer_size, const Note &note);
+        NoteGenerator(const int input_buffer_size, const int note_number);
         ~NoteGenerator() override;
 
         SampleGetters get_type() const override;

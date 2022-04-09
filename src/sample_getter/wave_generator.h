@@ -10,7 +10,7 @@ static const double D_FREQ = 5.0;
 
 class WaveGenerator : public SampleGetter {
     public:
-        WaveGenerator(const double freq);
+        WaveGenerator(const int input_buffer_size, const double freq);
         ~WaveGenerator() override;
 
         SampleGetters get_type() const override;

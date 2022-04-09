@@ -33,10 +33,6 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     input_buffer_n_samples = -1;
     // estimator = new Tuned(input_buffer, input_buffer_n_samples);
     estimator = new HighRes(input_buffer, input_buffer_n_samples);
-    if(input_buffer_n_samples > MAX_FRAME_SIZE) {
-        error("Read buffer is larger than maximum frame size");
-        exit(EXIT_FAILURE);
-    }
     if(input_buffer == NULL) {
         error("Estimator did not create an input buffer");
         exit(EXIT_FAILURE);
@@ -49,19 +45,19 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     audio_in = false;
     if(cli_args.generate_sine) {
         // info("Playing generate_sine");
-        sample_getter = new WaveGenerator(cli_args.generate_sine_freq);
+        sample_getter = new WaveGenerator(input_buffer_n_samples, cli_args.generate_sine_freq);
     }
     else if(cli_args.generate_note) {
         // info("Playing generate_note");
-        sample_getter = new NoteGenerator(cli_args.generate_note_note);
+        sample_getter = new NoteGenerator(input_buffer_n_samples, cli_args.generate_note_note);
     }
     else if(cli_args.play_file) {
         // info("Playing '" + cli_args.play_file_name + "'");
-        sample_getter = new AudioFile(cli_args.play_file_name);
+        sample_getter = new AudioFile(input_buffer_n_samples, cli_args.play_file_name);
     }
     else {
         // info("Sourcing audio from computer audio input");
-        sample_getter = new AudioIn(in_dev);
+        sample_getter = new AudioIn(input_buffer_n_samples, in_dev);
         audio_in = true;
     }
 
@@ -130,6 +126,8 @@ void Program::main_loop() {
 
         // Check for keyboard/mouse/window/OS events
         handle_sdl_events();
+        if(poll_quit())
+            break;
 
         // DEBUG
         if(lag != 0) {  // Lag might have been increased by in handle_sdl_events()
@@ -448,6 +446,17 @@ void Program::handle_sdl_events() {
                     mouse_clicked = true;
                     mouse_x = e.motion.x;
                     mouse_y = e.motion.y;
+                }
+                break;
+
+            case SDL_MOUSEWHEEL:
+                // if(cli_args.play_file) {
+                if(sample_getter->get_type() == SampleGetters::audio_file) {
+                    AudioFile *audio_in_cast = dynamic_cast<AudioFile *>(sample_getter);
+                    if(e.wheel.y > 0)
+                        audio_in_cast->seek((int)(SECONDS_PER_SCROLL * SAMPLE_RATE * e.wheel.y));
+                    else if(e.wheel.y < 0)
+                        audio_in_cast->seek((int)(SECONDS_PER_SCROLL * SAMPLE_RATE * e.wheel.y));
                 }
                 break;
 

@@ -43,5 +43,8 @@ constexpr unsigned int MAX_PIXELS_WATERFALL_LINE = 16384;
 // Determines if the waterfall flows up or down
 constexpr bool WATERFALL_FLOW_DOWN = true;
 
+// Number of seconds is scrubbed through the input file every scroll wheel action
+constexpr double SECONDS_PER_SCROLL = 0.1;
+
 
 #endif  // DIGISTRING_CONFIG_GRAPHICS_H

@@ -11,10 +11,12 @@
 
 class AudioFile : public SampleGetter {
     public:
-        AudioFile(const std::string &file);
+        AudioFile(const int input_buffer_size, const std::string &file);
         ~AudioFile() override;
 
         SampleGetters get_type() const override;
+
+        void seek(const int d_samples);
 
         void get_frame(float *const in, const int n_samples);
 

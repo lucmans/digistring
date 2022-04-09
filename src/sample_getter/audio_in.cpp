@@ -14,12 +14,11 @@
 #include <algorithm>  // std::clamp(), std::min()
 
 
-AudioIn::AudioIn(SDL_AudioDeviceID *const _in) {
+AudioIn::AudioIn(const int input_buffer_size, SDL_AudioDeviceID *const _in) : SampleGetter(input_buffer_size) {
     in_dev = _in;
 
     conv_buf = nullptr;
-
-    // last_overlap_size = 0;
+    conv_buf_size = -1;
 }
 
 AudioIn::~AudioIn() {
@@ -95,12 +94,12 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
 
         // A full means enough samples were ready to be retrieved, which implies we could've read earlier (less latency)
         if(ret == n_samples * sizeof(float)) {
-            warning("Full read; implies sleeping too long before first SDL_DequeueAudio()");
-            hint("Try lowering SLEEP_FACTOR in config/audio.h");
+            warning("Full read; there might still be samples left in input audio queue (latency)");
+            hint("Might be due to sleeping too long before first SDL_DequeueAudio()\nTry lowering SLEEP_FACTOR in config/audio.h");
         }
     }
 
-    // For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
+    // DEBUG: For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
     // static double highest = 0.0, lowest = 0.0;
     // for(int i = 0; i < n_samples; i++) {
     //     if(in[i] < 0.0) {
@@ -121,9 +120,13 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {
     perf.push_time_point("Start waiting for frame");
 
-    // int32_t conv_buf[n_samples];  // TODO: Remove VLA
-    if(conv_buf == nullptr)
-        conv_buf = new int32_t[n_samples];
+    if(n_samples > conv_buf_size) {
+        if(conv_buf != nullptr)
+            delete[] conv_buf;
+
+        conv_buf_size = n_samples;
+        conv_buf = new int32_t[conv_buf_size];
+    }
 
     // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
     const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(uint32_t));
@@ -175,7 +178,8 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, const int bytes_per_sample) {
     // DEBUG
     if(MIN_NEW_SAMPLES_NONBLOCK > n_samples) {
-        debug("MIN_NEW_SAMPLES_NONBLOCK too large");
+        error("MIN_NEW_SAMPLES_NONBLOCK too large");
+        hint("MIN_NEW_SAMPLES_NONBLOCK is set in config/transcription.h");
         exit(EXIT_FAILURE);
     }
 
