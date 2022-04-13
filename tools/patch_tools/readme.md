@@ -1,5 +1,5 @@
-To help with creating and applying patches, we have created three different tools.  
-These scripts are POSIX/Bourne shell compliant and rely on core utils such as echo, rm and touch. Furthermore, diff and patch are used for creating and applying patches.  
+To help with creating and applying patches, we have created three tools: `apply.sh`, `create.sh` and `check.sh`.  
+These scripts are POSIX/Bourne shell compliant and only rely on POSIX utilities such as echo, rm, diff and patch.  
 All of these tools should only be run from the project's root directory.
 
 
