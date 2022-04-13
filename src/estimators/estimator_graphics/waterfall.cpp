@@ -122,8 +122,14 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
         // Both sides of the or should always be both true or both false
         // if(graphics_data.max_display_frequency > spectrum_data[spectrum_size - 1].freq || n_pixels_per_line >= spectrum_size) {
         if(n_pixels_per_line >= spectrum_size) {  // n_pixels_per_line shouldn't be > spectrum_size; only ==
-            warning("Full spectrum is on screen, so 'max displayed frequency' and 'clicked frequency' might be incorrect");
-            hint("Real 'max displayed frequency' is " + STR(spectrum_data[spectrum_size - 1].freq) + " Hz");
+            static bool shown = false;
+            if(!shown) {
+                warning("Full spectrum is on screen, so 'max displayed frequency' and 'clicked frequency' might be incorrect");
+                hint("Real 'max displayed frequency' is " + STR(spectrum_data[spectrum_size - 1].freq) + " Hz");
+
+                shown = true;
+            }
+
         }
     }
     #pragma GCC diagnostic pop
