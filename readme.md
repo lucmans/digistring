@@ -5,19 +5,18 @@ The thesis accompanying this project can be found in the thesis branch.
 
 # Build instructions
 ## Requirements
-Digistring only supports Linux. It uses SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
+Digistring only supports Linux. It uses g++ and Make for building. It depends on SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
 The build requirements of the individual tools can be found in the tool's respective readme.  
 Optionally, in order to use the Dolph Chebyshev window function, Digistring requires Python3 and SciPy.
 
 On Ubuntu Linux:  
-`sudo apt install g++ libsdl2-dev libsdl2-ttf-dev libfftw3-dev`  
+`sudo apt install g++ make libsdl2-dev libsdl2-ttf-dev libfftw3-dev`  
 Optional dependency for Dolph Chebyshev windows:  
 `sudo apt install python3 python3-scipy`  
-In order to compile and run Digistring on Ubuntu 20.04 LTS, the C++17 patch as well as the glibc-2_31 patch have to be applied:  
-`tools/patch_tools/apply.sh patches/c++17.patch; tools/patch_tools/apply.sh patches/glibc-2_31.patch; make force` (from the project root)
+Note that in order to compile and run Digistring on Ubuntu 20.04 LTS, some patches have to be applied. This can be done by running `make ubuntu2004lts` before building.
 
 On Arch Linux:  
-`sudo pacman -S sdl2 sdl2_ttf fftw3`  
+`sudo pacman -S gcc make sdl2 sdl2_ttf fftw3`  
 Optional dependency for Dolph Chebyshev windows:  
 `sudo pacman -S python3 python-scipy`
 

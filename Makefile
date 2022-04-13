@@ -33,7 +33,7 @@ ALL_OBJ = $(patsubst src/%.cpp, obj/%.o, $(wildcard $(patsubst src%/, src%/*.cpp
 FILTER_OBJ = obj/generate_completions.o
 OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
-.PHONY: all sanitize force fresh clean cacheclean outputclean valgrind check_patches lines grep grepl debug todo trailing_spaces help
+.PHONY: all sanitize force fresh ubuntu2004lts clean cacheclean outputclean valgrind check_patches lines grep grepl debug todo trailing_spaces help
 
 
 # Makes all folders needed by build process and build with parallel jobs
@@ -51,6 +51,12 @@ force:
 fresh:
 	make clean
 	make all
+
+ubuntu2004lts:
+	make clean
+	tools/patch_tools/check.sh
+	tools/patch_tools/apply.sh patches/c++17.patch
+	tools/patch_tools/apply.sh patches/glibc-2_31.patch
 
 clean:
 	rm -rf obj/
@@ -140,6 +146,7 @@ help:
 	@echo \"make outputclean\" removes the default named output files.
 	@echo \"make force\" forces all build targets to be rebuild.
 	@echo \"make fresh\" runs \"make clean\; make\", which may help with potential building problems after updating.
+	@echo \"make ubuntu2004lts\" applies all patches necessary for Ubuntu 20.04 LTS support.
 	@echo \"make sanitize\" builds with -fsanitize=address. Do not forget to run \"make force\" to remove sanitize.
 	@echo
 	@echo Furthermore, some often used command are added to the makefile:
