@@ -115,7 +115,7 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
         n_pixels_per_line = i;
         last_max_display_frequency = graphics_data.max_display_frequency;
 
-        // TODO: Take second look at
+        // DEBUG: Fails if spectrum.size <= 1
         // debug(STR(graphics_data.max_display_frequency) + " " + STR(spectrum_data[spectrum_size - 1].freq));
         // debug(STR(n_pixels_per_line) + " " + STR(MAX_PIXELS_WATERFALL_LINE));
         // debug("");
