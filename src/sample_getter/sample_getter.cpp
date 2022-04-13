@@ -18,8 +18,7 @@ SampleGetter::SampleGetter(const int input_buffer_size) {
         if constexpr(DO_OVERLAP)
             overlap_buffer_size = input_buffer_size * OVERLAP_RATIO;
         else if constexpr(DO_OVERLAP_NONBLOCK)
-            // TODO: use MIN_NEW_SAMPLES_NONBLOCK and MAX_NEW_SAMPLES_NONBLOCK for optimal size
-            overlap_buffer_size = input_buffer_size;
+            overlap_buffer_size = input_buffer_size - MIN_NEW_SAMPLES_NONBLOCK;
 
         overlap_buffer = new (std::nothrow) float[overlap_buffer_size];
         if(overlap_buffer == nullptr) {

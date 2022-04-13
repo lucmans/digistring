@@ -81,7 +81,6 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 # TODO
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
 Pass SampleGetter to Estimator and add get_frame_no_overlap() to base class.  
-In SampleGetter constructor, use MIN_NEW_SAMPLES_NONBLOCK and MAX_NEW_SAMPLES_NONBLOCK for optimal overlap_buffer size.  
 Convex envelope and low passed-spectrum peak picking.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Ability to cache FFTW3 knowledge.  

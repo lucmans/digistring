@@ -62,9 +62,8 @@ constexpr bool DO_OVERLAP_NONBLOCK = false;
 // Should not be more than the size of a frame!
 constexpr int MIN_NEW_SAMPLES_NONBLOCK = 14 * 1024;  // samples
 constexpr int MAX_NEW_SAMPLES_NONBLOCK = (16 * 1024) - 1;  // samples
-// constexpr int MIN_NEW_SAMPLES = 14;  // samples
-// constexpr int MAX_NEW_SAMPLES = 90;  // samples
-// constexpr int MIN_OVERLAP_ADVANCE = 1024 * 14;  // samples
+static_assert(MIN_NEW_SAMPLES_NONBLOCK < MAX_NEW_SAMPLES_NONBLOCK, "MAX_NEW_SAMPLES_NONBLOCK can't be smaller then MIN_NEW_SAMPLES_NONBLOCK");
+
 static_assert(!(DO_OVERLAP && DO_OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP and DO_OVERLAP_NONBLOCK");
 
 
