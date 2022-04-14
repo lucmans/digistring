@@ -13,7 +13,7 @@ On Ubuntu Linux:
 `sudo apt install g++ make libsdl2-dev libsdl2-ttf-dev libfftw3-dev`  
 Optional dependency for Dolph Chebyshev windows:  
 `sudo apt install python3 python3-scipy`  
-Note that in order to compile and run Digistring on Ubuntu 20.04 LTS, some patches have to be applied. This can be done by running `make ubuntu2004lts` before building.
+Note that in order to compile and run Digistring on Ubuntu, some patches have to be applied. This can be done by running `make ubuntu2104` and `make ubuntu2004lts` for Ubuntu 21.04 and Ubuntu 20.04 LTS respectively before building.
 
 On Arch Linux:  
 `sudo pacman -S gcc make sdl2 sdl2_ttf fftw3`  
