@@ -8,11 +8,11 @@ On Arch Linux:
 `sudo pacman -S python3 python-matplotlib`
 
 
-# Usage instructions (todo)
+# Usage instructions
 To generate performance report of Digistring on a dataset, run:  
 `./generate_report <dataset name> <dataset annotations> <digistring results> <performance report output>`  
 Valid dataset names are:  
-fraunhofer MDB-stem-synth
+`fraunhofer` `MDB-stem-synth`
 
 To generate Bash (tab) completions for dataset names, run:  
 `./generate_report generate`  
@@ -22,4 +22,5 @@ Running `source completions.sh` adds the completions to the current shell.
 
 # TODOs
 Use note event duration information instead of only using next note event for note termination.  
-Use NoteEvents being sorted for more efficient `is_monophonic()`, `is_polyphonic()` and time based getters.
+Use NoteEvents being sorted for more efficient `is_monophonic()`, `is_polyphonic()` and time based getters.  
+Add MDB-stem-synth parser.
