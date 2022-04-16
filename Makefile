@@ -49,16 +49,16 @@ force:
 	make -B all
 
 fresh:
-	make clean
+	make clean --no-print-directory
 	make all
 
 ubuntu2104:
-	make clean
+	make clean --no-print-directory
 	tools/patch_tools/check.sh patches/c++17.patch
 	tools/patch_tools/apply.sh patches/c++17.patch
 
 ubuntu2004lts:
-	make clean
+	make clean --no-print-directory
 	tools/patch_tools/check.sh
 	tools/patch_tools/apply.sh patches/c++17.patch
 	tools/patch_tools/apply.sh patches/glibc-2_31.patch
