@@ -1,9 +1,9 @@
 .PHONY: all clean
 
 all:
-	@make --no-print-directory float_vs_double
-	@make --no-print-directory float_vs_double_O3
-	@make --no-print-directory float_vs_double_fast
+	@make float_vs_double --no-print-directory
+	@make float_vs_double_O3 --no-print-directory
+	@make float_vs_double_fast --no-print-directory
 
 
 float_vs_double: main.cpp
