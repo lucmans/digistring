@@ -64,7 +64,8 @@ class Graphics {
         SDL_Texture *clicked_amp_text;
 
         double file_played_time;
-        SDL_Texture *seconds_text;
+        SDL_Texture *file_played_time_text;
+        SDL_Texture *file_played_seconds_text;
 
         // Render functions render to framebuffer
         void render_black_screen();

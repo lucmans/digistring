@@ -98,7 +98,8 @@ Graphics::Graphics() {
     clicked_amp_text = create_txt_texture(renderer, "Clicked amplitude: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
     file_played_time = -1.0;
-    seconds_text = create_txt_texture(renderer, " s", info_font, {0xff, 0xff, 0xff, 0xff});
+    file_played_time_text = create_txt_texture(renderer, "File play time: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    file_played_seconds_text = create_txt_texture(renderer, " s", info_font, {0xff, 0xff, 0xff, 0xff});
 
     // TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
     // if(freeze_font == NULL) {
@@ -113,7 +114,8 @@ Graphics::Graphics() {
 Graphics::~Graphics() {
     // SDL_DestroyTexture(freeze_txt_buffer);
 
-    SDL_DestroyTexture(seconds_text);
+    SDL_DestroyTexture(file_played_time_text);
+    SDL_DestroyTexture(file_played_seconds_text);
 
     SDL_DestroyTexture(clicked_freq_text);
     SDL_DestroyTexture(clicked_amp_text);
@@ -439,14 +441,18 @@ void Graphics::render_file_played_time(int &offset) {
     SDL_Texture *file_played_time_number = create_txt_texture(renderer, ss.str(), info_font, {0xff, 0xff, 0xff, 0xff});
 
     int w, h;
-    SDL_QueryTexture(seconds_text, NULL, NULL, &w, &h);
+    SDL_QueryTexture(file_played_time_text, NULL, NULL, &w, &h);
     int w2;
     SDL_QueryTexture(file_played_time_number, NULL, NULL, &w2, &h);
+    int w3;
+    SDL_QueryTexture(file_played_seconds_text, NULL, NULL, &w3, &h);
 
-    SDL_Rect dst = {res_w - w - 1, h * offset, w, h};
-    SDL_RenderCopy(renderer, seconds_text, NULL, &dst);
-    dst = {res_w - w2 - w - 1, h * offset, w2, h};
+    SDL_Rect dst = {res_w - w3 - 1, h * offset, w3, h};
+    SDL_RenderCopy(renderer, file_played_seconds_text, NULL, &dst);
+    dst = {res_w - w3 - w2 - 1, h * offset, w2, h};
     SDL_RenderCopy(renderer, file_played_time_number, NULL, &dst);
+    dst = {res_w - w3 - w2 - w - 1, h * offset, w, h};
+    SDL_RenderCopy(renderer, file_played_time_text, NULL, &dst);
 
     SDL_DestroyTexture(file_played_time_number);
 

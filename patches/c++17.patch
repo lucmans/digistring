@@ -15,7 +15,7 @@
 
 --- src/graphics.cpp
 +++ src/graphics.cpp
-@@ -271,8 +271,11 @@
+@@ -273,8 +273,11 @@
      static bool warning_printed = false;
      if(estimator_graphics != nullptr) {
          set_max_recorded_value_if_larger(estimator_graphics->get_max_recorded_value());
