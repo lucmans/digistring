@@ -58,8 +58,8 @@ Argument parameters in <> are required and in [] are optional.
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
-`--synth`: Output sine wave based on note estimation from audio input (default is sine).  
-`--synths`: List available synthesizers.
+`--synth [synth_type]`: Generate sound based on note estimation (default is sine).  
+`--synths`: List available synthesizers (`synth_type` for `--synth`).
 
 All command line arguments can also be printed by running Digistring with `-h`/`--help`.
 
