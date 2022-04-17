@@ -48,7 +48,7 @@ Graphics::Graphics() {
     // SDL_GetWindowSize(window, &res_w, &res_h);
     info("Start-up resolution " + STR(res_w) + " " + STR(res_h));
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED/* | SDL_RENDERER_PRESENTVSYNC*/);
     if(renderer == NULL) {
         error("Failed to create renderer for window\nSDL error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
@@ -139,7 +139,7 @@ Graphics::~Graphics() {
 }
 
 
-void Graphics::set_max_recorded_value() {
+void Graphics::reset_max_recorded_value() {
     max_recorded_value = -1.0;
 }
 

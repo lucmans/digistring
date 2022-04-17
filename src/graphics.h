@@ -14,7 +14,7 @@ class Graphics {
         Graphics();
         ~Graphics();
 
-        void set_max_recorded_value();
+        void reset_max_recorded_value();
         void set_max_recorded_value(const double new_max);
         void set_max_recorded_value_if_larger(const double new_max);
         double get_max_recorded_value() const;
