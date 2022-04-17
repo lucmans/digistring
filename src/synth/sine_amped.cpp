@@ -2,7 +2,9 @@
 
 #include "note.h"
 #include "error.h"
+
 #include "config/audio.h"
+#include "config/synth.h"
 
 #include <cmath>
 #include <algorithm>  // std::fill_n()
