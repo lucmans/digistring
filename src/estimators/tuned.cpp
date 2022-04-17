@@ -78,8 +78,14 @@ Tuned::Tuned(float *&input_buffer, int &buffer_size) {
         blackman_nuttall_window(window_funcs[i], buffer_sizes[i]);
     }
 
-    // Allocate norms here instead of VLA in perform()
-    norms = new double[(n_samples / 2) + 1];
+    // Allocate norms here once instead of VLA in perform()
+    try {
+        norms = new double[(n_samples / 2) + 1];
+    }
+    catch(const std::bad_alloc &e) {
+        error("Failed to allocate norms buffer (" + STR(e.what()) + ")");
+        exit(EXIT_FAILURE);
+    }
 
     if constexpr(!HEADLESS)
         estimator_graphics = new TunedGraphics();

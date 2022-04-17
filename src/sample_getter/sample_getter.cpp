@@ -20,8 +20,10 @@ SampleGetter::SampleGetter(const int input_buffer_size) {
         else if constexpr(DO_OVERLAP_NONBLOCK)
             overlap_buffer_size = input_buffer_size - MIN_NEW_SAMPLES_NONBLOCK;
 
-        overlap_buffer = new (std::nothrow) float[overlap_buffer_size];
-        if(overlap_buffer == nullptr) {
+        try {
+            overlap_buffer = new float[overlap_buffer_size];
+        }
+        catch(const std::bad_alloc &e) {
             error("Failed to create overlap buffer");
             hint("Setting a lower value for OVERLAP_RATIO in config/transcription.h or disable overlapping completely");
             exit(EXIT_FAILURE);
