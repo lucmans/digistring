@@ -1,4 +1,4 @@
-#include "sine.h"
+#include "sine_amped.h"
 
 #include "note.h"
 #include "error.h"
@@ -8,18 +8,19 @@
 #include <algorithm>  // std::fill_n()
 
 
-Sine::Sine() {
+SineAmped::SineAmped() {
     last_phase = 0.0;
 
     prev_frame_silent = true;
+    prev_frame_amp = 0.0;
 }
 
-Sine::~Sine() {
+SineAmped::~SineAmped() {
 
 }
 
 
-void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples) {
+void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples) {
     const int n_events = note_events.size();
 
     // Output silence if there are no notes
@@ -27,29 +28,35 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
         std::fill_n(synth_buffer, n_samples, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
 
         // Finish sine from previous frame
+        int i;
         if(!prev_frame_silent) {
             const double phase_offset = (last_phase * ((double)SAMPLE_RATE / prev_frame_freq));
             if(last_phase > 0.5) {
-                for(int i = 0; i < n_samples; i++) {
+                for(i = 0; i < n_samples; i++) {
                     const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)SAMPLE_RATE);
                     if(next_sample > 0.0)
                         break;
 
-                    synth_buffer[i] = next_sample;
+                    synth_buffer[i] = next_sample * prev_frame_amp;
                 }
             }
             else /*if(last_phase < 0.5)*/ {
-                for(int i = 0; i < n_samples; i++) {
+                for(i = 0; i < n_samples; i++) {
                     const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)SAMPLE_RATE);
                     if(next_sample < 0.0)
                         break;
 
-                    synth_buffer[i] = next_sample;
+                    synth_buffer[i] = next_sample * prev_frame_amp;
                 }
             }
         }
 
+        // DEBUG
+        if(i == n_samples)
+            warning("Failed to force end of wave from previous frame to zero within a frame");
+
         prev_frame_silent = true;
+        prev_frame_amp = 0.0;
         last_phase = 0.0;
         return;
     }
@@ -63,6 +70,10 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
                 event_idx = i;
     }
     const NoteEvent &out_event = note_events[event_idx];
+    const Note &out_note = out_event.note;
+
+    if(out_note.amp > max_amp)
+        max_amp = out_note.amp;
 
     // DEBUG: Sanity check
     if(out_event.offset + out_event.length > (unsigned int)n_samples) {
@@ -76,10 +87,12 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
     prev_frame_silent = false;
 
     // Write samples to buffer
-    const Note &out_note = out_event.note;
+    const double amp_mod = std::pow(out_note.amp, AMP_SCALING) / std::pow(max_amp, AMP_SCALING);
     const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
-    for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++)
-        synth_buffer[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
+    for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++) {
+        const double amp_i = (double)i * ((amp_mod - prev_frame_amp) / ((double)out_event.offset + (double)out_event.length));
+        synth_buffer[i] = (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
+    }
 
     last_phase = fmod(last_phase + (out_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
 
@@ -88,4 +101,5 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
     std::fill_n(synth_buffer + out_event.offset + out_event.length, n_samples - (out_event.offset + out_event.length), 0.0);  // End
 
     prev_frame_freq = out_note.freq;
+    prev_frame_amp = amp_mod;
 }

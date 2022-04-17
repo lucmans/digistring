@@ -4,6 +4,7 @@
 #include "error.h"
 #include "config/audio.h"
 
+#include <cmath>
 #include <algorithm>  // std::fill_n()
 
 

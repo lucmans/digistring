@@ -46,11 +46,11 @@ function _generate_digistring_compl() {
                 return 0;;
             --synth)
                 if [[ ${#cur} == 0 ]]; then
-                    COMPREPLY=($(compgen -W "sine square  -" -- $cur))
+                    COMPREPLY=($(compgen -W "sine sine_amped square  -" -- $cur))
                 elif [[ ${cur[0]} == "-" ]]; then
                     COMPREPLY=($(compgen -W "--file --generate-completions --help --output --over --perf --rsc --synth --synths -f -g -h -n -o -p -r -s" -- $cur))
                 else
-                    COMPREPLY=($(compgen -W "sine square " -- $cur))
+                    COMPREPLY=($(compgen -W "sine sine_amped square " -- $cur))
                 fi
                 return 0;;
             --synths)

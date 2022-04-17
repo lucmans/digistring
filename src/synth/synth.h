@@ -8,16 +8,17 @@
 #include <string>
 
 
-/* When adding a new synth, don't forget to include the file in synths.h */
+/* When adding a new synth, don't forget to include the file in synths.h and add it to the factory */
 
 // Different synth types
 enum class Synths {
-    sine, square
+    square, sine, sine_amped
 };
 
 // For selecting a synth using CLI args
-const std::map<std::string, Synths> parse_synth_string = {{"sine", Synths::sine},
-                                                          {"square", Synths::square}};
+const std::map<std::string, Synths> parse_synth_string = {{"square", Synths::square},
+                                                          {"sine", Synths::sine},
+                                                          {"sine_amped", Synths::sine_amped}};
 
 
 class Synth {
@@ -27,9 +28,12 @@ class Synth {
 
         virtual void synthesize(const NoteEvents &notes, float *const synth_buffer, const int n_samples) = 0;
 
+        void reset_max_amp();
+        void set_max_amp(const double _max_amp);
+
 
     protected:
-        //
+        double max_amp;
 };
 
 

@@ -31,6 +31,10 @@ constexpr unsigned int SAMPLES_PER_BUFFER = 512;
 constexpr double SLEEP_FACTOR = 0.85;
 
 
+/* Synth config */
+constexpr double AMP_SCALING = 3.5;  // Let AMP_SCALING be x, the amplitude of the out wave is calculated using note.amp^x / max_amp^x
+
+
 /* Easter egg constant time arpeggiator */
 // Don't forget to use a low frame size, as audio is played per frame
 constexpr bool ENABLE_ARPEGGIATOR = false;
