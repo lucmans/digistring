@@ -78,7 +78,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 
 # Tools
-Digistring includes a few tools:
+Digistring includes a few tools:  
 `dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.  
 `float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.  
 `generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.  
