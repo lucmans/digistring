@@ -125,7 +125,13 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
             delete[] conv_buf;
 
         conv_buf_size = n_samples;
-        conv_buf = new int32_t[conv_buf_size];
+        try {
+            conv_buf = new int32_t[conv_buf_size];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate sample format conversion buffer (" + STR(e.what()) + ")");
+            exit(EXIT_FAILURE);
+        }
     }
 
     // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
@@ -202,7 +208,7 @@ void AudioIn::copy_nonblocking_overlap(float *const in, const int n_samples) {
 }
 
 
-void AudioIn::get_frame(float *const in, const int n_samples) {
+int AudioIn::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
@@ -226,4 +232,6 @@ void AudioIn::get_frame(float *const in, const int n_samples) {
         copy_overlap(in, n_samples);
     else if constexpr(DO_OVERLAP_NONBLOCK)
         copy_nonblocking_overlap(in, n_samples);
+
+    return overlap_n_samples;
 }

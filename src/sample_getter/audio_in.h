@@ -23,7 +23,7 @@ class AudioIn : public SampleGetter {
         void calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, const int bits_per_sample);
         void copy_nonblocking_overlap(float *const in, const int n_samples);
 
-        void get_frame(float *const in, const int n_samples);
+        int get_frame(float *const in, const int n_samples);
 
 
     private:

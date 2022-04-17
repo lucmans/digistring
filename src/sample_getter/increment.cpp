@@ -17,7 +17,7 @@ SampleGetters Increment::get_type() const {
 }
 
 
-void Increment::get_frame(float *const in, const int n_samples) {
+int Increment::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
@@ -32,4 +32,6 @@ void Increment::get_frame(float *const in, const int n_samples) {
 
     if constexpr(DO_OVERLAP)
         copy_overlap(in, n_samples);
+
+    return overlap_n_samples;
 }

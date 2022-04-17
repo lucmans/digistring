@@ -26,7 +26,8 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
     }
 
     if(wav_spec.freq != SAMPLE_RATE) {
-        error("Internal sample rate (" + STR(SAMPLE_RATE) + " Hz) mismatches WAV sample rate (" + STR(wav_spec.freq) + " Hz)\nInternal sample rate can be set in src/config/audio.h");
+        error("Internal sample rate (" + STR(SAMPLE_RATE) + " Hz) mismatches WAV sample rate (" + STR(wav_spec.freq) + " Hz)");
+        hint("Internal sample rate can be set in src/config/audio.h");
         exit(EXIT_FAILURE);
     }
 
@@ -42,7 +43,14 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         }
 
         wav_buffer_samples = read_buffer_bytes / sizeof(float);
-        wav_buffer = new float[wav_buffer_samples];
+        try {
+            wav_buffer = new float[wav_buffer_samples];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate WAV file buffer; WAV file too big (" + STR(e.what()) + ")");
+            hint("Try a splitting the WAV file into smaller files");
+            exit(EXIT_FAILURE);
+        }
 
         memcpy(wav_buffer, read_buffer, read_buffer_bytes);
     }
@@ -53,7 +61,14 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         }
 
         wav_buffer_samples = read_buffer_bytes / sizeof(int32_t);
-        wav_buffer = new float[wav_buffer_samples];
+        try {
+            wav_buffer = new float[wav_buffer_samples];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate WAV file buffer; WAV file too big (" + STR(e.what()) + ")");
+            hint("Try a splitting the WAV file into smaller files");
+            exit(EXIT_FAILURE);
+        }
 
         const int32_t *const sample_buffer = (int32_t*)read_buffer;
         for(int i = 0; i < wav_buffer_samples; i++) {
@@ -171,7 +186,7 @@ double AudioFile::current_time() {
 }
 
 
-void AudioFile::get_frame(float *const in, const int n_samples) {
+int AudioFile::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;  // n_samples to get after accounting for overlap
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
@@ -199,4 +214,6 @@ void AudioFile::get_frame(float *const in, const int n_samples) {
 
     if constexpr(DO_OVERLAP)
         copy_overlap(in, n_samples);
+
+    return overlap_n_samples;
 }

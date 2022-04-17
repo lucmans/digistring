@@ -38,7 +38,7 @@ void WaveGenerator::pitch_down() {
 }
 
 
-void WaveGenerator::get_frame(float *const in, const int n_samples) {
+int WaveGenerator::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
@@ -56,4 +56,6 @@ void WaveGenerator::get_frame(float *const in, const int n_samples) {
 
     if constexpr(DO_OVERLAP)
         copy_overlap(in, n_samples);
+
+    return overlap_n_samples;
 }

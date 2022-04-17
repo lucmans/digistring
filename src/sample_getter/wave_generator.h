@@ -18,7 +18,7 @@ class WaveGenerator : public SampleGetter {
         void pitch_up() override;
         void pitch_down() override;
 
-        void get_frame(float *const in, const int n_samples);
+        int get_frame(float *const in, const int n_samples);
 
 
     private:

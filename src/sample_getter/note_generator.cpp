@@ -47,7 +47,7 @@ void NoteGenerator::pitch_down() {
 }
 
 
-void NoteGenerator::get_frame(float *const in, const int n_samples) {
+int NoteGenerator::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;
     float *overlap_in = in;
     if constexpr(DO_OVERLAP)
@@ -65,4 +65,6 @@ void NoteGenerator::get_frame(float *const in, const int n_samples) {
 
     if constexpr(DO_OVERLAP)
         copy_overlap(in, n_samples);
+
+    return overlap_n_samples;
 }

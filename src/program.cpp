@@ -67,7 +67,14 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         exit(EXIT_FAILURE);
     }
     if(cli_args.synth) {
-        synth_buffer = new float[input_buffer_n_samples];
+        try {
+            synth_buffer = new float[input_buffer_n_samples];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate synth_buffer (" + STR(e.what()) + ")");
+            hint("Try using an Estimator with a smaller input buffer size or don't synthesize sound");
+            exit(EXIT_FAILURE);
+        }
         synth = synth_factory(cli_args.synth_type);
     }
 
@@ -127,12 +134,12 @@ void Program::main_loop() {
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
-        sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
+        const int new_samples = sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
         perf.push_time_point("Got frame full of audio samples");
 
         // Play it back to the user if chosen
         if(cli_args.playback)
-            playback_audio();
+            playback_audio(new_samples);
 
         // Send frame to estimator
         NoteEvents note_events;
@@ -141,7 +148,7 @@ void Program::main_loop() {
 
         // Arg parser disallows both cli_args.playback and cli_args.synth to be true (sanity checked in constructor)
         if(cli_args.synth)
-            synthesize_audio(note_events);
+            synthesize_audio(note_events/*, new_samples*/);
 
         // Print note estimation to CLI
         // print_results(note_events);
@@ -185,12 +192,12 @@ void Program::resize(const int w, const int h) {
 }
 
 
-void Program::playback_audio() {
+void Program::playback_audio(const int new_samples) {
     if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
 
-    if(SDL_QueueAudio(*out_dev, input_buffer, input_buffer_n_samples * sizeof(float))) {
+    if(SDL_QueueAudio(*out_dev, input_buffer + (input_buffer_n_samples - new_samples), new_samples * sizeof(float))) {
         error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
@@ -301,10 +308,18 @@ void Program::update_graphics(const NoteEvents &note_events) {
 }
 
 
-void Program::synthesize_audio(const NoteEvents &notes) {
+// TODO: Use new_samples
+void Program::synthesize_audio(const NoteEvents &notes/*, const int new_samples*/) {
     if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
+
+    // if constexpr(SLOWDOWN_ON_OVERLAP) {
+    //     //
+    // }
+    // else {
+    //     //
+    // }
 
     synth->synthesize(notes, synth_buffer, input_buffer_n_samples);
 

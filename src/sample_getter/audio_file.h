@@ -19,7 +19,7 @@ class AudioFile : public SampleGetter {
         void seek(const int d_samples);
         double current_time();  // in seconds
 
-        void get_frame(float *const in, const int n_samples);
+        int get_frame(float *const in, const int n_samples);
 
 
     private:

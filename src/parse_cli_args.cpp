@@ -263,20 +263,6 @@ void ArgParser::parse_playback() {
     }
 
     cli_args.playback = true;
-
-    if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
-        const char *overlap;
-        if(!fetch_opt(overlap)) {
-            error("Playing audio back while using overlapping frames will cause distorted audio.\n"
-                  "Pass 'overlap' to the '-p' flag to overwrite this warning or disable DO_OVERLAP in config.h.");
-            exit(EXIT_FAILURE);
-        }
-
-        if(strncmp(overlap, "overlap", 7) != 0) {
-            error("Unknown option '" + std::string(overlap) + "' for -p flag");
-            exit(EXIT_FAILURE);
-        }
-    }
 }
 
 
@@ -409,6 +395,11 @@ void ArgParser::parse_synth() {
     catch(const std::out_of_range &oor) {
         error("Unknown synth type '" + std::string(synth_string) + "'");
         exit(EXIT_FAILURE);
+    }
+
+    if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
+        warning("Playback will be slowed based on the amount of overlap per frame");
+        hint("Disable DO_OVERLAP in config/transcription.h to prevent slowdown");
     }
 }
 

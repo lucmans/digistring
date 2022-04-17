@@ -40,7 +40,8 @@ class SampleGetter {
         virtual void pitch_down() {};
 
         // Has to increment played_samples
-        virtual void get_frame(float *const in, const int n_samples) = 0;
+        // Returns number of new samples (which may be less then n_samples due to overlap)
+        virtual int get_frame(float *const in, const int n_samples) = 0;
 
         /* Overlap function
          * Note that n_samples has to be the same every call for overlapping to work!

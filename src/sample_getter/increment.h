@@ -15,7 +15,7 @@ class Increment : public SampleGetter {
 
         SampleGetters get_type() const override;
 
-        void get_frame(float *const in, const int n_samples);
+        int get_frame(float *const in, const int n_samples);
 
 
     private:

@@ -43,7 +43,7 @@ Sending `SIGINT` or `SIGTERM` a second time will immediately stop Digistring.
 Most of Digistring's configuration is done compile time to optimize performance and minimize latency. The default configuration is optimized for real-time usage (e.g. connecting a guitar to the audio input of your computer). The configuration files can be found in `src/config/`.  
 `audio.h`: Audio driver configuration, such as sample rate, samples per buffer and sample format.  
 `transcription.h`: Contains all parameters which control pitch estimation. This includes overlapping input frames configuration.  
-`graphics.h`: GUI configuration. Most important is headless mode. which ensures no graphics code is compiled into Digistring. This is important, as graphics is only useful for research/debugging and much CPU and RAM overhead. Headless mode is useful for practical usage (sound synthesis based on guitar input) and experimental usage (running performance measurements).
+`graphics.h`: GUI configuration. Most important is headless mode, which ensures no graphics code is compiled into Digistring. This is important, as graphics is only useful for research/debugging and adds much CPU and RAM overhead. Headless mode is useful for practical usage (real-time sound synthesis based on guitar input) and experimental usage (running performance measurements).
 
 ## Command line arguments
 Argument parameters in <> are required and in [] are optional.  
@@ -86,6 +86,7 @@ Digistring includes a few tools:
 
 
 # TODO
+Use new_samples in Program::synthesize_audio() to prevent slowed playback when overlapping input buffers.  
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
 Pass SampleGetter to Estimator and add get_frame_no_overlap() to base class.  
 Convex envelope and low passed-spectrum peak picking.  
@@ -99,4 +100,5 @@ Estimator graphics data wipe after frame (now have to manually .clear() old data
 
 
 # BUGS
+Audio distortions from synthesizer when using NoteEvent offset and length.  
 Can't build project using "make digistring" directly due to build directory dependencies.

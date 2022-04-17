@@ -62,7 +62,7 @@ class Program {
 
 
         // This function should only be called if cli_args.playback is true
-        void playback_audio();
+        void playback_audio(const int new_samples);
 
         // These functions should only be called if cli_args.output_file is true
         void write_result_header();
@@ -73,7 +73,8 @@ class Program {
         // This function should only be called if HEADLESS is false
         void update_graphics(const NoteEvents &note_events);
 
-        void synthesize_audio(const NoteEvents &notes);
+        // TODO: Use new_samples
+        void synthesize_audio(const NoteEvents &notes/*, const int new_samples*/);
 
         void arpeggiate();
 
