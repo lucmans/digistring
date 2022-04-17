@@ -59,7 +59,7 @@ Argument parameters in <> are required and in [] are optional.
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
 `--synth [synth_type]`: Generate sound based on note estimation (default is sine).  
-`--synths`: List available synthesizers (`synth_type` for `--synth`).
+`--synths`: List available synthesizers (`synth_type`s for `--synth`).
 
 All command line arguments can also be printed by running Digistring with `-h`/`--help`.
 
@@ -75,6 +75,14 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 `i`: Toggle showing info in top-right corner of the window.  
 `t`: Clear SDL audio playback buffer (samples sent to OS are still played).  
 `q`/`esc`: Quit Digistring.
+
+
+# Tools
+Digistring includes a few tools:
+`dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.  
+`float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.  
+`generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.  
+`patch_tools`: A few tools which help with checking, applying and creating patches.
 
 
 # TODO
