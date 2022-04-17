@@ -73,7 +73,7 @@ Graphics::Graphics() {
     max_recorded_value = -1.0;
     max_display_frequency = DEFAULT_MAX_DISPLAY_FREQUENCY;
 
-    info_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 20);
+    info_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), INFO_FONT_SIZE);
     if(info_font == NULL) {
         error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
         exit(EXIT_FAILURE);

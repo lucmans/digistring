@@ -13,6 +13,7 @@ constexpr bool DISPLAY_NOTE_LINES = false;
 
 // Render some info in top-right corner of the window
 constexpr bool DISPLAY_INFO = true;
+constexpr int INFO_FONT_SIZE = 20;  // Point size (based on 72DPI); basically translates to pixel height
 
 // Render the number of input samples queued, which indicates audio overruns
 constexpr bool DISPLAY_QUEUED_IN_SAMPLES = true;
@@ -42,9 +43,6 @@ constexpr unsigned int MAX_PIXELS_WATERFALL_LINE = 16384;
 
 // Determines if the waterfall flows up or down
 constexpr bool WATERFALL_FLOW_DOWN = true;
-
-// Number of seconds is scrubbed through the input file every scroll wheel action
-constexpr double SECONDS_PER_SCROLL = 0.1;
 
 
 #endif  // DIGISTRING_CONFIG_GRAPHICS_H
