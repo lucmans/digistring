@@ -28,7 +28,8 @@ void calc_norms(const fftwf_complex values[], double norms[], const int n, doubl
 // dB ref: https://www.kvraudio.com/forum/viewtopic.php?t=276092
 void calc_norms_db(const fftwf_complex values[], double norms[], const int n) {
     for(int i = 0; i < n; i++)
-        norms[i] = 20 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
+        norms[i] = 20.0 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
+        // norms[i] = 20.0 * log10(2.0 * sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])) / n);
 }
 
 void calc_norms_db(const fftwf_complex values[], double norms[], const int n, double &max_norm, double &power) {
@@ -36,7 +37,8 @@ void calc_norms_db(const fftwf_complex values[], double norms[], const int n, do
     power = 0.0;
 
     for(int i = 0; i < n; i++) {
-        norms[i] = 20 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
+        norms[i] = 20.0 * log10(sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])));
+        // norms[i] = 20.0 * log10(2.0 * sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1])) / n);
         power += norms[i];
 
         if(norms[i] > max_norm)
