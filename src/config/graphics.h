@@ -13,7 +13,7 @@ constexpr bool DISPLAY_NOTE_LINES = false;
 
 // Render some info in top-right corner of the window
 constexpr bool DISPLAY_INFO = true;
-constexpr int INFO_FONT_SIZE = 20;  // Point size (based on 72DPI); basically translates to pixel height
+constexpr int INFO_FONT_SIZE = 23;  // Point size (based on 72DPI); basically translates to pixel height
 
 // Render the number of input samples queued, which indicates audio overruns
 constexpr bool DISPLAY_QUEUED_IN_SAMPLES = true;
