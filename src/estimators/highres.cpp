@@ -51,6 +51,9 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     }
     input_buffer = in;  // Share the input buffer with caller, so SampleGetter can directly write samples to it (no copies needed)
 
+    // Zero zero-padded part of buffer
+    std::fill_n(in + FRAME_SIZE, FRAME_SIZE_PADDED - FRAME_SIZE, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
+
     out = (fftwf_complex*)fftwf_malloc(((FRAME_SIZE_PADDED / 2) + 1) * sizeof(fftwf_complex));
     if(out == NULL) {
         error("Failed to malloc Fourier output buffer");
@@ -95,7 +98,7 @@ Estimators HighRes::get_type() const {
 
 void HighRes::calc_envelope(const double norms[(FRAME_SIZE_PADDED / 2) + 1], double envelope[(FRAME_SIZE_PADDED / 2) + 1]) {
     for(int i = 0; i < (FRAME_SIZE_PADDED / 2) + 1; i++) {
-        double sum = 0, weights = 0;
+        double sum = 0.0, weights = 0.0;
         for(int j = std::max(-MID, -i); j <= std::min(MID, (FRAME_SIZE_PADDED / 2) - i); j++) {
             sum += norms[i + j] * gaussian[j + MID];
             weights += gaussian[j + MID];
