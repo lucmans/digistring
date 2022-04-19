@@ -323,7 +323,7 @@ void Graphics::render_current_note(const Note *const note) {
     dst = {0, h, w, h};
     SDL_RenderCopy(renderer, note_freq_text, NULL, &dst);
     if(note != nullptr) {
-        SDL_Texture *note_freq_number = create_txt_texture(renderer, STR(note->freq), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_Texture *note_freq_number = create_txt_texture(renderer, std::to_string(note->freq), info_font, {0xff, 0xff, 0xff, 0xff});
         SDL_QueryTexture(note_freq_number, NULL, NULL, &w2, &h);
         dst = {w, h, w2, h};
         SDL_RenderCopy(renderer, note_freq_number, NULL, &dst);
@@ -334,7 +334,7 @@ void Graphics::render_current_note(const Note *const note) {
     dst = {0, 2 * h, w, h};
     SDL_RenderCopy(renderer, note_error_text, NULL, &dst);
     if(note != nullptr) {
-        SDL_Texture *note_error_number = create_txt_texture(renderer, STR(note->error), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_Texture *note_error_number = create_txt_texture(renderer, std::to_string(note->error), info_font, {0xff, 0xff, 0xff, 0xff});
         SDL_QueryTexture(note_error_number, NULL, NULL, &w2, &h);
         dst = {w, 2 * h, w2, h};
         SDL_RenderCopy(renderer, note_error_number, NULL, &dst);
@@ -345,7 +345,7 @@ void Graphics::render_current_note(const Note *const note) {
     dst = {0, 3 * h, w, h};
     SDL_RenderCopy(renderer, note_amp_text, NULL, &dst);
     if(note != nullptr) {
-        SDL_Texture *note_amp_number = create_txt_texture(renderer, STR(note->amp), info_font, {0xff, 0xff, 0xff, 0xff});
+        SDL_Texture *note_amp_number = create_txt_texture(renderer, std::to_string(note->amp), info_font, {0xff, 0xff, 0xff, 0xff});
         SDL_QueryTexture(note_amp_number, NULL, NULL, &w2, &h);
         dst = {w, 3 * h, w2, h};
         SDL_RenderCopy(renderer, note_amp_number, NULL, &dst);
@@ -389,7 +389,7 @@ void Graphics::render_max_displayed_frequency(int &offset) {
 
 
 void Graphics::render_queued_samples(int &offset) {
-    SDL_Texture *n_samples_number = create_txt_texture(renderer, STR(queued_samples), info_font, {0xff, 0xff, 0xff, 0xff});
+    SDL_Texture *n_samples_number = create_txt_texture(renderer, std::to_string(queued_samples), info_font, {0xff, 0xff, 0xff, 0xff});
 
     int w, h;
     SDL_QueryTexture(n_samples_text, NULL, NULL, &w, &h);
@@ -465,7 +465,7 @@ void Graphics::render_clicked_location_info(int &offset) {
         return;
 
     const int clicked_freq = round(((double)mouse_x / (double)res_w) * max_display_frequency);
-    SDL_Texture *clicked_freq_number = create_txt_texture(renderer, STR(clicked_freq), info_font, {0xff, 0xff, 0xff, 0xff});
+    SDL_Texture *clicked_freq_number = create_txt_texture(renderer, std::to_string(clicked_freq), info_font, {0xff, 0xff, 0xff, 0xff});
 
     int w, h;
     SDL_QueryTexture(clicked_freq_text, NULL, NULL, &w, &h);
@@ -483,7 +483,7 @@ void Graphics::render_clicked_location_info(int &offset) {
 
 
     const int clicked_amp = round(max_recorded_value - (((double)mouse_y / (double)res_h) * max_recorded_value));
-    SDL_Texture *clicked_amp_number = create_txt_texture(renderer, STR(clicked_amp), info_font, {0xff, 0xff, 0xff, 0xff});
+    SDL_Texture *clicked_amp_number = create_txt_texture(renderer, std::to_string(clicked_amp), info_font, {0xff, 0xff, 0xff, 0xff});
 
     SDL_QueryTexture(clicked_amp_text, NULL, NULL, &w, &h);
     SDL_QueryTexture(clicked_amp_number, NULL, NULL, &w2, &h);

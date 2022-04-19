@@ -12,6 +12,7 @@
 #include <chrono>  // timing
 #include <thread>  // sleep
 #include <algorithm>  // std::clamp(), std::min()
+#include <string>  // std::to_string()
 
 
 AudioIn::AudioIn(const int input_buffer_size, SDL_AudioDeviceID *const _in) : SampleGetter(input_buffer_size) {
@@ -114,7 +115,7 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
     // debug(STR(lowest) + " " + STR(highest));
 
     played_samples += n_samples;
-    perf.push_time_point("Read " + STR(n_samples) + " samples");
+    perf.push_time_point("Read " + std::to_string(n_samples) + " samples");
 }
 
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {
@@ -160,7 +161,7 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 
         // // Experiment: Comment this for extra performance
         // if(read + ret == n_samples * sizeof(int32_t))
-        //     perf.push_time_point("Read " + STR(n_samples) + " samples");
+        //     perf.push_time_point("Read " + std::to_string(n_samples) + " samples");
 
         // Directly perform conversion to save on computation when frame is ready
         // In other words, the only added latency is from casting the data from the last DequeueAudio call
