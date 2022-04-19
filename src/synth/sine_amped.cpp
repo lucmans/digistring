@@ -92,7 +92,7 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
     const double amp_mod = std::pow(out_note.amp, AMP_SCALING) / std::pow(max_amp, AMP_SCALING);  // Target synthesized amplitude based on input note amplitude
     const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
     for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++) {
-        const double amp_i = (double)i * ((amp_mod - prev_frame_amp) / ((double)out_event.offset + (double)out_event.length));  // Linearly interpolate between the output amplitude of the previous frame and the current frame to prevent clicks in audio
+        const double amp_i = (double)(i - out_event.offset) * ((amp_mod - prev_frame_amp) / (double)out_event.length);  // Linearly interpolate between the output amplitude of the previous frame and the current frame to prevent clicks in audio
         synth_buffer[i] = (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
     }
 
