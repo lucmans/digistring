@@ -11,6 +11,7 @@
 #include "config/transcription.h"
 #include "config/graphics.h"
 #include "config/results_file.h"
+#include "config/synth.h"
 
 #include "estimators/estimators.h"
 #include "sample_getter/sample_getters.h"
@@ -20,6 +21,7 @@
 #include <iomanip>  // std::setw()
 #include <chrono>
 #include <thread>  // sleep
+#include <utility>  // std::move()
 
 
 Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) : graphics(_g) {
@@ -142,24 +144,28 @@ void Program::main_loop() {
             playback_audio(new_samples);
 
         // Send frame to estimator
-        NoteEvents note_events;
-        estimator->perform(input_buffer, note_events);
+        NoteEvents estimated_events;
+        estimator->perform(input_buffer, estimated_events);
         perf.push_time_point("Performed estimation");
+
+        // If less than input_buffer_n_samples is retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
+        if(new_samples != input_buffer_n_samples)
+            adjust_events(estimated_events, new_samples);
 
         // Arg parser disallows both cli_args.playback and cli_args.synth to be true (sanity checked in constructor)
         if(cli_args.synth)
-            synthesize_audio(note_events/*, new_samples*/);
+            synthesize_audio(estimated_events, new_samples);
 
         // Print note estimation to CLI
-        // print_results(note_events);
+        // print_results(estimated_events);
 
         // Write estimation to output file
         if(cli_args.output_file)
-            write_results(note_events);
+            write_results(estimated_events, new_samples);
 
         // Graphics
         if constexpr(!HEADLESS)
-            update_graphics(note_events);
+            update_graphics(estimated_events);
 
         // Print performance information to CLI
         if(cli_args.output_performance)
@@ -229,10 +235,10 @@ void Program::write_result_header() {
     }
 }
 
-void Program::write_results(const NoteEvents &note_events) {
+void Program::write_results(const NoteEvents &note_events, const int new_samples) {
     results_file->start_dict();
 
-    const double start_frame_time = sample_getter->get_played_time() - ((double)input_buffer_n_samples / (double)SAMPLE_RATE);
+    const double start_frame_time = (double)(sample_getter->get_played_samples() - new_samples) / (double)SAMPLE_RATE;
 
     const int n_notes = note_events.size();
     if(n_notes == 0) {
@@ -291,7 +297,7 @@ void Program::update_graphics(const NoteEvents &note_events) {
         if(audio_in)
             graphics->set_queued_samples(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8));
         else if(cli_args.play_file)
-            graphics->set_file_played_time((dynamic_cast<AudioFile *>(sample_getter))->current_time());
+            graphics->set_file_played_time(sample_getter->get_played_time());  // TODO: Subtract new_samples(_time) from playtime?
 
         const int n_notes = note_events.size();
         if(n_notes == 0)
@@ -308,22 +314,33 @@ void Program::update_graphics(const NoteEvents &note_events) {
 }
 
 
-// TODO: Use new_samples
-void Program::synthesize_audio(const NoteEvents &notes/*, const int new_samples*/) {
+void Program::adjust_events(NoteEvents &events, const int new_samples) {
+    NoteEvents adjusted;
+
+    for(const auto &event : events) {
+        // As only the first 'new_samples' samples will be relevant, discard events starting later
+        if(event.offset >= (unsigned int)new_samples)
+            continue;
+
+        const int new_offset = event.offset;
+        const int new_length = std::min(new_samples - new_offset, new_samples);  // Can't be <= 1 because of if above
+
+        adjusted.push_back(NoteEvent(std::move(event.note), new_length, new_offset));
+    }
+
+    events = std::move(adjusted);
+    perf.push_time_point("NoteEvents adjusted");
+}
+
+
+void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
     if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
 
-    // if constexpr(SLOWDOWN_ON_OVERLAP) {
-    //     //
-    // }
-    // else {
-    //     //
-    // }
+    synth->synthesize(notes, synth_buffer, new_samples);
 
-    synth->synthesize(notes, synth_buffer, input_buffer_n_samples);
-
-    if(SDL_QueueAudio(*out_dev, synth_buffer, input_buffer_n_samples * sizeof(float))) {
+    if(SDL_QueueAudio(*out_dev, synth_buffer, new_samples * sizeof(float))) {
         error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
@@ -458,7 +475,16 @@ void Program::handle_sdl_events() {
             case SDL_MOUSEWHEEL:
                 // if(cli_args.play_file) {
                 if(sample_getter->get_type() == SampleGetters::audio_file) {
-                    AudioFile *audio_in_cast = dynamic_cast<AudioFile *>(sample_getter);
+                    if(cli_args.output_file) {
+                        static bool warning_printed = false;
+                        if(!warning_printed) {
+                            warning("Can't seek file writing results to file");
+                            warning_printed = true;
+                        }
+                        break;
+                    }
+
+                    AudioFile *const audio_in_cast = dynamic_cast<AudioFile *>(sample_getter);
                     if(e.wheel.y > 0)
                         audio_in_cast->seek((int)(SECONDS_PER_SCROLL * SAMPLE_RATE * e.wheel.y));
                     else if(e.wheel.y < 0)

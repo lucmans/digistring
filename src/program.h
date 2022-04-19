@@ -66,15 +66,18 @@ class Program {
 
         // These functions should only be called if cli_args.output_file is true
         void write_result_header();
-        void write_results(const NoteEvents &note_events);
+        void write_results(const NoteEvents &note_events, const int new_samples);
 
         void print_results(const NoteEvents &note_events);
+
+        // If less than input_buffer_n_samples is retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
+        // Adjust the note events to reflect this smaller frame (Estimator doesn't know about overlap, so gives full frame lengths to note events)
+        void adjust_events(NoteEvents &events, const int new_samples);
 
         // This function should only be called if HEADLESS is false
         void update_graphics(const NoteEvents &note_events);
 
-        // TODO: Use new_samples
-        void synthesize_audio(const NoteEvents &notes/*, const int new_samples*/);
+        void synthesize_audio(const NoteEvents &notes, const int new_samples);
 
         void arpeggiate();
 

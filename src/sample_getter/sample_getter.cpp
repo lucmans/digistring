@@ -38,7 +38,7 @@ SampleGetter::~SampleGetter() {
 }
 
 
-unsigned long SampleGetter::get_played_samples() const {
+long SampleGetter::get_played_samples() const {
     return played_samples;
 }
 

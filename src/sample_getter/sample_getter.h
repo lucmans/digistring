@@ -32,15 +32,15 @@ class SampleGetter {
         // This function should only return its type as named in SampleGetters
         virtual SampleGetters get_type() const = 0;
 
-        unsigned long get_played_samples() const;
-        double get_played_time() const;
+        long get_played_samples() const;
+        double get_played_time() const;  // In seconds
 
-        // These methods might not exist for all sample getter types
+        // These methods might not exist for all sample getter types, so define empty
         virtual void pitch_up() {};
         virtual void pitch_down() {};
 
         // Has to increment played_samples
-        // Returns number of new samples (which may be less then n_samples due to overlap)
+        // Returns number of newly read samples (which may be less than n_samples due to input buffer overlapping)
         virtual int get_frame(float *const in, const int n_samples) = 0;
 
         /* Overlap function
@@ -55,7 +55,7 @@ class SampleGetter {
 
 
     protected:
-        int played_samples;
+        long played_samples;
 
         // Only available if DO_OVERLAP or DO_OVERLAP_NON_BLOCK
         float *overlap_buffer;

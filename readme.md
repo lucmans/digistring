@@ -86,7 +86,8 @@ Digistring includes a few tools:
 
 
 # TODO
-Use new_samples in Program::synthesize_audio() to prevent slowed playback when overlapping input buffers.  
+Slowed playback.  
+Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
 Pass SampleGetter to Estimator and add get_frame_no_overlap() to base class.  
 Convex envelope and low passed-spectrum peak picking.  
