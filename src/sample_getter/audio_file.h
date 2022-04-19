@@ -17,14 +17,13 @@ class AudioFile : public SampleGetter {
         SampleGetters get_type() const override;
 
         void seek(const int d_samples);
-        double current_time();  // in seconds
 
         int get_frame(float *const in, const int n_samples);
 
 
     private:
         float *wav_buffer;
-        int wav_buffer_samples;
+        int wav_buffer_n_samples;
         SDL_AudioSpec wav_spec;
 };
 

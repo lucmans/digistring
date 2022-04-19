@@ -42,9 +42,9 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
             exit(EXIT_FAILURE);
         }
 
-        wav_buffer_samples = read_buffer_bytes / sizeof(float);
+        wav_buffer_n_samples = read_buffer_bytes / sizeof(float);
         try {
-            wav_buffer = new float[wav_buffer_samples];
+            wav_buffer = new float[wav_buffer_n_samples];
         }
         catch(const std::bad_alloc &e) {
             error("Failed to allocate WAV file buffer; WAV file too big (" + STR(e.what()) + ")");
@@ -60,9 +60,9 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
             exit(EXIT_FAILURE);
         }
 
-        wav_buffer_samples = read_buffer_bytes / sizeof(int32_t);
+        wav_buffer_n_samples = read_buffer_bytes / sizeof(int32_t);
         try {
-            wav_buffer = new float[wav_buffer_samples];
+            wav_buffer = new float[wav_buffer_n_samples];
         }
         catch(const std::bad_alloc &e) {
             error("Failed to allocate WAV file buffer; WAV file too big (" + STR(e.what()) + ")");
@@ -71,7 +71,7 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         }
 
         const int32_t *const sample_buffer = (int32_t*)read_buffer;
-        for(int i = 0; i < wav_buffer_samples; i++) {
+        for(int i = 0; i < wav_buffer_n_samples; i++) {
             // | can be interchanged with +
             // const int32_t new_sample = (read_buffer[(i * 4) + 0]    << 0)
             //                             | (read_buffer[(i * 4) + 1] << 8)
@@ -111,14 +111,14 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
     }
 
     std::stringstream ss;
-    ss << std::fixed << std::setprecision(3) << (double)wav_buffer_samples / (double)SAMPLE_RATE;
+    ss << std::fixed << std::setprecision(3) << (double)wav_buffer_n_samples / (double)SAMPLE_RATE;
     info("WAV file loaded, " + ss.str() + " seconds long");
 
-    // debug("File is " + STR((double)wav_buffer_samples / (double)SAMPLE_RATE) + " seconds; " + STR(wav_buffer_samples) + " samples");
+    // debug("File is " + STR((double)wav_buffer_n_samples / (double)SAMPLE_RATE) + " seconds; " + STR(wav_buffer_n_samples) + " samples");
 
     // DEBUG: For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
     // double highest = 0.0, lowest = 0.0;
-    // for(int i = 0; i < wav_buffer_samples; i++) {
+    // for(int i = 0; i < wav_buffer_n_samples; i++) {
     //     if(wav_buffer[i] < 0.0) {
     //         if(wav_buffer[i] < lowest)
     //             lowest = wav_buffer[i];
@@ -155,7 +155,7 @@ void AudioFile::seek(const int d_samples) {
         return;
     }
 
-    if(played_samples > wav_buffer_samples) {
+    if(played_samples > wav_buffer_n_samples) {
         info("File ended after seek");
         set_quit();
         return;
@@ -181,10 +181,6 @@ void AudioFile::seek(const int d_samples) {
     // debug("Seeked to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
 }
 
-double AudioFile::current_time() {
-    return (double)played_samples / (double)SAMPLE_RATE;
-}
-
 
 int AudioFile::get_frame(float *const in, const int n_samples) {
     int overlap_n_samples = n_samples;  // n_samples to get after accounting for overlap
@@ -194,19 +190,21 @@ int AudioFile::get_frame(float *const in, const int n_samples) {
 
     // debug("At to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
 
-    // If file end doesn't align with a frame, we need to read less then n_samples
-    const int n_read_samples = std::clamp(overlap_n_samples, 0, std::max(wav_buffer_samples - played_samples, 0));
-    if(played_samples < wav_buffer_samples)
-        memcpy(overlap_in, wav_buffer + played_samples, n_read_samples * sizeof(float));
+    // If file end doesn't align with a frame, we need to read less than n_samples
+    // First calculate how many samples we can still read from the file
+    const long file_samples_left = std::max(wav_buffer_n_samples - played_samples, (long)0);  // max(), as played_samples > wav_buffer_n_samples may happen when overlapping
+    const int n_samples_from_file = std::clamp((long)overlap_n_samples, (long)0, file_samples_left);  // overlap_n_samples always fits in int, so n_samples_from_file never overflows
+    if(played_samples < wav_buffer_n_samples)
+        memcpy(overlap_in, wav_buffer + played_samples, n_samples_from_file * sizeof(float));
 
     // Zero rest of buffer if file ended
-    if(n_read_samples < overlap_n_samples)
-        memset(overlap_in + n_read_samples, 0, (overlap_n_samples - n_read_samples) * sizeof(float));
+    if(n_samples_from_file < overlap_n_samples)
+        memset(overlap_in + n_samples_from_file, 0, (overlap_n_samples - n_samples_from_file) * sizeof(float));
 
     played_samples += overlap_n_samples;
 
     // Check if there won't be any of the file in the next read and quit if so
-    if(played_samples >= wav_buffer_samples + (n_samples - overlap_n_samples)) {
+    if(played_samples >= wav_buffer_n_samples + (n_samples - overlap_n_samples)) {
         info("File ended, filling rest of frame with silence...");
         set_quit();
     }
