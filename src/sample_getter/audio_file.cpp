@@ -9,8 +9,8 @@
 #include <SDL2/SDL.h>
 
 #include <string>
-#include <algorithm>
-#include <cstring>  // memcpy(), memset()
+#include <algorithm>  // std::max(), std::clamp(), std::fill_n()
+#include <cstring>  // memcpy()
 
 #include <sstream>  // This and iomanip are for double->string formatting
 #include <iomanip>
@@ -149,7 +149,7 @@ void AudioFile::seek(const int d_samples) {
     // If seeked behind start
     if(played_samples <= 0) {
         played_samples = 0;
-        memset(overlap_buffer, 0, overlap_buffer_size * sizeof(float));
+        std::fill_n(overlap_buffer, overlap_buffer_size, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
 
         // debug("Seeked to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
         return;
@@ -168,7 +168,7 @@ void AudioFile::seek(const int d_samples) {
 
         if(samples_needed_before_file > 0) {
             // Zero start of buffer
-            memset(overlap_buffer, 0, samples_needed_before_file * sizeof(float));
+            std::fill_n(overlap_buffer, samples_needed_before_file, 0.0);
 
             // Copy as much from file as possible
             memcpy(overlap_buffer + samples_needed_before_file, wav_buffer, played_samples * sizeof(float));
@@ -199,7 +199,7 @@ int AudioFile::get_frame(float *const in, const int n_samples) {
 
     // Zero rest of buffer if file ended
     if(n_samples_from_file < overlap_n_samples)
-        memset(overlap_in + n_samples_from_file, 0, (overlap_n_samples - n_samples_from_file) * sizeof(float));
+        std::fill_n(overlap_in + n_samples_from_file, overlap_n_samples - n_samples_from_file, 0.0);
 
     played_samples += overlap_n_samples;
 

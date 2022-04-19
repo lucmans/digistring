@@ -6,7 +6,7 @@
 #include "config/transcription.h"
 
 #include <cstring>  // memset(), memcpy()
-#include <algorithm>  // std::clamp()
+#include <algorithm>  // std::clamp() std::fill_n()
 
 
 SampleGetter::SampleGetter(const int input_buffer_size) {
@@ -29,7 +29,7 @@ SampleGetter::SampleGetter(const int input_buffer_size) {
             exit(EXIT_FAILURE);
         }
 
-        memset(overlap_buffer, 0, overlap_buffer_size * sizeof(float));
+        std::fill_n(overlap_buffer, overlap_buffer_size, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
     }
 }
 
