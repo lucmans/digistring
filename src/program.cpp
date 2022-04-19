@@ -148,9 +148,14 @@ void Program::main_loop() {
         estimator->perform(input_buffer, estimated_events);
         perf.push_time_point("Performed estimation");
 
-        // If less than input_buffer_n_samples is retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
-        if(new_samples != input_buffer_n_samples)
+        // If less than input_buffer_n_samples new samples are retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
+        if(new_samples < input_buffer_n_samples)
             adjust_events(estimated_events, new_samples);
+        // DEBUG: Sanity check
+        else if(new_samples > input_buffer_n_samples) {
+            error("Received too many samples from SampleGetter");
+            exit(EXIT_FAILURE);
+        }
 
         // Arg parser disallows both cli_args.playback and cli_args.synth to be true (sanity checked in constructor)
         if(cli_args.synth)
