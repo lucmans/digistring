@@ -23,12 +23,15 @@ constexpr unsigned int SAMPLES_PER_BUFFER = 512;
 constexpr bool PRINT_AUDIO_UNDERRUNS = false;
 
 
+/* Note: Currently disabled! */
 // When reading samples from audio in, Digistring sleeps the time it takes to have enough samples ready from the audio driver
 // To prevent sleeping too long, which leads to more latency, we only sleep SLEEP_FACTOR times wait required time
 // Setting a lower factor increases the length of the burst of high CPU usage before full frame is read
 // We still let the CPU burst to minimize the latency between the driver having the buffer ready and reading it in Digistring
 // Set to 0.0 to not sleep at all
 constexpr double SLEEP_FACTOR = 0.85;
+// Alternatively, subtract a constant time from sleep time to account for OS scheduling
+constexpr double SLEEP_OVERHEAD_TIME = 15.0;  // Milliseconds
 
 
 // Number of seconds is scrubbed through the input file every scroll wheel action

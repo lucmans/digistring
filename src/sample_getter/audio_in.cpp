@@ -33,7 +33,7 @@ SampleGetters AudioIn::get_type() const {
 }
 
 
-// DEBUG
+// DEBUG: For testing nonblocking overlap
 void AudioIn::read_increment(float *const in, const int n_samples) {
     for(int i = 0; i < n_samples; i++)
         in[i] = played_samples + i + 1;
@@ -68,10 +68,13 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
     perf.push_time_point("Start waiting for frame");
 
     // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
-    const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(float));
-    const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
-    // debug("Sleeping for " + STR((int)sample_left_time));
-    std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
+    // const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(float));
+    // const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
+    // debug("Sleeping for " + STR((int)(sample_left_time * SLEEP_FACTOR * 1000.0)) + " μs");
+    // std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
+
+    // debug("Sleeping for " + STR((int)(sample_left_time - 0.0)) + " ms");
+    // std::this_thread::sleep_for(std::chrono::milliseconds((int)(sample_left_time - SLEEP_OVERHEAD_TIME)));
 
     uint32_t read = 0;
     while(read < n_samples * sizeof(float)) {
@@ -94,10 +97,10 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
         read += ret;
 
         // A full means enough samples were ready to be retrieved, which implies we could've read earlier (less latency)
-        if(ret == n_samples * sizeof(float)) {
-            warning("Full read; there might still be samples left in input audio queue (latency)");
-            hint("Might be due to sleeping too long before first SDL_DequeueAudio()\nTry lowering SLEEP_FACTOR in config/audio.h");
-        }
+        // if(ret == n_samples * sizeof(float) && sample_left_time > 0) {
+        //     warning("Full read; there might still be samples left in input audio queue (latency)");
+        //     hint("Might be due to sleeping too long before first SDL_DequeueAudio()\nTry lowering SLEEP_FACTOR in config/audio.h");
+        // }
     }
 
     // DEBUG: For analyzing the range of the float samples, as being within [-1.0, 1.0] is not enforced by any standard
@@ -114,13 +117,13 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
     // }
     // debug(STR(lowest) + " " + STR(highest));
 
-    played_samples += n_samples;
     perf.push_time_point("Read " + std::to_string(n_samples) + " samples");
 }
 
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {
     perf.push_time_point("Start waiting for frame");
 
+    // TODO: Allocate once
     if(n_samples > conv_buf_size) {
         if(conv_buf != nullptr)
             delete[] conv_buf;
@@ -138,7 +141,7 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
     // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
     const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(uint32_t));
     const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
-    // debug("Sleeping for " + STR((int)sample_left_time));
+    // debug("Sleeping for " + STR((int)(sample_left_time * SLEEP_FACTOR * 1000.0)) + " μs");
     std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
 
     uint32_t read = 0;
@@ -177,7 +180,6 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
         }
     }
 
-    played_samples += n_samples;
     perf.push_time_point("Read frame and converted from int32 to float32");
 }
 
@@ -227,6 +229,8 @@ int AudioIn::get_frame(float *const in, const int n_samples) {
         error("Unsupported audio format");
         exit(EXIT_FAILURE);
     }
+
+    played_samples += overlap_n_samples;
 
 
     if constexpr(DO_OVERLAP)
