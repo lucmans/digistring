@@ -396,11 +396,6 @@ void ArgParser::parse_synth() {
         error("Unknown synth type '" + std::string(synth_string) + "'");
         exit(EXIT_FAILURE);
     }
-
-    if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
-        warning("Playback will be slowed based on the amount of overlap per frame");
-        hint("Disable DO_OVERLAP in config/transcription.h to prevent slowdown");
-    }
 }
 
 
