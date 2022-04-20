@@ -17,11 +17,13 @@ enum class SampleGetters {
 
 // For printing enum
 // If a string isn't present in SampleGetterString for every type, random crashes may happen
-const std::map<const SampleGetters, const std::string> SampleGetterString = {{SampleGetters::audio_file, "audio file"},
-                                                                             {SampleGetters::audio_in, "audio in"},
-                                                                             {SampleGetters::wave_generator, "wave generator"},
-                                                                             {SampleGetters::note_generator, "note generator"},
-                                                                             {SampleGetters::increment, "increment (debug)"}};
+const std::map<const SampleGetters, const std::string> SampleGetterString = {
+    {SampleGetters::audio_file, "audio file"},
+    {SampleGetters::audio_in, "audio in"},
+    {SampleGetters::wave_generator, "wave generator"},
+    {SampleGetters::note_generator, "note generator"},
+    {SampleGetters::increment, "increment (debug)"}
+};
 
 
 class SampleGetter {

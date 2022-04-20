@@ -403,7 +403,7 @@ void ArgParser::parse_synths() {
     std::cout << "Available synthesizers:" << std::endl;
     for(const auto &[key, value] : parse_synth_string) {
         try {
-            std::string description = synth_description.at(key);
+            std::string description = synth_description.at(value);
             std::cout << "  - " << key << ": " << description << std::endl;
         }
         catch(const std::out_of_range& e) {

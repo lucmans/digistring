@@ -16,13 +16,17 @@ enum class Synths {
 };
 
 // For selecting a synth using CLI args
-const std::map<std::string, Synths> parse_synth_string = {{"square", Synths::square},
-                                                          {"sine", Synths::sine},
-                                                          {"sine_amped", Synths::sine_amped}};
+const std::map<const std::string, const Synths> parse_synth_string = {
+    {"square", Synths::square},
+    {"sine", Synths::sine},
+    {"sine_amped", Synths::sine_amped}
+};
 
-const std::map<std::string, std::string> synth_description = {{"square", "Simple square wave synth"},
-                                                              {"sine", "Simple sine wave synth"},
-                                                              {"sine_amped", "Sine wave synth with variable amplitude"}};
+const std::map<const Synths, const std::string> synth_description = {
+    {Synths::square, "Simple square wave synth"},
+    {Synths::sine, "Simple sine wave synth"},
+    {Synths::sine_amped, "Sine wave synth with variable amplitude"}
+};
 
 
 class Synth {
