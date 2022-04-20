@@ -16,8 +16,10 @@ Waterfall::Waterfall() {
 }
 
 Waterfall::~Waterfall() {
-    for(auto &line : lines)
-        SDL_DestroyTexture(line);
+    // Since Graphics is destroyed before Program, the SDL_Renderer is destroyed before reaching this code
+    // We can simply skip destroying these textures, as SDL automatically destroys all textures tied to a renderer
+    // for(auto &line : lines)
+    //     SDL_DestroyTexture(line);
 }
 
 
@@ -136,8 +138,7 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
 
     // Render the lines
     std::list<SDL_Texture *>::iterator it = lines.begin();
-    const int n_lines = lines.size();
-    for(int i = 0; i < n_lines && i < dst.h; i++) {
+    for(int i = 0; it != lines.end() && i < dst.h; i++) {
         SDL_Rect src_rect = {0, 0, (int)n_pixels_per_line, 1};
 
         SDL_Rect dst_rect;
