@@ -20,7 +20,7 @@ struct CLIArgs {
     int res_h = -1;
     bool fullscreen = false;
 
-    // TODO: Clean (and absolute?) this string (like done on CLI passed rsc directory) for better error printing
+    // This path is verified (and string is cleaned) at start of main()
     std::string rsc_dir = "rsc/";
 
     // Print performance measurements every frame
@@ -37,6 +37,7 @@ struct CLIArgs {
     Note generate_note_note = Note(Notes::A, 4);
     std::string play_file_name;
 
+    // JSON output settings
     bool output_file = false;
     std::string output_filename;
 };

@@ -328,29 +328,7 @@ void ArgParser::parse_rsc_dir() {
         exit(EXIT_FAILURE);
     }
 
-    std::filesystem::path path(path_string);
-    path = path.lexically_normal();
-
-    try {
-        path = std::filesystem::canonical(path);
-    }
-    catch(...) {
-        error("Path '" + std::string(path.string()) + "' doesn't exist");
-        exit(EXIT_FAILURE);
-    }
-
-    // Get last part of path
-    std::filesystem::path::iterator it = path.end();
-    --it;
-    if(*it == "")  // Is empty if path ends with a /
-        --it;
-
-    if(*it != "rsc") {
-        error("Last part of path is not named 'rsc'");
-        exit(EXIT_FAILURE);
-    }
-
-    cli_args.rsc_dir = path.string();
+    cli_args.rsc_dir = path_string;
 }
 
 

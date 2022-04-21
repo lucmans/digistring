@@ -107,7 +107,7 @@ void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev, c
 
 bool verify_rsc_dir() {
     if(!std::filesystem::exists(cli_args.rsc_dir)) {
-        error("Resource path not found");
+        error("Resource path doesn't exist");
         return false;
     }
 
@@ -116,12 +116,27 @@ bool verify_rsc_dir() {
         return false;
     }
 
+    // Clean the path string (for printing it to cli)
+    std::filesystem::path path(cli_args.rsc_dir);
+    path = path.lexically_normal();
+
+    // Make absolute path
+    // try {
+    //     path = std::filesystem::canonical(path);
+    // }
+    // catch(...) {
+    //     error("Canonical path '" + std::string(path.string()) + "' doesn't exist");
+    //     exit(EXIT_FAILURE);
+    // }
+
+    cli_args.rsc_dir = path.string();
+
     // Make the path end with a /
     if(cli_args.rsc_dir.back() != '/')
         cli_args.rsc_dir += '/';
 
     if(!std::filesystem::exists(cli_args.rsc_dir + "verify")) {
-        error("Recourse directory verification file not present");
+        error("Resource directory verification file not present");
         return false;
     }
 
@@ -148,7 +163,7 @@ int main(int argc, char *argv[]) {
     parse_args(argc, argv);
 
     if(!verify_rsc_dir()) {
-        info("You have to point to the resource directory if not running from project root using the '-rsc <path>' flag.");
+        hint("You have to point to the resource directory if not running from project root using '--rsc <path>'");
         exit(EXIT_FAILURE);
     }
 
