@@ -58,6 +58,7 @@ Argument parameters in <> are required and in [] are optional.
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
+`--sync`: Run Digistring "real-time"; in other words, sync graphics etc. as if audio was playing back.  
 `--synth [synth_type]`: Generate sound based on note estimation (default is sine).  
 `--synths`: List available synthesizers (`synth_type`s for `--synth`).
 
@@ -87,11 +88,14 @@ Digistring includes a few tools:
 
 # TODO
 Slowed playback.  
+Format ArgParse::print_help() automatically.  
+No ellipses (...) in catches.  
 Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
 Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
 Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).  
 Convex envelope and low passed-spectrum peak picking.  
+Correct signal power and note dB calculation.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Ability to cache FFTW3 knowledge.  
 Don't copy whole input buffer when OVERLAP_NONBLOCK.  

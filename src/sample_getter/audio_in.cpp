@@ -33,6 +33,11 @@ SampleGetters AudioIn::get_type() const {
 }
 
 
+bool AudioIn::is_blocking() const {
+    return true;
+}
+
+
 // DEBUG: For testing nonblocking overlap
 void AudioIn::read_increment(float *const in, const int n_samples) {
     for(int i = 0; i < n_samples; i++)
@@ -123,7 +128,7 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {
     perf.push_time_point("Start waiting for frame");
 
-    // TODO: Allocate once
+    // TODO: Allocate once (or use vector/realloc for faster resizing)
     if(n_samples > conv_buf_size) {
         if(conv_buf != nullptr)
             delete[] conv_buf;

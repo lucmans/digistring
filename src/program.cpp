@@ -65,15 +65,16 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
             error("No entry in switch to construct given SampleGetters type");
             exit(EXIT_FAILURE);
     }
-
-    // DEBUG: Sanity check
-    if(cli_args.playback && cli_args.synth) {
-        error("Can't both play back input audio and synthesize audio based on estimation");
-        exit(EXIT_FAILURE);
+    if(sample_getter->is_blocking() && cli_args.sync_with_audio) {
+        warning("You should not sync with audio during real-time usage for optimal performance; disabling syncing...");
+        cli_args.sync_with_audio = false;
     }
+
+    synth_buffer = nullptr;
     if(cli_args.synth) {
+        synth_buffer_n_samples = input_buffer_n_samples;
         try {
-            synth_buffer = new float[input_buffer_n_samples];
+            synth_buffer = new float[synth_buffer_n_samples];
         }
         catch(const std::bad_alloc &e) {
             error("Failed to allocate synth_buffer (" + STR(e.what()) + ")");
@@ -98,7 +99,8 @@ Program::~Program() {
         delete results_file;
 
     if(cli_args.synth) {
-        delete[] synth_buffer;
+        if(synth_buffer != nullptr)  // Check, as Program may be destroyed while synth_buffer is reallocated
+            delete[] synth_buffer;
         delete synth;
     }
 
@@ -160,6 +162,9 @@ void Program::main_loop() {
             exit(EXIT_FAILURE);
         }
 
+        // if constexpr(SLOWDOWN)
+        //     slowdown_events(estimated_events);
+
         // Arg parser disallows both cli_args.playback and cli_args.synth to be true (sanity checked in constructor)
         if(cli_args.synth)
             synthesize_audio(estimated_events, new_samples);
@@ -201,9 +206,9 @@ void Program::main_loop() {
         if(cli_args.output_performance)
             std::cout << perf << std::endl;
 
-        // 
-        // if constexpr(REAL_TIME_OUTPUT)
-        //     waste_till_real_time();
+        // Always has to be done when using audio out to prevent program running faster than audio
+        // Otherwise, when no audio out is used and REAL_TIME_OUTPUT is true, it will simulate this behavior
+        sync_with_audio(new_samples);
 
 
         // Arpeggiator easter egg
@@ -243,15 +248,7 @@ void Program::playback_audio(const int new_samples) {
         exit(EXIT_FAILURE);
     }
 
-    // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
-    if(cli_args.audio_input_method == SampleGetters::audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
-        warning("Audio overrun (too much audio to play); clearing buffer...");
-        SDL_ClearQueuedAudio(*out_dev);
-    }
-
-    // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
-    while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
-        handle_sdl_events();
+    // Waiting till samples are played is done in sync_with_audio()
 }
 
 
@@ -373,6 +370,24 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
 
+    // TODO: Slowdown
+    // // new_samples may be larger due to artificial slowdown; overlapping input buffers may shorten it however
+    // if(new_samples > synth_buffer_n_samples) {
+    //     delete[] synth_buffer;
+    //     synth_buffer = nullptr;
+
+    //     synth_buffer_n_samples = new_samples;
+    //     try {
+    //         warning("Need to reallocate synth buffer; shouldn't happen too often...");
+    //         synth_buffer = new float[synth_buffer_n_samples];
+    //     }
+    //     catch(const std::bad_alloc &e) {
+    //         error("Failed to allocate new (larger) synth_buffer (" + STR(e.what()) + ")");
+    //         hint("SLOWDOWN_FACTOR may be too large, which causes the need for large synth buffers");
+    //         exit(EXIT_FAILURE);
+    //     }
+    // }
+
     synth->synthesize(notes, synth_buffer, new_samples);
 
     if(SDL_QueueAudio(*out_dev, synth_buffer, new_samples * sizeof(float))) {
@@ -380,15 +395,42 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
         exit(EXIT_FAILURE);
     }
 
-    // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
-    if(cli_args.audio_input_method == SampleGetters::audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
-        warning("Audio overrun (too much audio to play); clearing buffer...");
-        SDL_ClearQueuedAudio(*out_dev);
+    // Waiting till samples are played is done in sync_with_audio()
+}
+
+
+void Program::sync_with_audio(const int new_samples) {
+    // If audio out it used, we can make sure the out buffer isn't filled faster than it plays
+    if(cli_args.playback || cli_args.synth) {
+        // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
+        if(cli_args.audio_input_method == SampleGetters::audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+            warning("Audio overrun (too much audio to play); clearing buffer...");
+            SDL_ClearQueuedAudio(*out_dev);
+        }
+
+        // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
+        while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
+            handle_sdl_events();
     }
 
-    // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
-    while(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) >= (unsigned int)input_buffer_n_samples && !poll_quit())
-        handle_sdl_events();
+    // Otherwise, we have to time the number of used samples ourselves to enforce a virtual sample out rate
+    else if(cli_args.sync_with_audio){
+        static std::chrono::steady_clock::time_point last_call = std::chrono::steady_clock::now();
+
+        // First call will wait too long, as "last_call" is just set, so return immediately
+        // When blocking on audio output, we also return instantly the first call as we wait till one full buffer is left in audio out (which also causes output latency)
+        static bool first_call = true;
+        if(first_call) {
+            first_call = false;
+            return;
+        }
+
+        // Given that "new_samples" samples were retrieved, we need to pause for this duration in total (since last call)
+        while(std::chrono::duration<double>(std::chrono::steady_clock::now() - last_call).count() < (double)new_samples / (double)SAMPLE_RATE && !poll_quit())
+            handle_sdl_events();
+
+        last_call = std::chrono::steady_clock::now();
+    }
 }
 
 

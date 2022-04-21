@@ -31,6 +31,10 @@ struct CLIArgs {
     bool synth = false;
     Synths synth_type = Synths::sine;
 
+    // Sync Digistring components (graphics etc.) with audio output rate
+    // Program constructor may set value back to false if syncing is not a valid choice!
+    bool sync_with_audio = false;
+
     // Audio input settings
     SampleGetters audio_input_method = DEFAULT_AUDIO_INPUT_METHOD;
     double generate_sine_freq = 1000.0;  // Hz

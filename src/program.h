@@ -39,6 +39,7 @@ class Program {
 
         Synth *synth;
         float *synth_buffer;
+        int synth_buffer_n_samples;
 
         // Frame limiting (graphics)
         std::chrono::duration<double, std::milli> frame_time;
@@ -61,6 +62,7 @@ class Program {
 
 
         // This function should only be called if cli_args.playback is true
+        // Queues samples in audio out buffer, but doesn't block (is done by sync_with_audio())
         void playback_audio(const int new_samples);
 
         // These functions should only be called if cli_args.output_file is true
@@ -76,8 +78,15 @@ class Program {
         // This function should only be called if HEADLESS is false
         void update_graphics(const NoteEvents &note_events);
 
+        // Queues samples in audio out buffer, but doesn't block (is done by sync_with_audio())
         void synthesize_audio(const NoteEvents &notes, const int new_samples);
 
+        // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
+        // In case of no audio out, simulate the behavior by timing duration between calls and waiting the appropriate time
+        // This effectively syncs program with current audio out
+        void sync_with_audio(const int new_samples);
+
+        // Easter egg arpeggiator
         void arpeggiate();
 
         void handle_sdl_events();

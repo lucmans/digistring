@@ -42,6 +42,7 @@ const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
     {"--rsc",                   ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
     {"-s",                      ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
     {"--synth",                 ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
+    {"--sync",                  ParseObj(&ArgParser::parse_sync_with_audio,     {})},
     {"--synths",                ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})}
 };
 
@@ -58,6 +59,7 @@ void print_help() {
               << "  -r <w> <h>           - Start GUI with given resolution\n"
               << "  --rsc <path>         - Set alternative resource directory location\n"
               << "  -s [f]               - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
+              << "  --sync               - Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"
               << "  --synth [synth]      - Synthesize sound based on note estimation from audio input (default synth is sine)\n"
               << "  --synths             - List available synthesizers\n"
               << std::endl;
@@ -365,6 +367,12 @@ void ArgParser::parse_generate_sine() {
         exit(EXIT_FAILURE);
     }
     cli_args.generate_sine_freq = f;
+}
+
+
+void ArgParser::parse_sync_with_audio() {
+    // Program class may overwrite this value if SampleGetter is blocking
+    cli_args.sync_with_audio = true;
 }
 
 
