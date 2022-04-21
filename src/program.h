@@ -36,7 +36,6 @@ class Program {
         int input_buffer_n_samples;
 
         SampleGetter *sample_getter;
-        bool audio_in;
 
         Synth *synth;
         float *synth_buffer;

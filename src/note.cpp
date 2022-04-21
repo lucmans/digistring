@@ -7,6 +7,7 @@
 #include <ostream>
 #include <iomanip>  // std::setw()
 #include <algorithm>  // std::max()
+#include <stdexcept>  // std::runtime_error
 
 
 const char *note_string[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
@@ -147,7 +148,7 @@ void print_overtones(const Note &note, const int n_overtones) {
 
 Note string_to_note(const std::string &in_string) {
     if(in_string.size() < 2)
-        throw(std::string("String too short"));
+        throw(std::runtime_error("String too short"));
 
     int note_distance, octave_distance;
     int modifier = 0;
@@ -180,7 +181,7 @@ Note string_to_note(const std::string &in_string) {
     //         break;
 
     //     default:
-    //         throw(std::string("Incorrect note name ('" + in_string[0] + "')"));
+    //         throw(std::runtime_error("Incorrect note name ('" + in_string[0] + "')"));
     // }
 
     switch(in_string[0]) {
@@ -213,7 +214,7 @@ Note string_to_note(const std::string &in_string) {
             break;
 
         default:
-            throw(std::string("Incorrect note name '" + in_string.substr(0, 1) + "'"));
+            throw(std::runtime_error("Incorrect note name '" + in_string.substr(0, 1) + "'"));
     }
 
     note_distance += modifier;
@@ -226,7 +227,7 @@ Note string_to_note(const std::string &in_string) {
             octave_distance = std::stoi(in_string.substr(2));
     }
     catch(...) {
-        throw(std::string("Incorrect octave number '" + (modifier == 0 ? in_string.substr(1) : in_string.substr(2)) + "'"));
+        throw(std::runtime_error("Incorrect octave number '" + (modifier == 0 ? in_string.substr(1) : in_string.substr(2)) + "'"));
     }
 
     return Note(static_cast<Notes>(note_distance), octave_distance);

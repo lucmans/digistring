@@ -3,9 +3,14 @@
 
 
 #include "note.h"
-#include "synth/synth.h"  // Note not synths.h
+#include "synth/synth.h"  // Only for Synths enum
+#include "sample_getter/sample_getter.h"  // Only for SampleGetters enum
 
 #include <string>
+
+
+// Due to how audio input method selection is currently implemented in ArgParser, this can't be changed
+const SampleGetters DEFAULT_AUDIO_INPUT_METHOD = SampleGetters::audio_in;
 
 
 // Struct with all settings that can be changed through CLI arguments
@@ -26,14 +31,10 @@ struct CLIArgs {
     bool synth = false;
     Synths synth_type = Synths::sine;
 
-    // Generate sine instead of using audio input
-    bool generate_sine = false;
+    // Audio input settings
+    SampleGetters audio_input_method = DEFAULT_AUDIO_INPUT_METHOD;
     double generate_sine_freq = 1000.0;  // Hz
-
-    bool generate_note = false;
     Note generate_note_note = Note(Notes::A, 4);
-
-    bool play_file = false;
     std::string play_file_name;
 
     bool output_file = false;

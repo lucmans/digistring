@@ -364,7 +364,7 @@ void Graphics::render_info() {
 
     render_max_recorded_value(i);
 
-    if(cli_args.play_file)
+    if(cli_args.audio_input_method == SampleGetters::audio_file)
         render_file_played_time(i);
 
     render_clicked_location_info(i);

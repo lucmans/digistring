@@ -44,23 +44,26 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         exit(EXIT_FAILURE);
     }
 
-    audio_in = false;
-    if(cli_args.generate_sine) {
-        // info("Playing generate_sine");
-        sample_getter = new WaveGenerator(input_buffer_n_samples, cli_args.generate_sine_freq);
-    }
-    else if(cli_args.generate_note) {
-        // info("Playing generate_note");
-        sample_getter = new NoteGenerator(input_buffer_n_samples, cli_args.generate_note_note);
-    }
-    else if(cli_args.play_file) {
-        // info("Playing '" + cli_args.play_file_name + "'");
-        sample_getter = new AudioFile(input_buffer_n_samples, cli_args.play_file_name);
-    }
-    else {
-        // info("Sourcing audio from computer audio input");
-        sample_getter = new AudioIn(input_buffer_n_samples, in_dev);
-        audio_in = true;
+    switch(cli_args.audio_input_method) {
+        case SampleGetters::wave_generator:
+            sample_getter = new WaveGenerator(input_buffer_n_samples, cli_args.generate_sine_freq);
+            break;
+
+        case SampleGetters::note_generator:
+            sample_getter = new NoteGenerator(input_buffer_n_samples, cli_args.generate_note_note);
+            break;
+
+        case SampleGetters::audio_file:
+            sample_getter = new AudioFile(input_buffer_n_samples, cli_args.play_file_name);
+            break;
+
+        case SampleGetters::audio_in:
+            sample_getter = new AudioIn(input_buffer_n_samples, in_dev);
+            break;
+
+        default:
+            error("No entry in switch to construct given SampleGetters type");
+            exit(EXIT_FAILURE);
     }
 
     // DEBUG: Sanity check
@@ -106,7 +109,7 @@ Program::~Program() {
 
 void Program::main_loop() {
     // Unpause audio devices so that samples are collected/played
-    if(audio_in)
+    if(cli_args.audio_input_method == SampleGetters::audio_in)
         SDL_PauseAudioDevice(*in_dev, 0);
 
     if(cli_args.playback || cli_args.synth)
@@ -161,6 +164,28 @@ void Program::main_loop() {
         if(cli_args.synth)
             synthesize_audio(estimated_events, new_samples);
 
+        // if constexpr(SLOW_DOWN && SLOW_DOWN_FACTOR > 0) {
+        //     if(cli_args.synth) {
+        //         for(int i = 0; i < SLOW_DOWN_FACTOR; i++)
+        //             synthesize_audio(estimated_events, new_samples);
+        //     }
+        //     else {
+        //         // const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+        //         // std::chrono::duration<double> waiting = std::chrono::steady_clock::now() - start;
+
+        //         // const double waste_time = (double)((SLOW_DOWN_FACTOR - 1) * new_samples) / (double)SAMPLE_RATE;
+        //         // std::cout << "Waste " << waste_time << std::endl;
+        //         // while(waiting.count() < waste_time && !poll_quit()) {
+        //         //     waiting = std::chrono::steady_clock::now() - start;
+        //         //     handle_sdl_events();
+        //         // }
+        //     }
+        // }
+        // else {
+        //     if(cli_args.synth)
+        //         synthesize_audio(estimated_events, new_samples);
+        // }
+
         // Print note estimation to CLI
         // print_results(estimated_events);
 
@@ -175,6 +200,11 @@ void Program::main_loop() {
         // Print performance information to CLI
         if(cli_args.output_performance)
             std::cout << perf << std::endl;
+
+        // 
+        // if constexpr(REAL_TIME_OUTPUT)
+        //     waste_till_real_time();
+
 
         // Arpeggiator easter egg
         if constexpr(ENABLE_ARPEGGIATOR)
@@ -214,7 +244,7 @@ void Program::playback_audio(const int new_samples) {
     }
 
     // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
-    if(audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+    if(cli_args.audio_input_method == SampleGetters::audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
         warning("Audio overrun (too much audio to play); clearing buffer...");
         SDL_ClearQueuedAudio(*out_dev);
     }
@@ -299,9 +329,9 @@ void Program::update_graphics(const NoteEvents &note_events) {
     if(frame_time.count() > 1000.0 / MAX_FPS) {
         graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
 
-        if(audio_in)
+        if(cli_args.audio_input_method == SampleGetters::audio_in)
             graphics->set_queued_samples(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8));
-        else if(cli_args.play_file)
+        else if(cli_args.audio_input_method == SampleGetters::audio_file)
             graphics->set_file_played_time(sample_getter->get_played_time());  // TODO: Subtract new_samples(_time) from playtime?
 
         const int n_notes = note_events.size();
@@ -351,7 +381,7 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
     }
 
     // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
-    if(audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
+    if(cli_args.audio_input_method == SampleGetters::audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
         warning("Audio overrun (too much audio to play); clearing buffer...");
         SDL_ClearQueuedAudio(*out_dev);
     }

@@ -87,9 +87,10 @@ Digistring includes a few tools:
 
 # TODO
 Slowed playback.  
+Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
 Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
-Pass SampleGetter to Estimator and add get_frame_no_overlap() to base class.  
+Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).  
 Convex envelope and low passed-spectrum peak picking.  
 Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
 Ability to cache FFTW3 knowledge.  

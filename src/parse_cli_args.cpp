@@ -13,11 +13,12 @@
 #include "config/results_file.h"
 
 #include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
-#include <string>  // std::stoi()
+#include <string>  // std::stoi(), std::stod()
 #include <filesystem>  // basic checks on given rsc directory
 #include <functional>  // std::invoke()
 #include <optional>  // Construct note without initializing it
 #include <map>
+#include <stdexcept>  // std::runtime_error
 
 
 // Initialize the global holding the chosen CLI argument options
@@ -136,12 +137,16 @@ void ArgParser::parse_file() {
         exit(EXIT_FAILURE);
     }
 
-    if(cli_args.generate_note) {
-        error("Can't play a file while generating a note");
-        exit(EXIT_FAILURE);
-    }
-    if(cli_args.generate_sine) {
-        error("Can't play a file while generating a sine wave");
+    if(cli_args.audio_input_method != DEFAULT_AUDIO_INPUT_METHOD) {
+        std::string sample_getter_string;
+        try {
+            sample_getter_string = SampleGetterString.at(cli_args.audio_input_method);
+        }
+        catch(const std::out_of_range &e) {
+            error("SampleGetter missing in SampleGetterString (in sample_getter/sample_getter.h)");
+            exit(EXIT_FAILURE);
+        }
+        error("Can't play a file while using '" + sample_getter_string + "' as input method");
         exit(EXIT_FAILURE);
     }
 
@@ -150,7 +155,7 @@ void ArgParser::parse_file() {
         exit(EXIT_FAILURE);
     }
 
-    cli_args.play_file = true;
+    cli_args.audio_input_method = SampleGetters::audio_file;
     cli_args.play_file_name = arg;
 }
 
@@ -162,16 +167,20 @@ void ArgParser::parse_help() {
 
 
 void ArgParser::parse_generate_note() {
-    if(cli_args.play_file) {
-        error("Can't generate a note while playing a file");
-        exit(EXIT_FAILURE);
-    }
-    if(cli_args.generate_sine) {
-        error("Can't generate a note while generating a sine wave");
+    if(cli_args.audio_input_method != DEFAULT_AUDIO_INPUT_METHOD) {
+        std::string sample_getter_string;
+        try {
+            sample_getter_string = SampleGetterString.at(cli_args.audio_input_method);
+        }
+        catch(const std::out_of_range &e) {
+            error("SampleGetter missing in SampleGetterString (in sample_getter/sample_getter.h)");
+            exit(EXIT_FAILURE);
+        }
+        error("Can't generate a note while using '" + sample_getter_string + "' as input method");
         exit(EXIT_FAILURE);
     }
 
-    cli_args.generate_note = true;
+    cli_args.audio_input_method = SampleGetters::note_generator;
 
     const char *arg;
     if(!fetch_opt(arg))  // No more arguments, so use default value (set in config.h)
@@ -180,8 +189,8 @@ void ArgParser::parse_generate_note() {
     try {
         cli_args.generate_note_note = string_to_note(arg);
     }
-    catch(const std::string &what) {
-        error("Failed to parse note string: " + what);
+    catch(const std::runtime_error &e) {
+        error("Failed to parse note string: " + STR(e.what()));
         exit(EXIT_FAILURE);
     }
 }
@@ -234,8 +243,8 @@ void ArgParser::parse_print_overtone() {
     try {
         note = string_to_note(note_string);
     }
-    catch(const std::string &what) {
-        error("Failed to parse note string '" + std::string(note_string) + "': " + what);
+    catch(const std::runtime_error &e) {
+        error("Failed to parse note string '" + std::string(note_string) + "': " + e.what());
         exit(EXIT_FAILURE);
     }
 
@@ -345,16 +354,20 @@ void ArgParser::parse_rsc_dir() {
 
 
 void ArgParser::parse_generate_sine() {
-    if(cli_args.play_file) {
-        error("Can't generate sine wave while playing a file");
-        exit(EXIT_FAILURE);
-    }
-    if(cli_args.generate_note) {
-        error("Can't generate sine wave while generating a note");
+    if(cli_args.audio_input_method != DEFAULT_AUDIO_INPUT_METHOD) {
+        std::string sample_getter_string;
+        try {
+            sample_getter_string = SampleGetterString.at(cli_args.audio_input_method);
+        }
+        catch(const std::out_of_range &e) {
+            error("SampleGetter missing in SampleGetterString (in sample_getter/sample_getter.h)");
+            exit(EXIT_FAILURE);
+        }
+        error("Can't generate sine while using '" + sample_getter_string + "' as input method");
         exit(EXIT_FAILURE);
     }
 
-    cli_args.generate_sine = true;
+    cli_args.audio_input_method = SampleGetters::wave_generator;
 
     const char *arg;
     if(!fetch_opt(arg))  // No more arguments, so use default value (set in config.h)
@@ -406,7 +419,7 @@ void ArgParser::parse_synths() {
             std::string description = synth_description.at(value);
             std::cout << "  - " << key << ": " << description << std::endl;
         }
-        catch(const std::out_of_range& e) {
+        catch(const std::out_of_range &e) {
             std::cout << "  - " << key << std::endl;
         }
     }
