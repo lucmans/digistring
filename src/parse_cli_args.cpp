@@ -131,12 +131,6 @@ void ArgParser::parse_fullscreen() {
 
 
 void ArgParser::parse_file() {
-    const char *arg;
-    if(!fetch_arg(arg)) {
-        error("No file given with the --file flag");
-        exit(EXIT_FAILURE);
-    }
-
     if(cli_args.audio_input_method != DEFAULT_AUDIO_INPUT_METHOD) {
         std::string sample_getter_string;
         try {
@@ -150,12 +144,19 @@ void ArgParser::parse_file() {
         exit(EXIT_FAILURE);
     }
 
+    cli_args.audio_input_method = SampleGetters::audio_file;
+
+    const char *arg;
+    if(!fetch_arg(arg)) {
+        error("No file given with the --file flag");
+        exit(EXIT_FAILURE);
+    }
+
     if(!std::filesystem::exists(arg)) {
         error("Given file does not exist");
         exit(EXIT_FAILURE);
     }
 
-    cli_args.audio_input_method = SampleGetters::audio_file;
     cli_args.play_file_name = arg;
 }
 
