@@ -49,7 +49,7 @@ Most of Digistring's configuration is done compile time to optimize performance 
 Argument parameters in <> are required and in [] are optional.  
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
 `--file <file>`: Use file as input.  
-`-g | --generate-completions <file>`: Generate Bash completions to file (overwriting it).  
+`--gen-completions <file>`: Generate Bash completions to file (overwriting it).  
 `-n [note]`: Generate note (default is A4).  
 `-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
 `--over <note> [n]`: Print n (default is 5) overtones of given note.  
@@ -87,7 +87,6 @@ Digistring includes a few tools:
 
 
 # TODO
-No ellipses (...) in catches.  
 Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
 Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
@@ -104,5 +103,5 @@ Estimator graphics data wipe after frame (now have to manually .clear() old data
 
 
 # BUGS
-Audio distortions from synthesizer when using NoteEvent offset and length.  
+Audio click and pops from synthesizer when using NoteEvent offset and length.  
 Can't build project using "make digistring" directly due to build directory dependencies.

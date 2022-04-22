@@ -148,7 +148,7 @@ void print_overtones(const Note &note, const int n_overtones) {
 
 Note string_to_note(const std::string &in_string) {
     if(in_string.size() < 2)
-        throw(std::runtime_error("String too short"));
+        throw(std::runtime_error("String too short; need note and octave number"));
 
     int note_distance, octave_distance;
     int modifier = 0;
@@ -226,7 +226,10 @@ Note string_to_note(const std::string &in_string) {
         else
             octave_distance = std::stoi(in_string.substr(2));
     }
-    catch(...) {
+    catch(const std::out_of_range &e) {
+        throw(std::runtime_error("Octave number too large to store in an integer"));
+    }
+    catch(const std::exception &e) {
         throw(std::runtime_error("Incorrect octave number '" + (modifier == 0 ? in_string.substr(1) : in_string.substr(2)) + "'"));
     }
 

@@ -139,13 +139,13 @@ void ArgParser::parse_args() {
             const std::function<void(ArgParser&)> parse_func = ArgParser::flag_to_func.at(arg).function;
             parse_func(*this);
         }
-        catch(const std::out_of_range &oor) {
+        catch(const std::out_of_range &e) {
             error("Incorrect usage; flag '" + std::string(arg) + "' not known\n");
             print_help();
             exit(EXIT_FAILURE);
         }
-        catch(...) {
-            error("Failed to call function associated with given flag");
+        catch(const std::exception &e) {
+            error("Failed to call function associated with given flag (" + STR(e.what()) + ")");
             exit(EXIT_FAILURE);
         }
     }
@@ -218,15 +218,15 @@ void ArgParser::parse_generate_note() {
 
     cli_args.audio_input_method = SampleGetters::note_generator;
 
-    const char *arg;
-    if(!fetch_opt(arg))  // No more arguments, so use default value (set in config.h)
-        return;
+    const char *note_string;
+    if(!fetch_opt(note_string))
+        return;  // No more arguments, so use default value (set in config.h)
 
     try {
-        cli_args.generate_note_note = string_to_note(arg);
+        cli_args.generate_note_note = string_to_note(note_string);
     }
     catch(const std::runtime_error &e) {
-        error("Failed to parse note string: " + STR(e.what()));
+        error("Failed to parse note string '" + STR(note_string) + "': " + e.what());
         exit(EXIT_FAILURE);
     }
 }
@@ -295,8 +295,12 @@ void ArgParser::parse_print_overtone() {
         try {
             n = std::stoi(n_string);
         }
-        catch(...) {
-            error("Failed to parse '" + std::string(n_string) + "' as integer");
+        catch(const std::out_of_range &e) {
+            error("Number is too large to store in an integer");
+            exit(EXIT_FAILURE);
+        }
+        catch(const std::exception &e) {
+            error("Failed to parse '" + std::string(n_string) + "' as integer (" + STR(e.what()) + ")");
             exit(EXIT_FAILURE);
         }
     }
@@ -341,8 +345,12 @@ void ArgParser::parse_resolution() {
     try {
         n = std::stoi(w_string);
     }
-    catch(...) {
-        error("Failed to parse given width '" + std::string(w_string) + "'");
+    catch(const std::out_of_range &e) {
+        error("Width is too large to store in an integer");
+        exit(EXIT_FAILURE);
+    }
+    catch(const std::exception &e) {
+        error("Failed to parse given width as an integer (" + STR(e.what()) + ")");
         exit(EXIT_FAILURE);
     }
     if(n < MIN_RES[0]) {
@@ -354,8 +362,12 @@ void ArgParser::parse_resolution() {
     try {
         n = std::stoi(h_string);
     }
-    catch(...) {
-        error("Failed to parse given height '" + std::string(h_string) + "'");
+    catch(const std::out_of_range &e) {
+        error("Height is too large to store in an integer");
+        exit(EXIT_FAILURE);
+    }
+    catch(const std::exception &e) {
+        error("Failed to parse given height as an integer (" + STR(e.what()) + ")");
         exit(EXIT_FAILURE);
     }
     if(n < MIN_RES[1]) {
@@ -401,8 +413,12 @@ void ArgParser::parse_generate_sine() {
     try {
         f = std::stod(arg);
     }
-    catch(...) {
-        error("Failed to parse frequency '" + std::string(arg) + "'");
+    catch(const std::out_of_range &e) {
+        error("Frequency is cannot be represented by a double");
+        exit(EXIT_FAILURE);
+    }
+    catch(const std::exception &e) {
+        error("Failed to parse given frequency as a floating point number (" + STR(e.what()) + ")");
         exit(EXIT_FAILURE);
     }
     if(f < 1.0) {
@@ -435,7 +451,7 @@ void ArgParser::parse_synth() {
     try {
         cli_args.synth_type = parse_synth_string.at(synth_string);
     }
-    catch(const std::out_of_range &oor) {
+    catch(const std::out_of_range &e) {
         error("Unknown synth type '" + std::string(synth_string) + "'");
         exit(EXIT_FAILURE);
     }

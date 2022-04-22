@@ -124,8 +124,8 @@ bool verify_rsc_dir() {
     // try {
     //     path = std::filesystem::canonical(path);
     // }
-    // catch(...) {
-    //     error("Canonical path '" + std::string(path.string()) + "' doesn't exist");
+    // catch(const std::exception &e) {
+    //     error("Failed to make canonical path from resource path (" + STR(e.what()) + ")");
     //     exit(EXIT_FAILURE);
     // }
 

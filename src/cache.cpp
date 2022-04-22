@@ -36,6 +36,10 @@ void Cache::init_cache() {
             error("Failed to create cache directory '" + cache_dir + "'\nOS error: " + e.code().message());
             exit(EXIT_FAILURE);
         }
+        catch(const std::exception &e) {
+            error("Failed to create cache directory '" + cache_dir + "' (" + e.what() + ")");
+            exit(EXIT_FAILURE);
+        }
     }
 
     if(!std::filesystem::is_directory(cache_dir)) {
