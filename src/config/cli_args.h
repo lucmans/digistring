@@ -9,7 +9,7 @@
 #include <string>
 
 
-// Due to how audio input method selection is currently implemented in ArgParser, this can't be changed
+// Due to how audio input method selection is currently implemented in ArgParser, this can't be changed (can't set to audio_in using a flag)
 const SampleGetters DEFAULT_AUDIO_INPUT_METHOD = SampleGetters::audio_in;
 
 
