@@ -88,7 +88,6 @@ Digistring includes a few tools:
 
 # TODO
 Slowed playback.  
-Format ArgParse::print_help() automatically.  
 No ellipses (...) in catches.  
 Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
 Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  

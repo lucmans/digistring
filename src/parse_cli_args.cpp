@@ -26,43 +26,66 @@ CLIArgs cli_args;
 
 
 const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
-    {"-f",                      ParseObj(&ArgParser::parse_fullscreen,          {})},
-    {"--file",                  ParseObj(&ArgParser::parse_file,                {OptType::file})},
-    {"-g",                      ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
-    {"--generate-completions",  ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
-    {"-h",                      ParseObj(&ArgParser::parse_help,                {})},
-    {"--help",                  ParseObj(&ArgParser::parse_help,                {})},
-    {"-n",                      ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
-    {"-o",                      ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-    {"--output",                ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-    {"--over",                  ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::last_arg})},
-    {"-p",                      ParseObj(&ArgParser::parse_playback,            {})},
-    {"--perf",                  ParseObj(&ArgParser::parse_print_performance,   {})},
-    {"-r",                      ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
-    {"--rsc",                   ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
-    {"-s",                      ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
-    {"--synth",                 ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
-    {"--sync",                  ParseObj(&ArgParser::parse_sync_with_audio,     {})},
-    {"--synths",                ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})}
+    {"-f",                  ParseObj(&ArgParser::parse_fullscreen,          {})},
+    {"--file",              ParseObj(&ArgParser::parse_file,                {OptType::file})},
+    {"--gen-completions",   ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
+    {"-h",                  ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
+    {"--help",              ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
+    {"-n",                  ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
+    {"-o",                  ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
+    {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
+    {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::last_arg})},
+    {"-p",                  ParseObj(&ArgParser::parse_playback,            {})},
+    {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
+    {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
+    {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
+    {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
+    {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
+    {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
+    {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
 };
 
+
+const std::pair<const std::string, const std::string> help_strings[] = {
+    {"-f",                          "Start in fullscreen (also set the fullscreen resolution with '-r')"},
+    {"--file <file>",               "Play samples from given file"},
+    {"--gen-completions [file]",    "Generate Bash completions to file (overwriting it) (default filename is completions.sh)"},
+    {"-h | --help",                 "Print command line argument information. Optionally pass 'readme' for readme formatting"},
+    {"-n [note]",                   "Generate note (default is A4)"},
+    {"-o | --output [file]",        "Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")"},
+    {"--over <note> [n]",           "Print n (default is 5) overtones of given note"},
+    {"-p",                          "Play recorded audio back"},
+    {"--perf",                      "Output performance information to stdout"},
+    {"-r <w> <h>",                  "Start GUI with given resolution"},
+    {"--rsc",                       "Set alternative resource directory location"},
+    {"-s [f]",                      "Generate sine wave with frequency f (default is 1000 Hz) instead of using recording device"},
+    {"--sync",                      "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
+    {"--synth [synth]",             "Synthesize sound based on note estimation from audio input (default synth is sine)"},
+    {"--synths",                    "List available synthesizers"},
+};
+
+
 void print_help() {
-    std::cout << "Flags (argument parameters in <> are required and in [] are optional):\n"
-              << "  -f                   - Start in fullscreen. Also set the fullscreen resolution with '-r'\n"
-              << "  --file <file>        - Play samples from given file\n"
-              << "  -g <file>            - Generate Bash completions to file (overwriting it)\n"
-              << "  -n [note]            - Generate note (default is A4)\n"
-              << "  -o | --output [file] - Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")\n"
-              << "  --over <note> [n]    - Print n (default is 5) overtones of given note\n"
-              << "  -p                   - Play recorded audio back\n"
-              << "  --perf               - Output performance stats in stdout\n"
-              << "  -r <w> <h>           - Start GUI with given resolution\n"
-              << "  --rsc <path>         - Set alternative resource directory location\n"
-              << "  -s [f]               - Generate sine wave with optional frequency f (default is 1000 Hz) instead of using recording device\n"
-              << "  --sync               - Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"
-              << "  --synth [synth]      - Synthesize sound based on note estimation from audio input (default synth is sine)\n"
-              << "  --synths             - List available synthesizers\n"
-              << std::endl;
+    std::cout << "Flags (argument parameters in <> are required and in [] are optional):" << std::endl;
+
+    // Get largest flag width for formatting
+    int max_flag_width = 0;
+    for(const auto &[flag, desc] : help_strings) {
+        const int flag_width = flag.size();
+        if(flag_width > max_flag_width)
+            max_flag_width = flag_width;
+    }
+
+    for(const auto &[flag, desc] : help_strings)
+        std::cout << "  " << flag << std::string(max_flag_width - flag.size(), ' ') << " - " << desc << std::endl;
+}
+
+
+void print_help_readme_formatted() {
+    std::cout << "Argument parameters in <> are required and in [] are optional.";
+    for(const auto &[flag, desc] : help_strings)
+        std::cout << "  \n`" << flag << "`: " << desc << ".";
+    std::cout << std::endl;
 }
 
 
@@ -149,7 +172,7 @@ void ArgParser::parse_file() {
     cli_args.audio_input_method = SampleGetters::audio_file;
 
     const char *arg;
-    if(!fetch_arg(arg)) {
+    if(!fetch_opt(arg)) {
         error("No file given with the --file flag");
         exit(EXIT_FAILURE);
     }
@@ -164,6 +187,14 @@ void ArgParser::parse_file() {
 
 
 void ArgParser::parse_help() {
+    const char *arg;
+    if(fetch_opt(arg)) {
+        if(std::string(arg) == "readme") {
+            print_help_readme_formatted();
+            exit(EXIT_SUCCESS);
+        }
+    }
+
     print_help();
     exit(EXIT_SUCCESS);
 }
