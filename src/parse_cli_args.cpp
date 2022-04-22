@@ -38,10 +38,11 @@ const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
     {"-p",                  ParseObj(&ArgParser::parse_playback,            {})},
     {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
     {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
+    // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
     {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
     {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
-    {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
     {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
+    {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
     {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
 };
 
@@ -57,6 +58,7 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"-p",                          "Play recorded audio back"},
     {"--perf",                      "Output performance information to stdout"},
     {"-r <w> <h>",                  "Start GUI with given resolution"},
+    // {"--real-time",                 "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
     {"--rsc",                       "Set alternative resource directory location"},
     {"-s [f]",                      "Generate sine wave with frequency f (default is 1000 Hz) instead of using recording device"},
     {"--sync",                      "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
@@ -231,6 +233,11 @@ void ArgParser::parse_generate_note() {
 
 
 void ArgParser::parse_output_file() {
+    if constexpr(SLOWDOWN) {
+        error("Can't output estimation log in slowdown mode");
+        exit(EXIT_FAILURE);
+    }
+
     const char *filename;
     if(!fetch_opt(filename)) {
         filename = DEFAULT_OUTPUT_FILENAME.c_str();
@@ -302,6 +309,11 @@ void ArgParser::parse_print_overtone() {
 void ArgParser::parse_playback() {
     if(cli_args.synth) {
         error("Can't playback input audio while synthesizing");
+        exit(EXIT_FAILURE);
+    }
+
+    if constexpr(SLOWDOWN) {
+        error("Can't playback in slowdown mode");
         exit(EXIT_FAILURE);
     }
 

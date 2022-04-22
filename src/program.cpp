@@ -22,6 +22,7 @@
 #include <chrono>
 #include <thread>  // sleep
 #include <utility>  // std::move()
+#include <cmath>  // std::round()
 
 
 Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) : graphics(_g) {
@@ -68,6 +69,19 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     if(sample_getter->is_blocking() && cli_args.sync_with_audio) {
         warning("You should not sync with audio during real-time usage for optimal performance; disabling syncing...");
         cli_args.sync_with_audio = false;
+    }
+
+    if constexpr(SLOWDOWN) {
+        if(sample_getter->is_blocking()) {
+            error("Can't slowdown if SampleGetter is blocking (audio in devices)");
+            exit(EXIT_FAILURE);
+        }
+
+        if(!cli_args.sync_with_audio && !cli_args.synth) {
+            error("Slowdown mode does nothing without syncing or synthesizing audio");
+            hint("Either disable SLOWDOWN in config/audio.h or pass --sync/--synth flag");
+            exit(EXIT_FAILURE);
+        }
     }
 
     synth_buffer = nullptr;
@@ -141,10 +155,11 @@ void Program::main_loop() {
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
-        const int new_samples = sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
+        // new_samples is not const, as slowdown may alter it
+        int new_samples = sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
         perf.push_time_point("Got frame full of audio samples");
 
-        // Play it back to the user if chosen
+        // Play input_buffer back to the user before it is altered by estimator->perform()
         if(cli_args.playback)
             playback_audio(new_samples);
 
@@ -162,34 +177,12 @@ void Program::main_loop() {
             exit(EXIT_FAILURE);
         }
 
-        // if constexpr(SLOWDOWN)
-        //     slowdown_events(estimated_events);
+        if constexpr(SLOWDOWN)
+            slowdown(estimated_events, new_samples);
 
-        // Arg parser disallows both cli_args.playback and cli_args.synth to be true (sanity checked in constructor)
+        // Arg parser disallows both cli_args.playback and cli_args.synth to be true
         if(cli_args.synth)
             synthesize_audio(estimated_events, new_samples);
-
-        // if constexpr(SLOW_DOWN && SLOW_DOWN_FACTOR > 0) {
-        //     if(cli_args.synth) {
-        //         for(int i = 0; i < SLOW_DOWN_FACTOR; i++)
-        //             synthesize_audio(estimated_events, new_samples);
-        //     }
-        //     else {
-        //         // const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-        //         // std::chrono::duration<double> waiting = std::chrono::steady_clock::now() - start;
-
-        //         // const double waste_time = (double)((SLOW_DOWN_FACTOR - 1) * new_samples) / (double)SAMPLE_RATE;
-        //         // std::cout << "Waste " << waste_time << std::endl;
-        //         // while(waiting.count() < waste_time && !poll_quit()) {
-        //         //     waiting = std::chrono::steady_clock::now() - start;
-        //         //     handle_sdl_events();
-        //         // }
-        //     }
-        // }
-        // else {
-        //     if(cli_args.synth)
-        //         synthesize_audio(estimated_events, new_samples);
-        // }
 
         // Print note estimation to CLI
         // print_results(estimated_events);
@@ -365,28 +358,43 @@ void Program::adjust_events(NoteEvents &events, const int new_samples) {
 }
 
 
+void Program::slowdown(NoteEvents &events, int &new_samples) {
+    NoteEvents slowed;
+    for(const auto &event : events) {
+        const int new_offset = std::round((double)event.offset * SLOWDOWN_FACTOR);
+        const int new_length = std::round((double)event.length * SLOWDOWN_FACTOR);
+
+        slowed.push_back(NoteEvent(std::move(event.note), new_length, new_offset));
+    }
+    events = std::move(slowed);
+
+    new_samples = std::round((double)new_samples * SLOWDOWN_FACTOR);;
+}
+
+
 void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
     if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
 
-    // TODO: Slowdown
-    // // new_samples may be larger due to artificial slowdown; overlapping input buffers may shorten it however
-    // if(new_samples > synth_buffer_n_samples) {
-    //     delete[] synth_buffer;
-    //     synth_buffer = nullptr;
+    // new_samples may be larger due to artificial slowdown; overlapping input buffers may shorten it however
+    if constexpr(SLOWDOWN) {
+        if(new_samples > synth_buffer_n_samples) {
+            delete[] synth_buffer;
+            synth_buffer = nullptr;
 
-    //     synth_buffer_n_samples = new_samples;
-    //     try {
-    //         warning("Need to reallocate synth buffer; shouldn't happen too often...");
-    //         synth_buffer = new float[synth_buffer_n_samples];
-    //     }
-    //     catch(const std::bad_alloc &e) {
-    //         error("Failed to allocate new (larger) synth_buffer (" + STR(e.what()) + ")");
-    //         hint("SLOWDOWN_FACTOR may be too large, which causes the need for large synth buffers");
-    //         exit(EXIT_FAILURE);
-    //     }
-    // }
+            synth_buffer_n_samples = new_samples;
+            try {
+                debug("Reallocating synth buffer to accommodate SLOWDOWN");
+                synth_buffer = new float[synth_buffer_n_samples];
+            }
+            catch(const std::bad_alloc &e) {
+                error("Failed to allocate new (larger) synth_buffer (" + STR(e.what()) + ")");
+                hint("SLOWDOWN_FACTOR may be too large, which causes the need for large reallocated synth buffers");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 
     synth->synthesize(notes, synth_buffer, new_samples);
 

@@ -75,6 +75,8 @@ class Program {
         // Adjust the note events to reflect this smaller frame (Estimator doesn't know about overlap, so gives full frame lengths to note events)
         void adjust_events(NoteEvents &events, const int new_samples);
 
+        void slowdown(NoteEvents &events, int &new_samples);
+
         // This function should only be called if HEADLESS is false
         void update_graphics(const NoteEvents &note_events);
 
