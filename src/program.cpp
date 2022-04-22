@@ -479,7 +479,8 @@ void Program::handle_sdl_events() {
 
                     case SDLK_r:
                         graphics->reset_max_recorded_value();
-                        synth->reset_max_amp();
+                        if(cli_args.synth)
+                            synth->reset_max_amp();
                         break;
 
                     case SDLK_i:
