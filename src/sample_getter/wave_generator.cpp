@@ -9,6 +9,9 @@
 #include <iostream>
 
 
+static constexpr double MIN_FREQ = 1.0;
+
+
 WaveGenerator::WaveGenerator(const int input_buffer_size, const double freq) : SampleGetter(input_buffer_size) {
     generated_wave_freq = freq;
 
@@ -33,6 +36,12 @@ void WaveGenerator::pitch_up() {
 
 void WaveGenerator::pitch_down() {
     generated_wave_freq -= D_FREQ;
+
+    if(generated_wave_freq < MIN_FREQ) {
+        warning("Can't set frequency < " + STR(MIN_FREQ));
+        hint("MIN_FREQ is configurable in src/sample_getter/wave_generator.cpp");
+        generated_wave_freq = MIN_FREQ;
+    }
 
     std::cout << "Playing sine wave of " << generated_wave_freq << " Hz" << std::endl;
 }
