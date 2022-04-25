@@ -30,8 +30,9 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
         std::fill_n(synth_buffer, n_samples, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
 
         // Finish sine from previous frame
-        int i;
         if(!prev_frame_silent) {
+            int i;  // DEBUG
+
             const double phase_offset = (last_phase * ((double)SAMPLE_RATE / prev_frame_freq));
             if(last_phase > 0.5) {
                 for(i = 0; i < n_samples; i++) {
@@ -51,11 +52,11 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
                     synth_buffer[i] = next_sample * prev_frame_amp;
                 }
             }
-        }
 
-        // DEBUG
-        if(i == n_samples)
-            warning("Failed to force end of wave from previous frame to zero within a frame");
+            // DEBUG
+            if(i == n_samples)
+                warning("Failed to force end of wave from previous frame to zero within a frame");
+        }
 
         prev_frame_silent = true;
         prev_frame_amp = 0.0;
