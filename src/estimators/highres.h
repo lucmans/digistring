@@ -7,6 +7,7 @@
 #include "estimator_graphics/spectrogram.h"
 #include "estimator_graphics/bins.h"
 #include "estimator_graphics/waterfall.h"
+#include "estimator_graphics/waveform.h"
 
 #include "config/transcription.h"
 #include "config/graphics.h"
@@ -73,6 +74,10 @@ class HighResGraphics : public EstimatorGraphics {
                 case 2:
                     waterfall.render(renderer, dst, graphics_data, spectrum);
                     break;
+
+                case 3:
+                    waveform.render(renderer, dst, graphics_data, wave_samples);
+                    break;
             }
         };
 
@@ -80,17 +85,20 @@ class HighResGraphics : public EstimatorGraphics {
         Spectrum &get_spectrum() {return spectrum;};
         Spectrum &get_envelope() {return envelope;};
         std::vector<double> &get_peaks() {return peak_frequencies;};
+        std::vector<float> &get_wave_samples() {return wave_samples;};
 
 
     private:
         Spectrogram spectrogram;
         Bins bins;
         Waterfall waterfall;
+        Waveform waveform;
 
         // These get set during a perform() call
         Spectrum spectrum;
         Spectrum envelope;
         std::vector<double> peak_frequencies;
+        std::vector<float> wave_samples;
 };
 
 

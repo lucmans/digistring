@@ -75,8 +75,14 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
     for(int i = 0; i < KERNEL_WIDTH; i++)
         gaussian[i] = exp(-M_PI * ((double)(i - MID) / ((double)MID * SIGMA)) * ((double)(i - MID) / ((double)MID * SIGMA)));
 
-    if constexpr(!HEADLESS)
-        estimator_graphics = new HighResGraphics();
+    if constexpr(!HEADLESS) {
+        HighResGraphics *const tmp_graphics = new HighResGraphics();
+        estimator_graphics = tmp_graphics;
+
+        std::vector<float> &tmp_wave_samples = tmp_graphics->get_wave_samples();
+        tmp_wave_samples.clear();  // Just to be sure
+        tmp_wave_samples.resize(FRAME_SIZE, 0.0);
+    }
 
     prev_power = 0.0;
 }
@@ -264,6 +270,14 @@ void HighRes::get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_no
 
 
 void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
+    // Safe raw waveform before applying window function
+    if constexpr(!HEADLESS) {
+        HighResGraphics *const highres_graphics = static_cast<HighResGraphics *>(estimator_graphics);
+
+        std::vector<float> &wave_samples = highres_graphics->get_wave_samples();
+        memcpy(wave_samples.data(), input_buffer, FRAME_SIZE * sizeof(float));
+    }
+
     /* Fourier transform */
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
@@ -329,7 +343,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
 
     // Graphics
     if constexpr(!HEADLESS) {
-        HighResGraphics *highres_graphics = static_cast<HighResGraphics *>(estimator_graphics);
+        HighResGraphics *const highres_graphics = static_cast<HighResGraphics *>(estimator_graphics);
         highres_graphics->set_max_recorded_value(max_norm);
 
         Spectrum &spectrum = highres_graphics->get_spectrum();

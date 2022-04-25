@@ -87,6 +87,7 @@ Digistring includes a few tools:
 
 
 # TODO
+Waveform graphics zooming.  
 Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
 Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
 Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
