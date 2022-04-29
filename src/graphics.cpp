@@ -101,6 +101,8 @@ Graphics::Graphics() {
     file_played_time_text = create_txt_texture(renderer, "File play time: ", info_font, {0xff, 0xff, 0xff, 0xff});
     file_played_seconds_text = create_txt_texture(renderer, " s", info_font, {0xff, 0xff, 0xff, 0xff});
 
+    time_domain_y_zoom = 1.0;
+
     // TTF_Font *freeze_font = TTF_OpenFont((cli_args.rsc_dir + "font/DejaVuSans.ttf").c_str(), 75);
     // if(freeze_font == NULL) {
     //     error("Failed to load font '" + cli_args.rsc_dir + "font/DejaVuSans.ttf'\nTTF error: " + TTF_GetError());
@@ -227,6 +229,11 @@ void Graphics::set_file_played_time(const double t) {
 }
 
 
+void Graphics::zoom(const double zoom_factor) {
+    time_domain_y_zoom *= zoom_factor;
+}
+
+
 // void Graphics::toggle_freeze_graph() {
 //     freeze = !freeze;
 //     freeze_data = (*(data_points.begin())).spectrum_data;
@@ -272,9 +279,12 @@ void Graphics::render_frame(const Note *const note, const EstimatorGraphics *con
 
     static bool warning_printed = false;
     if(estimator_graphics != nullptr) {
-        set_max_recorded_value_if_larger(estimator_graphics->get_max_recorded_value());
-        const GraphicsData gd = {.max_display_frequency = max_display_frequency,
-                                 .max_recorded_value = max_recorded_value};
+        set_max_recorded_value_if_larger(estimator_graphics->get_last_max_recorded_value());
+        const GraphicsData gd = {
+            .max_display_frequency = max_display_frequency,
+            .max_recorded_value = max_recorded_value,
+            .time_domain_y_zoom = time_domain_y_zoom
+        };
         estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
     }
     else if(!warning_printed) {

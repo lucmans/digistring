@@ -512,6 +512,14 @@ void Program::handle_sdl_events() {
                         graphics->add_max_display_frequency(300.0);
                         break;
 
+                    case SDLK_COMMA:
+                        graphics->zoom(0.5);
+                        break;
+
+                    case SDLK_PERIOD:
+                        graphics->zoom(2.0);
+                        break;
+
                     // case SDLK_f:
                     //     graphics->toggle_freeze_graph();
                     //     break;

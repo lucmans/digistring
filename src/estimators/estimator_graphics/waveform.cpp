@@ -6,7 +6,6 @@
 #include <SDL2/SDL.h>
 
 #include <vector>
-#include <algorithm>  // std::max()
 #include <cmath>  // std::abs()
 
 
@@ -43,6 +42,8 @@ void Waveform::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const G
         if(lowest * -2.0 > wave_range)  // Check, as highest may clip further than lowest
             wave_range = lowest * -2.0;
     }
+
+    wave_range /= graphics_data.time_domain_y_zoom;
 
 
     const float dst_y_mid = (float)dst.y + ((float)dst.h / 2.0);

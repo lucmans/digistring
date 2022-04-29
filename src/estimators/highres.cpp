@@ -344,7 +344,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Graphics
     if constexpr(!HEADLESS) {
         HighResGraphics *const highres_graphics = static_cast<HighResGraphics *>(estimator_graphics);
-        highres_graphics->set_max_recorded_value(max_norm);
+        highres_graphics->set_last_max_recorded_value(max_norm);
 
         Spectrum &spectrum = highres_graphics->get_spectrum();
         spectrum.clear();

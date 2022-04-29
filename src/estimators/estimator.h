@@ -53,18 +53,19 @@ class Estimator {
 struct GraphicsData {
     double max_display_frequency;
     double max_recorded_value;
+    double time_domain_y_zoom;
 };
 
 class EstimatorGraphics {
     public:
-        EstimatorGraphics() : cur_plot(0), max_recorded_value(-1.0) {};
+        EstimatorGraphics() : cur_plot(0), last_max_recorded_value(-1.0) {};
         virtual ~EstimatorGraphics() {};
 
         void next_plot() {cur_plot++;};
         virtual void render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data) const = 0;
 
-        double get_max_recorded_value() const {return max_recorded_value;};
-        void set_max_recorded_value(const double new_value) {max_recorded_value = new_value;};
+        double get_last_max_recorded_value() const {return last_max_recorded_value;};
+        void set_last_max_recorded_value(const double new_value) {last_max_recorded_value = new_value;};
 
 
     protected:
@@ -72,7 +73,9 @@ class EstimatorGraphics {
         // cur_plot should only be changed in the const member function render() to set it back to 0 if value is invalid
         mutable int cur_plot;
 
-        double max_recorded_value;
+        // The max recorded value from the last Estimator::perform() call
+        // Graphics keeps track of the max recorded value of all perform() calls
+        double last_max_recorded_value;
 };
 
 

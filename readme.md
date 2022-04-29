@@ -71,6 +71,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 **Keyboard controls:**  
 `-`/`+`: Decrease/increase the frequency of the generated sine wave or note. Note that frame containing samples representing the old frequency has to finish playing before new frame is played.  
 `[`/`]`: Decrease/increase the maximum displayed frequency.  
+`,`/`.`: Zoom in/out waveform plot.  
 `p`: Change plot type.  
 `r`: Reset loudest recorded value.  
 `i`: Toggle showing info in top-right corner of the window.  

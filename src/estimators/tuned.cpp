@@ -177,7 +177,7 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
         }
     }
     if constexpr(!HEADLESS) {
-        tuned_graphics->set_max_recorded_value(max_norm);
+        tuned_graphics->set_last_max_recorded_value(max_norm);
 
         Spectrum &spectrum = tuned_graphics->get_spectrum();
         spectrum.add_data(0.0, 0.0, 0.0);  // Make graph start at (0, 0)

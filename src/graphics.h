@@ -27,6 +27,8 @@ class Graphics {
         void set_clicked(const int x, const int y);
         void set_file_played_time(const double t);  // in seconds
 
+        void zoom(const double zoom_factor);
+
         void toggle_show_info();
 
         // Returns if size was changed
@@ -66,6 +68,8 @@ class Graphics {
         double file_played_time;
         SDL_Texture *file_played_time_text;
         SDL_Texture *file_played_seconds_text;
+
+        double time_domain_y_zoom;
 
         // Render functions render to framebuffer
         void render_black_screen();

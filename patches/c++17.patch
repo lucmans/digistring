@@ -15,16 +15,20 @@
 
 --- src/graphics.cpp
 +++ src/graphics.cpp
-@@ -273,8 +273,11 @@
+@@ -280,11 +280,12 @@
      static bool warning_printed = false;
      if(estimator_graphics != nullptr) {
-         set_max_recorded_value_if_larger(estimator_graphics->get_max_recorded_value());
--        const GraphicsData gd = {.max_display_frequency = max_display_frequency,
--                                 .max_recorded_value = max_recorded_value};
+         set_max_recorded_value_if_larger(estimator_graphics->get_last_max_recorded_value());
+-        const GraphicsData gd = {
+-            .max_display_frequency = max_display_frequency,
+-            .max_recorded_value = max_recorded_value,
+-            .time_domain_y_zoom = time_domain_y_zoom
+-        };
 +
 +        GraphicsData gd;
 +        gd.max_display_frequency = max_display_frequency;
 +        gd.max_recorded_value = max_recorded_value;
++        gd.time_domain_y_zoom = time_domain_y_zoom;
 +
          estimator_graphics->render(renderer, {0, 0, res_w, res_h}, gd);
      }
