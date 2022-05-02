@@ -177,6 +177,10 @@ void Program::main_loop() {
             exit(EXIT_FAILURE);
         }
 
+        // Write estimation to output file (before applying slowdown)
+        if(cli_args.output_file)
+            write_results(estimated_events, new_samples);
+
         if constexpr(SLOWDOWN)
             slowdown(estimated_events, new_samples);
 
@@ -186,10 +190,6 @@ void Program::main_loop() {
 
         // Print note estimation to CLI
         // print_results(estimated_events);
-
-        // Write estimation to output file
-        if(cli_args.output_file)
-            write_results(estimated_events, new_samples);
 
         // Graphics
         if constexpr(!HEADLESS)
@@ -572,7 +572,7 @@ void Program::handle_sdl_events() {
                     if(cli_args.output_file) {
                         static bool warning_printed = false;
                         if(!warning_printed) {
-                            warning("Can't seek file writing results to file");
+                            warning("Can't seek audio while writing results to a file");
                             warning_printed = true;
                         }
                         break;

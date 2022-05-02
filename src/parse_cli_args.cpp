@@ -233,11 +233,6 @@ void ArgParser::parse_generate_note() {
 
 
 void ArgParser::parse_output_file() {
-    if constexpr(SLOWDOWN) {
-        error("Can't output estimation log in slowdown mode");
-        exit(EXIT_FAILURE);
-    }
-
     const char *filename;
     if(!fetch_opt(filename)) {
         filename = DEFAULT_OUTPUT_FILENAME.c_str();
