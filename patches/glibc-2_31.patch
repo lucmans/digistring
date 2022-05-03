@@ -1,15 +1,16 @@
 --- src/quit.cpp
 +++ src/quit.cpp
-@@ -4,19 +4,18 @@
+@@ -3,7 +3,6 @@
+ #include "error.h"
  
- #include <iostream>
- #include <string>
+ #include <csignal>  // catching signals
 -#include <cstring>  // sigabbrev_np()
+ #include <execinfo.h>  // backtrace() functions
  
  
- static volatile bool quit;
+@@ -32,12 +31,12 @@
  
- void signal_handler(const int signum) {
+ void quit_signal_handler(const int signum) {
      if(quit) {
 -        info("Received signal 'SIG" + STR(sigabbrev_np(signum)) + "' while quitting; will now force quit");
 +        info("Received signal number " + STR(signum) + " while quitting; will now force quit");
@@ -22,3 +23,12 @@
  
      set_quit();
  }
+@@ -47,7 +46,7 @@
+     if(signum == SIGSEGV)
+         error("Segmentation fault occurred; printing stack trace (use addr2line to resolve offsets)...");
+     else
+-        error("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received; printing stack trace (use addr2line to resolve offsets)...");
++        error("Signal number " + STR(signum) + " received; printing stack trace (use addr2line to resolve offsets)...");
+     hint("First two in call stack are likely from signal handler");
+ 
+     const int n_frames = 10;

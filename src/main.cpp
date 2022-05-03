@@ -16,7 +16,6 @@
 #include <fftw3.h>
 
 #include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
-#include <csignal>  // catching ctrl+c in terminal
 #include <filesystem>  // is_directory, exists
 #include <fstream>  // Reading rsc dir verification file
 #include <string>
@@ -155,10 +154,8 @@ bool verify_rsc_dir() {
 
 
 int main(int argc, char *argv[]) {
-    // Init program
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
-    reset_quit();
+    // Quitting with ctrl+c in terminal and stacktrace on segfault
+    set_signal_handlers();
 
     parse_args(argc, argv);
 
