@@ -48,11 +48,11 @@ void Waveform::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const G
 
     const float dst_y_mid = (float)dst.y + ((float)dst.h / 2.0);
     float prev_x = dst.x;
-    float prev_y = (dst_y_mid + ((wave_samples[0] / wave_range) * (float)dst.h)) + (float)dst.y;
+    float prev_y = dst.h - ((dst_y_mid + ((wave_samples[0] / wave_range) * (float)dst.h)) + (float)dst.y);
 
     for(int i = 1; i < n_samples; i++) {
         const float x = (((float)i / (float)n_samples) * (float)dst.w) + (float)dst.x;
-        const float y = (dst_y_mid + ((wave_samples[i] / wave_range) * (float)dst.h)) + (float)dst.y;
+        const float y = dst.h - ((dst_y_mid + ((wave_samples[i] / wave_range) * (float)dst.h)) + (float)dst.y);
 
         // Draw clipped parts red
         if(std::abs(wave_samples[i]) > 1.0)
