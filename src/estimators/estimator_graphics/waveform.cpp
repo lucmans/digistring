@@ -23,6 +23,7 @@ void Waveform::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const G
         return;
     }
 
+    // Measure extreme values of samples for zooming
     double highest = 0.0, lowest = 0.0;
     for(const auto &sample : wave_samples) {
         if(sample > highest)
@@ -43,16 +44,21 @@ void Waveform::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const G
             wave_range = lowest * -2.0;
     }
 
-    wave_range /= graphics_data.time_domain_y_zoom;
+    double zoom_range = wave_range / graphics_data.time_domain_y_zoom;
 
+    // Prevent zooming in too far, causing SDL to allocate too much memory
+    const double wave_extreme = std::max(highest, -lowest);
+    if(zoom_range * 10.0 < wave_extreme)
+        zoom_range = wave_extreme / 10.0;
 
+    // Draw the waveform
     const float dst_y_mid = (float)dst.y + ((float)dst.h / 2.0);
     float prev_x = dst.x;
-    float prev_y = dst.h - ((dst_y_mid + ((wave_samples[0] / wave_range) * (float)dst.h)) + (float)dst.y);
+    float prev_y = dst.h - ((dst_y_mid + ((wave_samples[0] / zoom_range) * (float)dst.h)) + (float)dst.y);
 
     for(int i = 1; i < n_samples; i++) {
         const float x = (((float)i / (float)n_samples) * (float)dst.w) + (float)dst.x;
-        const float y = dst.h - ((dst_y_mid + ((wave_samples[i] / wave_range) * (float)dst.h)) + (float)dst.y);
+        const float y = dst.h - ((dst_y_mid + ((wave_samples[i] / zoom_range) * (float)dst.h)) + (float)dst.y);
 
         // Draw clipped parts red
         if(std::abs(wave_samples[i]) > 1.0)
