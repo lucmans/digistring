@@ -47,7 +47,7 @@ class Graphics {
 
         //
         TTF_Font *info_font;
-        SDL_Texture *note_text, *note_freq_text, *note_error_text, *note_amp_text;
+        SDL_Texture *note_text, *note_freq_text, *note_error_text, *note_error_minus, *note_amp_text;
         bool show_info;
 
         SDL_Texture *n_samples_text;

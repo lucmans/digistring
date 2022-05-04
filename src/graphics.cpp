@@ -16,6 +16,7 @@
 #include <sstream>  // This and iomanip are for double->string formatting
 #include <iomanip>
 #include <string>
+#include <algorithm>  // std::abs()
 
 
 Graphics::Graphics() {
@@ -82,6 +83,7 @@ Graphics::Graphics() {
     note_text = create_txt_texture(renderer, "Note: ", info_font, {0xff, 0xff, 0xff, 0xff});
     note_freq_text = create_txt_texture(renderer, "Freq: ", info_font, {0xff, 0xff, 0xff, 0xff});
     note_error_text = create_txt_texture(renderer, "Err: ", info_font, {0xff, 0xff, 0xff, 0xff});
+    note_error_minus = create_txt_texture(renderer, "-", info_font, {0xff, 0xff, 0xff, 0xff});
     note_amp_text = create_txt_texture(renderer, "Amp: ", info_font, {0xff, 0xff, 0xff, 0xff});
 
     max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
@@ -127,6 +129,7 @@ Graphics::~Graphics() {
     SDL_DestroyTexture(note_text);
     SDL_DestroyTexture(note_freq_text);
     SDL_DestroyTexture(note_error_text);
+    SDL_DestroyTexture(note_error_minus);
     SDL_DestroyTexture(note_amp_text);
 
     SDL_DestroyTexture(max_display_frequency_text);
@@ -317,6 +320,7 @@ void Graphics::render_black_screen() {
 void Graphics::render_current_note(const Note *const note) {
     SDL_SetRenderTarget(renderer, frame_buffer);
 
+    // Note (scientific notation)
     int w, h, w2;
     SDL_QueryTexture(note_text, NULL, NULL, &w, &h);
     SDL_Rect dst = {0, 0, w, h};
@@ -329,6 +333,7 @@ void Graphics::render_current_note(const Note *const note) {
         SDL_DestroyTexture(note_number);
     }
 
+    // Frequency
     SDL_QueryTexture(note_freq_text, NULL, NULL, &w, &h);
     dst = {0, h, w, h};
     SDL_RenderCopy(renderer, note_freq_text, NULL, &dst);
@@ -340,17 +345,27 @@ void Graphics::render_current_note(const Note *const note) {
         SDL_DestroyTexture(note_freq_number);
     }
 
+    // Error
     SDL_QueryTexture(note_error_text, NULL, NULL, &w, &h);
     dst = {0, 2 * h, w, h};
     SDL_RenderCopy(renderer, note_error_text, NULL, &dst);
     if(note != nullptr) {
-        SDL_Texture *note_error_number = create_txt_texture(renderer, std::to_string(note->error), info_font, {0xff, 0xff, 0xff, 0xff});
+        const double abs_error = std::abs(note->error);
+        int w_minus;
+        SDL_QueryTexture(note_error_minus, NULL, NULL, &w_minus, &h);
+        if(note->error < 0.0) {
+            dst = {w, 2 * h, w_minus, h};
+            SDL_RenderCopy(renderer, note_error_minus, NULL, &dst);
+        }
+
+        SDL_Texture *note_error_number = create_txt_texture(renderer, std::to_string(abs_error), info_font, {0xff, 0xff, 0xff, 0xff});
         SDL_QueryTexture(note_error_number, NULL, NULL, &w2, &h);
-        dst = {w, 2 * h, w2, h};
+        dst = {w + w_minus, 2 * h, w2, h};
         SDL_RenderCopy(renderer, note_error_number, NULL, &dst);
         SDL_DestroyTexture(note_error_number);
     }
 
+    // Amplitude
     SDL_QueryTexture(note_amp_text, NULL, NULL, &w, &h);
     dst = {0, 3 * h, w, h};
     SDL_RenderCopy(renderer, note_amp_text, NULL, &dst);
