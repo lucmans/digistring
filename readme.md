@@ -42,7 +42,7 @@ Sending `SIGINT` or `SIGTERM` a second time will immediately stop Digistring.
 
 ## Configuration
 Most of Digistring's configuration is done compile time to optimize performance and minimize latency. The default configuration is optimized for real-time usage (e.g. connecting a guitar to the audio input of your computer). The configuration files can be found in `src/config/`.  
-`audio.h`: Audio driver configuration, such as sample rate, samples per buffer and sample format.  
+`audio.h`: Audio driver configuration, such as sample rate, samples per buffer and sample format. Also contains the setting to enable slowdown mode.  
 `transcription.h`: Contains all parameters which control pitch estimation. This includes overlapping input frames configuration.  
 `graphics.h`: GUI configuration. Most important is headless mode, which ensures no graphics code is compiled into Digistring. This is important, as graphics is only useful for research/debugging and adds much CPU and RAM overhead. Headless mode is useful for practical usage (real-time sound synthesis based on guitar input) and experimental usage (running performance measurements).
 
