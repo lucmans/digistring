@@ -2,6 +2,7 @@
 
 #include "spectrum.h"
 #include "estimators/estimator.h"
+#include "error.h"
 
 #include "config/graphics.h"
 #include "config/transcription.h"
@@ -19,6 +20,8 @@ Bins::~Bins() {
 
 
 void Bins::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum) const {
+    static bool too_small_bin_printed = false;
+
     const SpectrumData spectrum_data = spectrum.get_data();
 
     if constexpr(DISPLAY_NOTE_LINES) {
@@ -46,6 +49,12 @@ void Bins::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const Graph
 
         SDL_FRect rect = {x - (bin_width / 2.0f), y, std::max(bin_width - 1.0f, 1.0f), h};
         SDL_RenderFillRectF(renderer, &rect);
+
+        if(bin_width - 1.0 < 1.0 && !too_small_bin_printed) {
+            warning("Bin is smaller than a pixel");
+            hint("Lower max displayed frequency sufficiently to correctly see individual bins");
+            too_small_bin_printed = true;
+        }
     }
 
     // Render last bin overlapping screen boundary if available
@@ -58,5 +67,11 @@ void Bins::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const Graph
 
         SDL_FRect rect = {x - (bin_width / 2.0f), y, std::max(bin_width - 1.0f, 1.0f), h};
         SDL_RenderFillRectF(renderer, &rect);
+
+        if(bin_width - 1.0 < 1.0 && !too_small_bin_printed) {
+            warning("Bin is smaller then a pixel");
+            hint("Lower max displayed frequency to correctly see individual bins");
+            too_small_bin_printed = true;
+        }
     }
 }

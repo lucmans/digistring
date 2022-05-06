@@ -505,11 +505,11 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_LEFTBRACKET:
-                        graphics->add_max_display_frequency(-300.0);
+                        graphics->add_max_display_frequency(-D_MAX_DISPLAYED_FREQUENCY);
                         break;
 
                     case SDLK_RIGHTBRACKET:
-                        graphics->add_max_display_frequency(300.0);
+                        graphics->add_max_display_frequency(D_MAX_DISPLAYED_FREQUENCY);
                         break;
 
                     case SDLK_COMMA:
