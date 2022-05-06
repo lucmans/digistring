@@ -88,7 +88,7 @@
 
 // Without file and line number
 inline void __msg(const char *type, const char *color, const std::string &msg) {
-    if(isatty(STDERR_FILENO)) {
+    if(isatty(STDERR_FILENO) == 1) {
         std::cerr << BOLD;
         if constexpr(PRINT_PROGRAM_TIME)
             std::cerr << "[" << perf.get_program_time() << "] ";
@@ -105,7 +105,7 @@ inline void __msg(const char *type, const char *color, const std::string &msg) {
 
 // With file and line number
 inline void __msg(const char *type, const char *color, const char *file, const int line, const std::string &msg) {
-    if(isatty(STDERR_FILENO)) {
+    if(isatty(STDERR_FILENO) == 1) {
         std::cerr << BOLD;
         if constexpr(PRINT_PROGRAM_TIME)
             std::cerr << "[" << perf.get_program_time() << "] ";
