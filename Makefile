@@ -19,6 +19,8 @@ CORES = 20
 
 # Compile time config; run "make force" after change
 # -DNO_COLORS: Don't output escape sequences used for coloring in terminal
+# -DINFO_SOURCE_LOC: Print the source location of info messages
+# -DMSG_PRINT_TIME: Print time since program start in logging messages
 COMPILE_CONFIG =
 
 SRC_FOLDERS = $(patsubst %, %/, $(shell find src -type d -print))

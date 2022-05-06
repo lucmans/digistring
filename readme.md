@@ -23,7 +23,8 @@ Optional dependency for Dolph Chebyshev windows:
 ## Building
 Run `make` in the root directory of the project to build the binary `digistring` in the root directory of the project.  
 In case of build failures after updating, try running `make fresh`.  
-Run `make help` for more information on all build targets and make scripts.
+Run `make help` for more information on all build targets and make scripts.  
+There are some compile time settings which control logging to the terminal running Digistring. Information about these can be found in the makefile where `COMPILE_CONFIG` is defined.
 
 ## Patches
 On older systems, building may fail as Digistring uses the newest features from its dependencies. Not all of these new features are necessary and some features may still be used through an older interface. To accommodate older systems, we provide some patches. These are located in the `patches` directory, along with a readme with information on when and how to use the patches. It is advised to rebuild Digistring with `make force` after applying any patches.
