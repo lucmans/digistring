@@ -105,5 +105,4 @@ Estimator graphics data wipe after frame (now have to manually .clear() old data
 
 
 # BUGS
-Audio click and pops from synthesizer when using NoteEvent offset and length.  
-Can't build project using "make digistring" directly due to build directory dependencies.
+Audio click and pops from synthesizer when using NoteEvent offset and length.

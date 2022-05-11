@@ -39,7 +39,7 @@ OBJ = $(filter-out $(FILTER_OBJ), $(ALL_OBJ))
 
 
 # Makes all folders needed by build process and build with parallel jobs
-all: | $(BUILD_FOLDERS)
+all:
 	make -j $(CORES) $(BIN)
 
 # Don't forget to run make force to remove sanitize
@@ -90,7 +90,7 @@ $(BUILD_FOLDERS):
 
 
 # Object file rule. Also makes dependency files using $(DEPFLAGS)
-obj/%.o: src/%.cpp
+obj/%.o: src/%.cpp | $(BUILD_FOLDERS)
 	$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCL) $(WARNINGS) $(COMPILE_CONFIG) $(OPTIMIZATIONS) -c $< -o $@
 
 # Include the dependencies
@@ -98,8 +98,8 @@ include $(wildcard $(patsubst obj/%.o, dep/%.d, $(OBJ)))
 
 
 # For studying the generated assembly
-%.s: %.cpp  %.h
-	$(CXX) -S -fverbose-asm -g -O2 $<
+src/%.s: src/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCL) $(WARNINGS) $(COMPILE_CONFIG) $(OPTIMIZATIONS) -S $< -fverbose-asm
 
 
 valgrind: all
