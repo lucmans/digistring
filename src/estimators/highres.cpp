@@ -18,6 +18,28 @@
 #include <vector>
 
 
+// Linear
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+//     const double a = norms[max_idx - 1],
+//                  b = norms[max_idx],
+//                  c = norms[max_idx + 1];
+//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+
+//     return max_idx + p;
+// }
+
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
+//     const double a = norms[max_idx - 1],
+//                  b = norms[max_idx],
+//                  c = norms[max_idx + 1];
+//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+
+//     amp = b - (0.25 * (a - c) * p);
+
+//     return max_idx + p;
+// }
+
+// Log
 inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
     const double a = log2(norms[max_idx - 1]),
                  b = log2(norms[max_idx]),
@@ -37,6 +59,27 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
 
     return max_idx + p;
 }
+
+// dB
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+//     const double a = 20.0 * log10(norms[max_idx - 1]),
+//                  b = 20.0 * log10(norms[max_idx]),
+//                  c = 20.0 * log10(norms[max_idx + 1]);
+//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+
+//     return max_idx + p;
+// }
+
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
+//     const double a = 20.0 * log10(norms[max_idx - 1]),
+//                  b = 20.0 * log10(norms[max_idx]),
+//                  c = 20.0 * log10(norms[max_idx + 1]);
+//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+
+//     amp = exp10((b - (0.25 * (a - c) * p)) / 20.0);
+
+//     return max_idx + p;
+// }
 
 
 HighRes::HighRes(float *&input_buffer, int &buffer_size) {
