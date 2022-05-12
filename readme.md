@@ -48,6 +48,8 @@ Most of Digistring's configuration is done compile time to optimize performance 
 
 ## Command line arguments
 Argument parameters in <> are required and in [] are optional.  
+`--audio_in <device name>`: Set the recording device to device name (as provided by Digistring at start-up.  
+`--audio_out <device name>`: Set the playback device to device name (as provided by Digistring at start-up.  
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
 `--file <file>`: Use file as input.  
 `--gen-completions <file>`: Generate Bash completions to file (overwriting it).  

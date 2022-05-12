@@ -47,7 +47,7 @@ Graphics::Graphics() {
         exit(EXIT_FAILURE);
     }
     // SDL_GetWindowSize(window, &res_w, &res_h);
-    info("Start-up resolution " + STR(res_w) + " " + STR(res_h));
+    // info("Start-up resolution " + STR(res_w) + " " + STR(res_h));
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED/* | SDL_RENDERER_PRESENTVSYNC*/);
     if(renderer == NULL) {

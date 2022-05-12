@@ -25,29 +25,54 @@
 CLIArgs cli_args;
 
 
-const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
-    {"-f",                  ParseObj(&ArgParser::parse_fullscreen,          {})},
-    {"--file",              ParseObj(&ArgParser::parse_file,                {OptType::file})},
-    {"--gen-completions",   ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
-    {"-h",                  ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
-    {"--help",              ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
-    {"-n",                  ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
-    {"-o",                  ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-    {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-    {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::last_arg})},
-    {"-p",                  ParseObj(&ArgParser::parse_playback,            {})},
-    {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
-    {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
-    // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
-    {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
-    {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
-    {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
-    {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
-    {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
+bool flag_ordering(const std::string lhs, const std::string rhs) {
+    // Normal sorting if both are - or both are --
+    if((lhs[1] == '-' && rhs[1] == '-') || (lhs[1] != '-' && rhs[1] != '-'))
+        return lhs < rhs;
+
+    // If lhs is - and rhs is --, lhs should come before rhs
+    if(lhs[1] != '-' && rhs[1] == '-')
+        return true;
+
+    // If lhs is -- and rhs is -, lhs should come after rhs
+    if(lhs[1] == '-' && rhs[1] != '-')
+        return false;
+
+    error("Corner case reached in CLI flag sorting");
+    exit(EXIT_FAILURE);
+}
+
+// const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
+const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::flag_to_func = {
+    {
+        {"--audio_in",          ParseObj(&ArgParser::parse_audio_in,            {OptType::audio_in_device})},
+        {"--audio_out",         ParseObj(&ArgParser::parse_audio_out,           {OptType::audio_out_device})},
+        {"-f",                  ParseObj(&ArgParser::parse_fullscreen,          {})},
+        {"--file",              ParseObj(&ArgParser::parse_file,                {OptType::file})},
+        {"--gen-completions",   ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
+        {"-h",                  ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
+        {"--help",              ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
+        {"-n",                  ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
+        {"-o",                  ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
+        {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
+        {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::last_arg})},
+        {"-p",                  ParseObj(&ArgParser::parse_playback,            {})},
+        {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
+        {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
+        // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
+        {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
+        {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
+        {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
+        {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
+        {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
+    },
+    flag_ordering
 };
 
 
 const std::pair<const std::string, const std::string> help_strings[] = {
+    {"--audio_in <device name>",    "Set the recording device to device name (as provided by Digistring at start-up"},
+    {"--audio_out <device name>",   "Set the playback device to device name (as provided by Digistring at start-up"},
     {"-f",                          "Start in fullscreen (also set the fullscreen resolution with '-r')"},
     {"--file <file>",               "Play samples from given file"},
     {"--gen-completions [file]",    "Generate Bash completions to file (overwriting it) (default filename is completions.sh)"},
@@ -149,6 +174,27 @@ void ArgParser::parse_args() {
             exit(EXIT_FAILURE);
         }
     }
+}
+
+
+void ArgParser::parse_audio_in() {
+    const char *in_dev_arg;
+    if(!fetch_opt(in_dev_arg)) {
+        error("No recording device name given");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.in_dev_name = in_dev_arg;
+}
+
+void ArgParser::parse_audio_out() {
+    const char *out_dev_arg;
+    if(!fetch_opt(out_dev_arg)) {
+        error("No playback device name given");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.out_dev_name = out_dev_arg;
 }
 
 

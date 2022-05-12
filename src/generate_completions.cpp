@@ -20,14 +20,6 @@ inline std::string indent(const int level) {
 
 
 void ArgParser::generate_completions() {
-    // Generate the file in a string stream
-    std::stringstream ss;
-
-    ss << "# This file is generated using Digistring's completions generator\n"
-       << "function _generate_digistring_compl() {\n"
-       << "    local cur=${COMP_WORDS[COMP_CWORD]}\n"
-       << "\n";
-
     // Make a list of all flags and count the maximum number of opts for any arg
     std::string all_flags;
     size_t max_number_of_opts = 0;  // Determines the maximum number of opts we have to look back for completions
@@ -37,7 +29,6 @@ void ArgParser::generate_completions() {
         if(value.opt_types.size() > max_number_of_opts)
             max_number_of_opts = value.opt_types.size();
     }
-
     // Remove trailing space
     if(all_flags.size() > 0)
         all_flags.pop_back();
@@ -46,6 +37,17 @@ void ArgParser::generate_completions() {
     std::string all_synths;
     for(const auto &[key, value] : parse_synth_string)
         all_synths += key + " ";
+    if(all_synths.size() > 0)
+        all_synths.pop_back();
+
+    // Generate the file in a string stream
+    std::stringstream ss;
+    ss << "# This file is generated using Digistring's completions generator\n"
+       << "function _generate_digistring_compl() {\n"
+       << "    local cur=${COMP_WORDS[COMP_CWORD]}\n"
+       << "    local ALL_FLAGS=\"" << all_flags << "\"\n"
+       << "    local ALL_SYNTHS=\"" << all_synths << "\"\n"
+       << "\n";
 
     // Generate rules for when expecting something else than a flag
     for(size_t i = 1; i <= max_number_of_opts; i++) {
@@ -71,7 +73,7 @@ void ArgParser::generate_completions() {
 
                 case OptType::output_file:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
-                       << indent(4) << "    COMPREPLY=(\"" + DEFAULT_OUTPUT_FILENAME + "\")\n"
+                       << indent(4) << "    COMPREPLY=(\"" << DEFAULT_OUTPUT_FILENAME << "\")\n"
                        << indent(4) << "else\n"  // Or suggest existing files on non-empty tab
                        << indent(4) << "    COMPREPLY=($(compgen -A file -- $cur))\n"
                        << indent(4) << "fi\n"
@@ -110,8 +112,8 @@ void ArgParser::generate_completions() {
                        << indent(4) << "    IFS=$'\\n'\n"
                        << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter an integer or type - for flag completions${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
-                       << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n"
+                       << indent(4) << "elif [[ ${cur:0:1} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_FLAGS\" -- $cur))\n"
                        << indent(4) << "elif [[ $cur =~ ^-?[0123456789]+$ ]]; then\n"  // An integer is typed
                        << indent(4) << "    COMPREPLY=(${cur})\n"
                        << indent(4) << "else\n"
@@ -151,8 +153,8 @@ void ArgParser::generate_completions() {
                        << indent(4) << "    IFS=$'\\n'\n"
                        << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a note name (e.g. A#4) or type - for flag completions${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
-                       << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n"
+                       << indent(4) << "elif [[ ${cur:0:1} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_FLAGS\" -- $cur))\n"
                        << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?[0123456789]+$ ]]; then\n"  // Note is fully typed
                        << indent(4) << "    COMPREPLY=(${cur})\n"
                        << indent(4) << "elif [[ $cur =~ ^[ABCDEFGabcdefg][#db]?$ ]]; then\n"  // Note is being typed
@@ -175,11 +177,35 @@ void ArgParser::generate_completions() {
 
                 case OptType::opt_synth:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_synths + " -\" -- $cur))\n"
-                       << indent(4) << "elif [[ ${cur[0]} == \"-\" ]]; then\n"  // Flag is started
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_SYNTHS -\" -- $cur))\n"
+                       << indent(4) << "elif [[ ${cur:0:1} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_FLAGS\" -- $cur))\n"
                        << indent(4) << "else\n"
-                       << indent(4) << "    COMPREPLY=($(compgen -W \"" + all_synths + "\" -- $cur))\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_SYNTHS\" -- $cur))\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
+                case OptType::audio_in_device:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a recording device name (as printed by Digistring at start-up)${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
+                case OptType::audio_out_device:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a playback device name (as printed by Digistring at start-up)${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
                        << indent(4) << "fi\n"
                        << indent(4) << "return 0;;\n";
                     break;
@@ -195,7 +221,7 @@ void ArgParser::generate_completions() {
 
     // If code gets here, there was no opt expected for arg, so display all args
     if(all_flags.size() > 0)
-        ss << "    COMPREPLY=($(compgen -W \"" + all_flags + "\" -- $cur))\n";
+        ss << "    COMPREPLY=($(compgen -W \"$ALL_FLAGS\" -- $cur))\n";
 
     ss << "    return 0\n"
        << "}\n"

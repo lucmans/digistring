@@ -10,6 +10,9 @@
 // Prototype before ArgParser
 class ParseObj;
 
+// Declare the function pointer to the compare function as compare_func_t
+typedef bool(*compare_func_t)(const std::string,const std::string);
+
 
 // Helps hiding creating an ArgParser object
 void parse_args(const int argc, const char *const argv[]);
@@ -39,9 +42,12 @@ class ArgParser {
         const char *const *const argv;  // TODO: Conform constructor
 
         // Maps flag strings to functions which parse the flag
-        static const std::map<const std::string, const ParseObj> flag_to_func;
+        // static const std::map<const std::string, const ParseObj> flag_to_func;
+        static const std::map<const std::string, const ParseObj, compare_func_t> flag_to_func;
 
 
+        void parse_audio_in();
+        void parse_audio_out();
         void parse_fullscreen();
         void parse_file();
         void parse_help();
@@ -63,7 +69,7 @@ class ArgParser {
 // The OptType determines what kind of tab complete to perform on arguments of flags
 // last_arg will prevent further completions to be given (useful for signalling no other flags are possible)
 enum class OptType {
-    dir, file, output_file, completions_file, integer, opt_integer, note, opt_note, last_arg, opt_synth
+    dir, file, output_file, completions_file, integer, opt_integer, note, opt_note, last_arg, opt_synth, audio_in_device, audio_out_device
 };
 
 // Struct holding the parse function and OptTypes

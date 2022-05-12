@@ -41,6 +41,11 @@ struct CLIArgs {
     Note generate_note_note = Note(Notes::A, 4);
     std::string play_file_name;
 
+    // Audio device settings
+    // Empty string will force passing NULL to let SDL select the best choice
+    std::string in_dev_name = "";
+    std::string out_dev_name = "";
+
     // JSON output settings
     bool output_file = false;
     std::string output_filename;
