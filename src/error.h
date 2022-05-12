@@ -120,6 +120,11 @@ inline void __msg(const char *type, const char *color, const char *file, const i
     }
 }
 
+// Plain messages
+inline void __msg(const std::string &msg) {
+    std::cerr << msg << std::endl;
+}
+
 
 inline std::string __str(const char *x) {
     return std::string(x);

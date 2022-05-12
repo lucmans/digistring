@@ -103,7 +103,8 @@ Don't copy whole input buffer when OVERLAP_NONBLOCK.
 Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).  
 Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
 Set cache directory location based on project root instead of relative to rsc directory.  
-Estimator graphics data wipe after frame (now have to manually .clear() old data).
+Estimator graphics data wipe after frame (now have to manually .clear() old data).  
+Show currently selected audio device when SDL default was used (requires SDL 2.0.24 https://github.com/libsdl-org/SDL/issues/5658).
 
 
 # BUGS

@@ -21,7 +21,7 @@
 #include <string>
 #include <iostream>
 
-#include <sstream>  // This and iomanip are for double->string formatting
+#include <sstream>  // Output formatting
 #include <iomanip>  // std::setw()
 #include <algorithm>  // std::max()
 #include <numeric>  // std::accumulate()
@@ -60,50 +60,69 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
         }) + 2
     };
 
-    std::cout << "Audio " << (input ? "input" : "output") << " config:\n"
-              << std::setw(column_width[0]) << "setting"          << std::setw(column_width[1]) << "want"             << std::setw(column_width[2]) << "have" << '\n'
-              << std::string(std::accumulate(column_width.begin(), column_width.end(), 0), '-') << '\n'
-              << std::setw(column_width[0]) << sample_rate        << std::setw(column_width[1]) << SAMPLE_RATE        << std::setw(column_width[2]) << specs.freq << '\n'
-              << std::setw(column_width[0]) << format             << std::setw(column_width[1]) << AUDIO_FORMAT       << std::setw(column_width[2]) << specs.format << '\n'
-              << std::setw(column_width[0]) << channels           << std::setw(column_width[1]) << N_CHANNELS         << std::setw(column_width[2]) << (int)specs.channels << '\n'
-              << std::setw(column_width[0]) << samples_per_buffer << std::setw(column_width[1]) << SAMPLES_PER_BUFFER << std::setw(column_width[2]) << specs.samples << '\n'
-              << std::setw(column_width[0]) << buffer_size        << std::setw(column_width[1]) << " - "              << std::setw(column_width[2]) << specs.size << '\n'
-              << std::setw(column_width[0]) << silence_value      << std::setw(column_width[1]) << " - "              << std::setw(column_width[2]) << (int)specs.silence << '\n'
-              << std::endl;
+    std::stringstream ss;
+    ss << "--- Audio " << (input ? "input" : "output") << " config ---\n"
+       << "| " << std::setw(column_width[0]) << "setting"          << std::setw(column_width[1]) << "want"             << std::setw(column_width[2]) << "have"              << " |\n"
+       << "|-" << std::string(std::accumulate(column_width.begin(), column_width.end(), 0), '-')                                                                            << "-|\n"
+       << "| " << std::setw(column_width[0]) << sample_rate        << std::setw(column_width[1]) << SAMPLE_RATE        << std::setw(column_width[2]) << specs.freq          << " |\n"
+       << "| " << std::setw(column_width[0]) << format             << std::setw(column_width[1]) << AUDIO_FORMAT       << std::setw(column_width[2]) << specs.format        << " |\n"
+       << "| " << std::setw(column_width[0]) << channels           << std::setw(column_width[1]) << N_CHANNELS         << std::setw(column_width[2]) << (int)specs.channels << " |\n"
+       << "| " << std::setw(column_width[0]) << samples_per_buffer << std::setw(column_width[1]) << SAMPLES_PER_BUFFER << std::setw(column_width[2]) << specs.samples       << " |\n"
+       << "| " << std::setw(column_width[0]) << buffer_size        << std::setw(column_width[1]) << "-"                << std::setw(column_width[2]) << specs.size          << " |\n"
+       << "| " << std::setw(column_width[0]) << silence_value      << std::setw(column_width[1]) << "-"                << std::setw(column_width[2]) << (int)specs.silence  << " |\n"
+       << std::flush;
+
+    info(ss.str());
 }
 
 void print_program_config_info() {
-    std::cout << "Frame size: " << FRAME_SIZE << '\n'
-              << "Frame size with zero padding: " << FRAME_SIZE_PADDED << '\n'
-              << "Frame time: " << ((double)FRAME_SIZE / (double)SAMPLE_RATE) * 1000.0 << " ms\n"
-              << "Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz\n";
+    std::stringstream ss;
+
+    ss << "--- Transcription config ---\n";
+
+    ss << "  - Frame size: " << FRAME_SIZE << '\n'
+       << "  - Frame size with zero padding: " << FRAME_SIZE_PADDED << '\n'
+       << "  - Frame time: " << ((double)FRAME_SIZE / (double)SAMPLE_RATE) * 1000.0 << " ms\n"
+       << "  - Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz\n";
 
     if(DO_OVERLAP) {
         const int overlap_n_samples = std::max((int)(OVERLAP_RATIO * (double)FRAME_SIZE), 1);
-        std::cout << "Overlap ratio: " << OVERLAP_RATIO << "  (" << overlap_n_samples << " overlapping samples)" << '\n';
-        std::cout << "Frame time without overlap: " << ((double)(FRAME_SIZE - overlap_n_samples) / (double)SAMPLE_RATE) * 1000.0 << " ms\n";
+        ss << "  - Overlap ratio: " << OVERLAP_RATIO << "  (" << overlap_n_samples << " overlapping samples)" << '\n'
+           << "  - Frame time without overlap: " << ((double)(FRAME_SIZE - overlap_n_samples) / (double)SAMPLE_RATE) * 1000.0 << " ms\n";
     }
 
     if(DO_OVERLAP_NONBLOCK) {
-        std::cout << "Minimum non-blocking frame advance: " << MIN_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MIN_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n"
-                  << "Maximum non-blocking frame advance: " << MAX_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MAX_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n";
+        ss << "  - Minimum non-blocking frame advance: " << MIN_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MIN_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n"
+           << "  - Maximum non-blocking frame advance: " << MAX_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MAX_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n";
     }
 
-    std::cout << std::endl;
-
     // TODO: Better estimate
-    // if constexpr(!HEADLESS) {
-    //     std::cout << "Max data history RAM usage: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb\n"
-    //               << std::endl;
-    // }
+    // if constexpr(!HEADLESS)
+    //     ss << "Max data history RAM usage: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb\n"
+
+    ss << std::flush;
+    info(ss.str());
+}
+
+
+void print_audio_driver() {
+    info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
+
+    // std::stringstream ss;
+    // ss << "--- Available audio drivers ---\n";
+    // const int count = SDL_GetNumAudioDrivers();
+    // for(int i = 0; i < count; i++)
+    //     ss << "  * " << SDL_GetAudioDriver(i) << '\n';
+    // ss << std::flush;
+    // info(ss.str());
 }
 
 
 void print_audio_devices(const bool print_out_dev) {
-    int count;
+    __msg("");  // Print newline for clarity
 
     if(print_out_dev) {
-        count = SDL_GetNumAudioDevices(0);
+        const int count = SDL_GetNumAudioDevices(0);
         if(count > 1 && cli_args.out_dev_name == "") {
             warning("SDL is choosing the \"most reasonable\" default playback device");
             hint("If audio playback is not working, try explicitly setting the playback device using '--audio_out <device name>' flag");
@@ -112,17 +131,19 @@ void print_audio_devices(const bool print_out_dev) {
         if(count == -1)
             warning("Failed to get list of playback devices");
         else {
-            std::cout << "Playback devices:\n";
+            std::stringstream out_info;
+            out_info << "--- Playback devices ---\n";
             for(int i = 0; i < count; i++) {
                 const std::string device_name = SDL_GetAudioDeviceName(i, 0);
-                std::cout << (device_name == cli_args.out_dev_name ? " *" : "  ")
-                          << "Device " << i + 1 << ": '" << device_name << "'\n";
+                out_info << " " << (device_name == cli_args.out_dev_name ? "->" : "  ") << " "
+                         << "Device " << i + 1 << ": '" << device_name << "'\n";
             }
-            std::cout << std::endl;
+            out_info << std::flush;
+            info(out_info.str());
         }
     }
 
-    count = SDL_GetNumAudioDevices(1);
+    const int count = SDL_GetNumAudioDevices(1);
     if(count > 1 && cli_args.in_dev_name == "") {
         warning("SDL is choosing the \"most reasonable\" default recording device");
         hint("If audio recording is not working, try explicitly setting the recording device using '--audio_in <device name>' flag");
@@ -131,13 +152,15 @@ void print_audio_devices(const bool print_out_dev) {
     if(count == -1)
         warning("Failed to get list of recording devices");
     else {
-        std::cout << "Recording devices:\n";
+        std::stringstream in_info;
+        in_info << "--- Recording devices ---\n";
         for(int i = 0; i < count; i++) {
             const std::string device_name = SDL_GetAudioDeviceName(i, 1);
-            std::cout << (device_name == cli_args.in_dev_name ? " *" : "  ")
-                      << "Device " << i + 1 << ": '" << device_name << "'\n";
+            in_info << " " << (device_name == cli_args.in_dev_name ? "->" : "  ") << " "
+                    << "Device " << i + 1 << ": '" << device_name << "'\n";
         }
-        std::cout << std::endl;
+        in_info << std::flush;
+        info(in_info.str());
     }
 }
 
@@ -242,8 +265,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Init audio devices
-    info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
     SDL_AudioDeviceID in_dev, out_dev;
+    print_audio_driver();
     print_audio_devices(cli_args.playback || cli_args.synth);
     init_audio_devices(in_dev, out_dev, cli_args.playback || cli_args.synth);
 
@@ -290,6 +313,6 @@ int main(int argc, char *argv[]) {
 
     fftwf_cleanup();
 
-    std::cout << std::endl;
+    // __msg("");  // Clear any partial message
     return EXIT_SUCCESS;
 }
