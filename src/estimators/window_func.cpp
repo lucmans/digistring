@@ -427,19 +427,35 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
     return true;
 }
 
+
+// http://itpp.sourceforge.net/devel/window_8cpp_source.html
+// https://github.com/ljtjerry/Dolph_Chebyshev_Fir_Coefficient_Generator
+
+// double cheby_poly(const double x, const int size) {
+//     if(x > -1.0 && x < 1.0)
+//         return cos(size * acos(x));
+//     else if(x <= -1.0) {
+//         if(size % 2 == 0)
+//             return cosh(size * acosh(-x));
+//         else
+//             return -cosh(size * acosh(-x));
+//     }
+//     return cosh(size * acosh(x));
+// }
+
 // #include <fftw3.h>
 // #include <algorithm>
 // #include "error.h"
-// void dolph_chebyshev_window(float window[], const int size) {
+// bool dolph_chebyshev_window(float window[], const int size, const double attenuation) {
 //     // The Dolph-Chebyshev is defined in the frequency domain
 //     fftwf_complex *f_win_in = (fftwf_complex*)fftwf_malloc(size * sizeof(fftwf_complex));
 //     fftwf_complex *out = (fftwf_complex*)fftwf_malloc(size * sizeof(fftwf_complex));
 //     fftwf_plan p = fftwf_plan_dft_1d(size, f_win_in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
 
 //     // Alpha
-//     const double dB = -60.0;
-//     const double alpha = dB / -20.0;
-//     const double beta = cosh((1.0 / (double)size) * acosh(pow(10.0, alpha)));
+//     const double dB = (attenuation > 0 ? attenuation : -attenuation);
+//     const double alpha = dB / 20.0;
+//     const double beta = cosh(acosh(pow(10.0, alpha)) / (double)(size));  // Or (size - 1)
 
 //     info("dB: " + STR(dB));
 //     info("alpha: " + STR(alpha));
@@ -447,25 +463,29 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
 //     info("");
 
 //     for(int i = 0; i < size; i++) {
-//         info("acos: " + STR(beta * cos((M_PI * i) / (double)size)));
-//         const double acos_range_check = std::clamp(beta * cos((M_PI * i) / (double)size), -1.0, 1.0);
-//         // const double acos_range_check = beta * cos((M_PI * i) / (double)size);
-//         info("acos2: " + STR(acos_range_check));
+//         // info("acos: " + STR(beta * cos((M_PI * i) / (double)size)));
+//         // const double acos_range_check = std::clamp(beta * cos((M_PI * i) / (double)size), -1.0, 1.0);
+//         const double acos_range_check = beta * cos((M_PI * (double)i) / (double)size);
+//         // info("acos2: " + STR(acos_range_check));
+
+//         window[i] = (cos((double)size * acos(acos_range_check)))
+//                      / (cosh((double)size * acosh(beta)));
+//         debug(STR(window[i]));
 
 //         f_win_in[i][0] = (cos((double)size * acos(acos_range_check)))
-//                       / (cosh((double)size * acosh(beta)));
+//                          / (cosh((double)size * acosh(beta)));
 //         f_win_in[i][1] = 0.0;
-//         info("f_win_in: " + STR(f_win_in[i][0]));
-//         info("");
 //     }
 
+//     debug("window made");
+//     return true;
 //     fftwf_execute(p);
 
 //     double normalization_sum = 0.0;
 //     for(int i = 0; i < size; i++) {
 //         const double norm = sqrt((out[i][0] * out[i][0]) + (out[i][1] * out[i][1]));
 //         // const double norm = fabs(out[i]);
-//         info(STR(out[i][1]));
+//         // info(STR(out[i][1]));
 //         window[i] = norm;
 //         normalization_sum += norm;
 //     }
@@ -477,4 +497,8 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
 //     fftwf_destroy_plan(p);
 //     fftwf_free(out);
 //     fftwf_free(f_win_in);
+
+//     debug("Done");
+
+//     return true;
 // }
