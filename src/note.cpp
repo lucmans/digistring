@@ -7,6 +7,7 @@
 #include <ostream>
 #include <iomanip>  // std::setw()
 #include <algorithm>  // std::max()
+#include <vector>
 #include <stdexcept>  // std::runtime_error
 
 
@@ -17,21 +18,23 @@ const char *sub[10] = {"\xe2\x82\x80", "\xe2\x82\x81", "\xe2\x82\x82",
 
 // Makes a subscript number string of n
 const std::string stringify_sub(int n) {
-    std::string out;
+    std::string sign = "";
+
     if(n < 0) {
-        out = "-";
+        sign = "-";
         n *= -1;
     }
 
     if(n < 10)
-        return out + sub[n];
+        return sign + sub[n];
 
+    std::string out;
     while(n != 0) {
         out = sub[n % 10] + out;
         n /= 10;
     }
 
-    return out;
+    return sign + out;
 }
 
 
@@ -97,7 +100,7 @@ std::ostream& operator<<(std::ostream &s, const NoteSet &noteset) {
     if(noteset.size() == 0)
         return s;
 
-    std::cout << noteset[0];
+    s << noteset[0];
     for(unsigned int i = 1; i < noteset.size(); i++)
         s << ' ' << noteset[i];
 
@@ -105,6 +108,8 @@ std::ostream& operator<<(std::ostream &s, const NoteSet &noteset) {
 }
 
 
+// Returns the number of printed character for a subscript
+// Needed as subscript uses wide characters, which count as two
 int subscript_offset(const int subscript) {
     if(subscript == 0)
         return 1;
@@ -115,34 +120,67 @@ int subscript_offset(const int subscript) {
     return log10(subscript) + 1;
 }
 
-void print_overtones(const Note &note, const int n_overtones) {
-    // Calculate column sizes
-    const int max_n_width = log10(n_overtones - 1) + 1;
-    const int max_harm_width = std::max((int)log10(note.freq * n_overtones) + 7, 12);
-    const int max_closest_width = std::max((int)log10(note.freq * n_overtones) + 7, 11);
+void print_overtones(const Note &note, const int n_overtones, const bool print_midi_number/* = false*/) {
+    const std::string n_txt = "n",
+                      f_harmonic_txt = "f_harmonic",
+                      closest_note_txt = "closest note",
+                      f_closest_txt = "f_closest",
+                      cent_error_txt = "cent error",
+                      midi_number_txt = "midi number";
+
+    const int precision = 3;
+    const int spacing = 2;
+    const Note max_note = Note(note.freq * n_overtones, 0);
+    const std::vector<int> column_width = {
+        std::max({
+            (int)n_txt.size(),
+            (int)log10(n_overtones - 1) + 1
+        }),
+        std::max({
+            (int)f_harmonic_txt.size(),
+            (int)log10(note.freq * n_overtones) + 1 + 1 + precision  // +1 for decimal point
+        }) + spacing,
+        std::max({
+            (int)closest_note_txt.size(),
+            1 + 1 + subscript_offset(max_note.octave)  // Note name + accidental + subscript
+        }) + spacing,
+        std::max({
+            (int)f_closest_txt.size(),
+            (int)log10(A4 * exp2((double)(max_note.midi_number - 69) / 12.0)) + 1 + 1 + precision
+        }) + spacing,
+        std::max({
+            (int)cent_error_txt.size(),
+            1 + 2 + 1 + precision  // minus + max 50 + decimal point + precision
+        }) + spacing,
+        std::max({
+            (int)midi_number_txt.size(),
+            (int)log10(max_note.midi_number) + 1
+        }) + spacing
+    };
 
     // Print header
     std::cout << std::right
-              << std::setw(max_n_width)  << "n"
-              << std::setw(max_harm_width) << "f_harmonic"
-              << std::setw(14) << "closest note"
-              << std::setw(max_closest_width) << "f_closest"
-              << std::setw(12) << "cent error" << std::endl;
-              // << std::setw(12) << "cent error"
-              // << std::setw(13) << "midi number" << std::endl;
+              << std::setw(column_width[0]) << n_txt
+              << std::setw(column_width[1]) << f_harmonic_txt
+              << std::setw(column_width[2]) << closest_note_txt
+              << std::setw(column_width[3]) << f_closest_txt
+              << std::setw(column_width[4]) << cent_error_txt;
+    if(print_midi_number)
+        std::cout << std::setw(column_width[5]) << midi_number_txt;
+    std::cout << std::endl;
 
+    std::cout << std::fixed << std::setprecision(precision);
     for(int i = 1; i <= n_overtones; i++) {
         Note overtone(note.freq * i, 0);
-        std::cout << std::fixed << std::setprecision(3)
-                  << std::setw(max_n_width) << i - 1
-                  << std::setw(max_harm_width) << overtone.freq
-                  << std::setw(14 - subscript_offset(overtone.octave)) << overtone
-                  << std::setw(max_closest_width) << A4 * exp2(round(12.0 * log2((overtone.freq) / A4)) / 12.0)
-                  << std::setw(12) << overtone.error << std::endl;
-                  // << std::setw(12) << overtone.error
-                  // << std::setw(13) << note.midi_number << std::endl;
+        std::cout << std::setw(column_width[0])                                     << i - 1
+                  << std::setw(column_width[1])                                     << overtone.freq
+                  << std::setw(column_width[2] - subscript_offset(overtone.octave)) << overtone
+                  << std::setw(column_width[3])                                     << A4 * exp2((double)(overtone.midi_number - 69) / 12.0)
+                  << std::setw(column_width[4])                                     << overtone.error;
+        if(print_midi_number)
+            std::cout << std::setw(column_width[5])  << overtone.midi_number;
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }
 
 

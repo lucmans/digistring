@@ -67,7 +67,7 @@ std::ostream& operator<<(std::ostream &s, const Note &note);
 std::string note_to_string(const Note &note);
 std::string note_to_string_ascii(const Note &note);  // Octave number without lowercase
 
-void print_overtones(const Note &note, const int n_overtones);
+void print_overtones(const Note &note, const int n_overtones, const bool print_midi_number = false);
 
 // Throws std::string with error description on invalid strings
 // A valid in_string consists of a note name (A-G), with optional accidental ('#' or 'd' for sharp, 'b' for flat) and an integer denoting the octave

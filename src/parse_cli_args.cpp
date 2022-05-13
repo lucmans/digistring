@@ -55,7 +55,7 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         {"-n",                  ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
         {"-o",                  ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
         {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-        {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::last_arg})},
+        {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::midi_switch, OptType::last_arg})},
         {"-p",                  ParseObj(&ArgParser::parse_playback,            {})},
         {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
         {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
@@ -79,7 +79,7 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"-h | --help",                 "Print command line argument information. Optionally pass 'readme' for readme formatting"},
     {"-n [note]",                   "Generate note (default is A4)"},
     {"-o | --output [file]",        "Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")"},
-    {"--over <note> [n]",           "Print n (default is 5) overtones of given note"},
+    {"--over <note> [n] [midi]",    "Print n (default is 5) overtones of given note; optionally toggle midi number column by passing midi_on/midi_off (default to midi_off)"},
     {"-p",                          "Play recorded audio back"},
     {"--perf",                      "Output performance information to stdout"},
     {"-r <w> <h>",                  "Start GUI with given resolution"},
@@ -346,6 +346,21 @@ void ArgParser::parse_print_overtone() {
         }
     }
 
+    const char *midi_cstring;
+    if(fetch_opt(midi_cstring)) {
+        const std::string midi_string = midi_cstring;
+        if(midi_string == "midi_on")
+            print_overtones(*note, n, true);  // Getting here implies note was successfully initialized
+        else if(midi_string == "midi_off")
+            print_overtones(*note, n, false);  // Getting here implies note was successfully initialized
+        else {
+            error("Invalid third argument passed... Either pass 'midi_on' or 'midi_off'");
+            exit(EXIT_FAILURE);
+        }
+        exit(EXIT_SUCCESS);
+    }
+
+    // Do the default if midi column isn't explicitly switched
     print_overtones(*note, n);  // Getting here implies note was successfully initialized
     exit(EXIT_SUCCESS);
 }

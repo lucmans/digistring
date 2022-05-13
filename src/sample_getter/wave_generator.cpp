@@ -31,7 +31,7 @@ SampleGetters WaveGenerator::get_type() const {
 void WaveGenerator::pitch_up() {
     generated_wave_freq += D_FREQ;
 
-    std::cout << "Playing sine wave of " << generated_wave_freq << " Hz" << std::endl;
+    info("Playing sine wave of " + STR(generated_wave_freq) + " Hz");
 }
 
 void WaveGenerator::pitch_down() {
@@ -43,7 +43,7 @@ void WaveGenerator::pitch_down() {
         generated_wave_freq = MIN_FREQ;
     }
 
-    std::cout << "Playing sine wave of " << generated_wave_freq << " Hz" << std::endl;
+    info("Playing sine wave of " + STR(generated_wave_freq) + " Hz");
 }
 
 

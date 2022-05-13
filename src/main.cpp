@@ -28,6 +28,7 @@
 
 
 void print_audio_settings(SDL_AudioSpec &specs, bool input) {
+    // Table headers
     const std::string sample_rate = "Sample rate",
                       format = "Format",
                       channels = "Channels",
@@ -35,6 +36,7 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
                       buffer_size = "Buffer size",
                       silence_value = "Silence value";
 
+    const int spacing = 2;
     const std::vector<size_t> column_width = {
         std::max({
             sample_rate.size(),
@@ -49,7 +51,7 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
             std::to_string(AUDIO_FORMAT).size(),
             std::to_string(N_CHANNELS).size(),
             std::to_string(SAMPLES_PER_BUFFER).size()
-        }) + 2,
+        }) + spacing,
         std::max({
             std::to_string(specs.freq).size(),
             std::to_string(specs.format).size(),
@@ -57,7 +59,7 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
             std::to_string(specs.samples).size(),
             std::to_string(specs.size).size(),
             std::to_string(specs.silence).size()
-        }) + 2
+        }) + spacing
     };
 
     std::stringstream ss;

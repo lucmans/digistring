@@ -4,8 +4,7 @@
 
 #include <SDL2/SDL.h>
 
-#include <algorithm>
-// #include <iostream>
+#include <algorithm>  // std::max(), std::clamp()
 
 
 constexpr int CHANNEL_MAX_WIDTH = 50;  // Pixels
@@ -43,7 +42,5 @@ void NoteChannels::render(SDL_Renderer *const renderer, const SDL_Rect &dst, con
         SDL_Rect channel_bar = {(i * channel_div_width) + (int)((channel_div_width - CHANNEL_MAX_WIDTH) / 2.0) + dst.x, ((dst.h - h) - 1) + dst.y, w, h};
         SDL_RenderFillRect(renderer, &channel_bar);
 
-        // std::cout << channel_bar.x << ' ' << channel_bar.y << ' ' << channel_bar.w << ' ' << channel_bar.h << ' ' << note_channel_data[i].power << std::endl;
     }
-    // std::cout << std::endl;
 }

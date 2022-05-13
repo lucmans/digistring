@@ -55,7 +55,7 @@ Argument parameters in <> are required and in [] are optional.
 `--gen-completions <file>`: Generate Bash completions to file (overwriting it).  
 `-n [note]`: Generate note (default is A4).  
 `-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
-`--over <note> [n]`: Print n (default is 5) overtones of given note.  
+`--over <note> [n] [midi]`: Print n (default is 5) overtones of given note; optionally toggle midi number column by passing midi_on/midi_off (default to midi_off).  
 `-p`: Play input audio back.  
 `--perf`: Print performance stats to stdout.  
 `-r <w> <h>`: Run Digistring with given resolution.  

@@ -36,14 +36,14 @@ void NoteGenerator::pitch_up() {
     generated_note_number++;
     generated_note = Note(generated_note_number);
 
-    std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
+    info("Playing note " + note_to_string(generated_note) + "  (" + STR(generated_note.freq) + " Hz)");
 }
 
 void NoteGenerator::pitch_down() {
     generated_note_number--;
     generated_note = Note(generated_note_number);
 
-    std::cout << "Playing note " << generated_note << "  (" << generated_note.freq << " Hz)" << std::endl;
+    info("Playing note " + note_to_string(generated_note) + "  (" + STR(generated_note.freq) + " Hz)");
 }
 
 

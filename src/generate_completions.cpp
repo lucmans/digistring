@@ -125,6 +125,11 @@ void ArgParser::generate_completions() {
                        << indent(4) << "return 0;;\n";
                     break;
 
+                case OptType::midi_switch:
+                    ss << indent(4) << "COMPREPLY=($(compgen -W \"midi_on midi_off\" -- $cur))\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
                 case OptType::note:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"

@@ -187,6 +187,14 @@ function _generate_digistring_compl() {
     if (( $COMP_CWORD - 3 >= 1 )); then
         case ${COMP_WORDS[COMP_CWORD - 3]} in
             --over)
+                COMPREPLY=($(compgen -W "midi_on midi_off" -- $cur))
+                return 0;;
+        esac
+    fi
+
+    if (( $COMP_CWORD - 4 >= 1 )); then
+        case ${COMP_WORDS[COMP_CWORD - 4]} in
+            --over)
                 return 0;;
         esac
     fi

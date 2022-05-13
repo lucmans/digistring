@@ -36,7 +36,7 @@ void quit_signal_handler(const int signum) {
         exit(-2);
     }
 
-    std::cout << std::endl;
+    __msg("");  // Print on a new line for when using ctrl+c to send a SIGINT (causes ^C to be printed)
     info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received");
 
     set_quit();
