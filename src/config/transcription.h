@@ -21,7 +21,7 @@ constexpr double POWER_THRESHOLD = 15.0;  // Threshold of channel power before f
 constexpr double PEAK_THRESHOLD = 15.0;  // Threshold of peak before significant
 constexpr double OVERTONE_ERROR = 10.0;  // Error in cents that an detected overtone may have compared to the theoretical overtone
 
-constexpr double ZERO_PAD_FACTOR = 4.0;  // Calculates number of zeros to pad; choose a power of two for optimal efficiency (0.0 to disable)
+constexpr double ZERO_PAD_FACTOR = 7.0;  // Calculates number of zeros to pad; choose a power of two minus one for optimal efficiency (0.0 to disable)
 constexpr int FRAME_SIZE_PADDED = FRAME_SIZE + (FRAME_SIZE * ZERO_PAD_FACTOR);  // Size of the frame with padding
 
 // Dolph Chebyshev attanuation

@@ -83,9 +83,13 @@ void print_program_config_info() {
     ss << "--- Transcription config ---\n";
 
     ss << "  - Frame size: " << FRAME_SIZE << '\n'
-       << "  - Frame size with zero padding: " << FRAME_SIZE_PADDED << '\n'
        << "  - Frame time: " << ((double)FRAME_SIZE / (double)SAMPLE_RATE) * 1000.0 << " ms\n"
-       << "  - Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << "Hz\n";
+       << "  - Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << " Hz\n";
+
+    if(ZERO_PAD_FACTOR > 0.0) {
+        ss << "  - Frame size with zero padding: " << FRAME_SIZE_PADDED << '\n'
+           << "  - Interpolated bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED << " Hz\n";
+    }
 
     if(DO_OVERLAP) {
         const int overlap_n_samples = std::max((int)(OVERLAP_RATIO * (double)FRAME_SIZE), 1);
