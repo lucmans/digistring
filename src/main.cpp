@@ -125,16 +125,13 @@ void print_audio_devices(const bool print_out_dev) {
 
     if(print_out_dev) {
         const int count = SDL_GetNumAudioDevices(0);
-        if(count > 1 && cli_args.out_dev_name == "") {
-            warning("SDL is choosing the \"most reasonable\" default playback device");
-            hint("If audio playback is not working, try explicitly setting the playback device using '--audio_out <device name>' flag");
-        }
-
         if(count == -1)
             warning("Failed to get list of playback devices");
         else {
             std::stringstream out_info;
             out_info << "--- Playback devices ---\n";
+            out_info << " " << (cli_args.out_dev_name == "" ? "->" : "  ") << " "
+                     << "Device 0: System default" << "\n";
             for(int i = 0; i < count; i++) {
                 const std::string device_name = SDL_GetAudioDeviceName(i, 0);
                 out_info << " " << (device_name == cli_args.out_dev_name ? "->" : "  ") << " "
@@ -146,16 +143,13 @@ void print_audio_devices(const bool print_out_dev) {
     }
 
     const int count = SDL_GetNumAudioDevices(1);
-    if(count > 1 && cli_args.in_dev_name == "") {
-        warning("SDL is choosing the \"most reasonable\" default recording device");
-        hint("If audio recording is not working, try explicitly setting the recording device using '--audio_in <device name>' flag");
-    }
-
     if(count == -1)
         warning("Failed to get list of recording devices");
     else {
         std::stringstream in_info;
         in_info << "--- Recording devices ---\n";
+        in_info << " " << (cli_args.in_dev_name == "" ? "->" : "  ") << " "
+                << "Device 0: System default" << "\n";
         for(int i = 0; i < count; i++) {
             const std::string device_name = SDL_GetAudioDeviceName(i, 1);
             in_info << " " << (device_name == cli_args.in_dev_name ? "->" : "  ") << " "
