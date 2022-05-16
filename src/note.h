@@ -35,7 +35,7 @@ struct Note {
     // Note(const int _midi_number);
 
     // See original, non constexpr, constructors for more readable version (only difference is local variable substitution)
-    constexpr Note(const double _freq, const double _amp) :
+    constexpr Note(const double _freq, const double _amp = -1.0) :
             freq(_freq),
             amp(_amp),
             note(static_cast<Notes>(((((int)round(12.0 * log2(_freq / C0))) % 12) + 12) % 12)),

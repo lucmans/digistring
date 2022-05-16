@@ -231,7 +231,7 @@ void HighRes::interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE
         }
 
         double amp;
-        const double freq = ((double)SAMPLE_RATE / FRAME_SIZE_PADDED) * interpolate_max(peak, norms, amp);
+        const double freq = ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED) * interpolate_max(peak, norms, amp);
         noteset.push_back(Note(freq, amp));
     }
 }

@@ -7,6 +7,7 @@
 
 // Different estimation techniques
 #include "highres.h"
+#include "basic_fourier.h"
 #include "tuned.h"
 
 

@@ -36,6 +36,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     input_buffer_n_samples = -1;
     // estimator = new Tuned(input_buffer, input_buffer_n_samples);
     estimator = new HighRes(input_buffer, input_buffer_n_samples);
+    // estimator = new BasicFourier(input_buffer, input_buffer_n_samples);
     if(input_buffer == NULL) {
         error("Estimator did not create an input buffer");
         exit(EXIT_FAILURE);

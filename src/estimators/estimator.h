@@ -15,13 +15,14 @@
 /* When adding a new estimator, don't forget to include the file in estimators.h */
 // Different estimator algorithms types
 enum class Estimators {
-    highres, tuned
+    highres, basic_fourier, tuned
 };
 
 // For printing enum
 // If a string isn't present in EstimatorString for every type, random crashes may happen
 const std::map<const Estimators, const std::string> EstimatorString = {
     {Estimators::highres, "highres"},
+    {Estimators::basic_fourier, "basic fourier"},
     {Estimators::tuned, "tuned"}
 };
 

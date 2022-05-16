@@ -14,6 +14,7 @@ constexpr Note HIGHEST_NOTE = Note(Notes::E, 6);
 
 
 /* High Res transcriber */
+// constexpr int FRAME_SIZE = 40960;  // BasicFourier
 constexpr int FRAME_SIZE = 1024 * 16 /** 2*/;  // Number of samples in Fourier frame
 // constexpr int FRAME_SIZE = 4096;  // For 48000 Hz
 // constexpr int FRAME_SIZE = 3763;  // For 44100 Hz

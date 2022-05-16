@@ -130,7 +130,7 @@ void print_overtones(const Note &note, const int n_overtones, const bool print_m
 
     const int precision = 3;
     const int spacing = 2;
-    const Note max_note = Note(note.freq * n_overtones, 0);
+    const Note max_note = Note(note.freq * (double)n_overtones);
     const std::vector<int> column_width = {
         std::max({
             (int)n_txt.size(),
@@ -171,7 +171,7 @@ void print_overtones(const Note &note, const int n_overtones, const bool print_m
 
     std::cout << std::fixed << std::setprecision(precision);
     for(int i = 1; i <= n_overtones; i++) {
-        Note overtone(note.freq * i, 0);
+        Note overtone(note.freq * (double)i);
         std::cout << std::setw(column_width[0])                                     << i - 1
                   << std::setw(column_width[1])                                     << overtone.freq
                   << std::setw(column_width[2] - subscript_offset(overtone.octave)) << overtone
