@@ -34,10 +34,7 @@ class BasicFourier : public Estimator {
         float window_func[FRAME_SIZE];
 
 
-        void all_max(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks);
-        void all_max(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks, double &max_norm);
-
-        void get_loudest_peak(NoteSet &out_notes, const double norms[(FRAME_SIZE / 2) + 1], const std::vector<int> &peaks);
+        void max_norm(const fftwf_complex values[(FRAME_SIZE / 2) + 1], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, int &max_norm_idx);
 };
 
 

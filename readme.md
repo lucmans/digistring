@@ -91,6 +91,7 @@ Digistring includes a few tools:
 
 
 # TODO
+Chance sqrt(x^2 + y^2) to hypot(x, y).  
 Make SLOWDOWN a cli arg instead of compile time parameter.  
 Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
 Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  

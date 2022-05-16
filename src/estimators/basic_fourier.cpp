@@ -5,7 +5,6 @@
 #include "note.h"
 
 #include "window_func.h"
-#include "estimation_func.h"
 
 #include "config/audio.h"
 #include "config/transcription.h"
@@ -76,42 +75,17 @@ Estimators BasicFourier::get_type() const {
 }
 
 
-void BasicFourier::all_max(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks) {
-    for(int i = 1; i < (FRAME_SIZE / 2); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1])
-            peaks.push_back(i);
-    }
-}
+void BasicFourier::max_norm(const fftwf_complex values[(FRAME_SIZE / 2) + 1], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, int &max_norm_idx) {
+    max_norm = -1.0;
 
-void BasicFourier::all_max(const double norms[(FRAME_SIZE / 2) + 1], std::vector<int> &peaks, double &max_norm) {
-    for(int i = 1; i < (FRAME_SIZE / 2); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]) {
-            peaks.push_back(i);
-            if(norms[i] > max_norm)
-                max_norm = norms[i];
+    for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++) {
+        norms[i] = sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1]));
+
+        if(norms[i] > max_norm) {
+            max_norm = norms[i];
+            max_norm_idx = i;
         }
     }
-}
-
-
-void BasicFourier::get_loudest_peak(NoteSet &out_notes, const double norms[(FRAME_SIZE / 2) + 1], const std::vector<int> &peaks) {
-    const int n_peaks = peaks.size();
-    if(n_peaks == 0)
-        return;
-    else if(n_peaks == 1) {
-        const Note tuned = Note(peaks[0] * ((double)SAMPLE_RATE / (double)FRAME_SIZE));
-        out_notes.push_back(Note(tuned.midi_number, norms[peaks[0]]));
-        return;
-    }
-
-    int max_idx = 0;
-    for(int i = 1; i < n_peaks; i++) {
-        if(norms[peaks[i]] > norms[peaks[max_idx]])
-            max_idx = i;
-    }
-
-    const Note tuned = Note(peaks[max_idx] * ((double)SAMPLE_RATE / (double)FRAME_SIZE));
-    out_notes.push_back(Note(tuned.midi_number, norms[peaks[max_idx]]));
 }
 
 
@@ -128,35 +102,25 @@ void BasicFourier::perform(float *const input_buffer, NoteEvents &note_events) {
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
         input_buffer[i] *= window_func[i];
-    // perf.push_time_point("Applied window function");
 
     // Do the actual transform
     fftwf_execute(p);
-    // perf.push_time_point("Fourier transformed");
 
-    // Calculate amplitude of every frequency component
+    // Get the bin with maximum signal power
     double norms[(FRAME_SIZE / 2) + 1];
-    double power, max_norm;
-    calc_norms(out, norms, (FRAME_SIZE / 2) + 1, max_norm, power);
-    // perf.push_time_point("Norms calculated");
-
-    // Find peaks based on envelope
-    std::vector<int> peaks;
-    all_max(norms, peaks, max_norm);
-
-    /* Note estimation from peaks */
-    NoteSet noteset;  // Noteset, so polyphony can easily be supported
-    get_loudest_peak(noteset, norms, peaks);
+    double max_norm_val;
+    int max_norm_idx = -1;
+    max_norm(out, norms, max_norm_val, max_norm_idx);
 
     // Add note to output note_events if not filtered
-    if(noteset.size() > 0)
-        note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
+    if(max_norm_idx != -1)
+        note_events.push_back(NoteEvent(Note(max_norm_idx * ((double)SAMPLE_RATE / (double)FRAME_SIZE), max_norm_val), FRAME_SIZE, 0));
 
 
     // Graphics
     if constexpr(!HEADLESS) {
         BasicFourierGraphics *const basic_fourier_graphics = static_cast<BasicFourierGraphics *>(estimator_graphics);
-        basic_fourier_graphics->set_last_max_recorded_value(max_norm);
+        basic_fourier_graphics->set_last_max_recorded_value(max_norm_val);
 
         Spectrum &spectrum = basic_fourier_graphics->get_spectrum();
         spectrum.clear();
@@ -168,8 +132,6 @@ void BasicFourier::perform(float *const input_buffer, NoteEvents &note_events) {
 
         std::vector<double> &f_peaks = basic_fourier_graphics->get_peaks();
         f_peaks.clear();
-        for(int peak_bin : peaks)
-            f_peaks.push_back(peak_bin * ((double)SAMPLE_RATE / (double)FRAME_SIZE));
-        std::sort(f_peaks.begin(), f_peaks.end());
+        f_peaks.push_back(max_norm_idx * ((double)SAMPLE_RATE / (double)FRAME_SIZE));
     }
 }
