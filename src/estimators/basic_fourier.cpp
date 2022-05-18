@@ -47,6 +47,15 @@ BasicFourier::BasicFourier(float *&input_buffer, int &buffer_size) {
     }
 
     if constexpr(!HEADLESS) {
+        try {
+            norms = new double[(FRAME_SIZE / 2) + 1];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate norms buffer (" + STR(e.what()) + ")");
+            hint("Try using a smaller frame size or enable headless mode");
+            exit(EXIT_FAILURE);
+        }
+
         BasicFourierGraphics *const tmp_graphics = new BasicFourierGraphics();
         estimator_graphics = tmp_graphics;
 
@@ -61,8 +70,10 @@ BasicFourier::BasicFourier(float *&input_buffer, int &buffer_size) {
 }
 
 BasicFourier::~BasicFourier() {
-    if constexpr(!HEADLESS)
+    if constexpr(!HEADLESS) {
         delete estimator_graphics;
+        delete[] norms;
+    }
 
     fftwf_destroy_plan(p);
     fftwf_free(out);
@@ -72,20 +83,6 @@ BasicFourier::~BasicFourier() {
 
 Estimators BasicFourier::get_type() const {
     return Estimators::basic_fourier;
-}
-
-
-void BasicFourier::max_norm(const fftwf_complex values[(FRAME_SIZE / 2) + 1], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, int &max_norm_idx) {
-    max_norm = -1.0;
-
-    for(int i = 0; i < (FRAME_SIZE / 2) + 1; i++) {
-        norms[i] = sqrt((values[i][0] * values[i][0]) + (values[i][1] * values[i][1]));
-
-        if(norms[i] > max_norm) {
-            max_norm = norms[i];
-            max_norm_idx = i;
-        }
-    }
 }
 
 
@@ -107,12 +104,25 @@ void BasicFourier::perform(float *const input_buffer, NoteEvents &note_events) {
     fftwf_execute(p);
 
     // Get the bin with maximum signal power
-    double norms[(FRAME_SIZE / 2) + 1];
-    double max_norm_val;
+    double max_norm_val = -1.0;
     int max_norm_idx = -1;
-    max_norm(out, norms, max_norm_val, max_norm_idx);
+    for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++) {
+        const double tmp_norm = sqrt((out[i][0] * out[i][0]) + (out[i][1] * out[i][1]));
 
-    // Add note to output note_events if not filtered
+        if(tmp_norm > max_norm_val) {
+            max_norm_val = tmp_norm;
+            max_norm_idx = i;
+        }
+
+        if constexpr(!HEADLESS)
+            norms[i] = tmp_norm;
+    }
+
+    // Calculate DC offset explicitly
+    if constexpr(!HEADLESS)
+        norms[0] = sqrt((out[0][0] * out[0][0]) + (out[0][1] * out[0][1]));
+
+    // Add note to output note_events
     if(max_norm_idx != -1)
         note_events.push_back(NoteEvent(Note(max_norm_idx * ((double)SAMPLE_RATE / (double)FRAME_SIZE), max_norm_val), FRAME_SIZE, 0));
 

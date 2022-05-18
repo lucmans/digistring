@@ -31,10 +31,9 @@ class BasicFourier : public Estimator {
         fftwf_complex *out;
         fftwf_plan p;
 
+        double *norms;  // For storing the norms for graphics
+
         float window_func[FRAME_SIZE];
-
-
-        void max_norm(const fftwf_complex values[(FRAME_SIZE / 2) + 1], double norms[(FRAME_SIZE / 2) + 1], double &max_norm, int &max_norm_idx);
 };
 
 
