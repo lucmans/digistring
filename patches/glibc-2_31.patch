@@ -17,7 +17,7 @@
          exit(-2);
      }
  
-     std::cout << std::endl;
+     __msg("");  // Print on a new line for when using ctrl+c to send a SIGINT (causes ^C to be printed)
 -    info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received");
 +    info("Signal number " + STR(signum) + " received");
  

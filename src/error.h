@@ -9,6 +9,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+// #include <sstream>
 #include <stdexcept>
 #include <source_location>
 
@@ -149,10 +150,30 @@ inline void warning(const std::string &msg, const std::source_location location 
     inline void info(const std::string &msg, const std::source_location location = std::source_location::current()) {
         __msg("Info", GREEN, location.file_name(), location.line(), msg);
     }
+    // inline void info(std::stringstream &msg_stream, const std::source_location location = std::source_location::current()) {
+    //     std::string msg_line;
+    //     while(msg_stream) {
+    //         std::getline(msg_stream, msg_line);
+    //         if(msg_line != "")
+    //             __msg("Info", GREEN, location.file_name(), location.line(), msg_line);
+    //         else
+    //             __msg("");
+    //     }
+    // }
 #else
     inline void info(const std::string &msg) {
         __msg("Info", GREEN, msg);
     }
+    // inline void info(std::stringstream &msg_stream) {
+    //     std::string msg_line;
+    //     while(msg_stream) {
+    //         std::getline(msg_stream, msg_line);
+    //         if(msg_line != "")
+    //             __msg("Info", GREEN, msg_line);
+    //         else
+    //             __msg("");
+    //     }
+    // }
 #endif  // INFO_SOURCE_LOC
 
 inline void debug(const std::string &msg, const std::source_location location = std::source_location::current()) {

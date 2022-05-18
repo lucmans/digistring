@@ -15,7 +15,7 @@
 
 --- src/graphics.cpp
 +++ src/graphics.cpp
-@@ -280,11 +280,12 @@
+@@ -283,11 +283,12 @@
      static bool warning_printed = false;
      if(estimator_graphics != nullptr) {
          set_max_recorded_value_if_larger(estimator_graphics->get_last_max_recorded_value());
@@ -37,23 +37,28 @@
 
 --- src/error.h
 +++ src/error.h
-@@ -10,7 +10,6 @@
- #include <string>
+@@ -11,7 +11,6 @@
  #include <iostream>
+ // #include <sstream>
  #include <stdexcept>
 -#include <source_location>
  
+ #include <unistd.h>  // isatty()
  
- constexpr bool TIMES = false;  // Display timestamp in CLI messages
-@@ -91,27 +90,27 @@
- #define STR(x)              __str(x)
+@@ -76,8 +75,8 @@
+ //     return out_msg;
+ // }
+ 
+-// inline void ex_msg(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-//     __ex_msg(location.file_name(), location.line(), msg);
++// inline void ex_msg(const std::string &msg) {
++//     __ex_msg(__FILE__, __LINE__, msg);
+ // }
  
  
--inline void ex_msg(const std::string &msg, const std::source_location location = std::source_location::current()) {
--    __ex_msg(location.file_name(), location.line(), msg);
-+inline void ex_msg(const std::string &msg) {
-+    __ex_msg(__FILE__, __LINE__, msg);
- }
+@@ -138,24 +137,24 @@
+ 
+ #define STR(x) __str(x)
  
 -inline void error(const std::string &msg, const std::source_location location = std::source_location::current()) {
 -    __msg("Error", RED, location.file_name(), location.line(), msg);
@@ -67,14 +72,26 @@
 +    __msg("Warning", YELLOW, __FILE__, __LINE__, msg);
  }
  
--// inline void info(const std::string &msg, const std::source_location location = std::source_location::current()) {
--//     __msg("Info", GREEN, location.file_name(), location.line(), msg);
-+// inline void info(const std::string &msg) {
-+//     __msg("Info", GREEN, __FILE__, __LINE__, msg);
- // }
- inline void info(const std::string &msg) {
-     __msg("Info", GREEN, msg);  // Prints to std::cout and does not print file:line
- }
+ #ifdef INFO_SOURCE_LOC
+-    inline void info(const std::string &msg, const std::source_location location = std::source_location::current()) {
+-        __msg("Info", GREEN, location.file_name(), location.line(), msg);
++    inline void info(const std::string &msg) {
++        __msg("Info", GREEN, __FILE__, __LINE__, msg);
+     }
+-    // inline void info(std::stringstream &msg_stream, const std::source_location location = std::source_location::current()) {
++    // inline void info(std::stringstream &msg_stream) {
+     //     std::string msg_line;
+     //     while(msg_stream) {
+     //         std::getline(msg_stream, msg_line);
+     //         if(msg_line != "")
+-    //             __msg("Info", GREEN, location.file_name(), location.line(), msg_line);
++    //             __msg("Info", GREEN, __FILE__, __LINE__, msg_line);
+     //         else
+     //             __msg("");
+     //     }
+@@ -176,8 +175,8 @@
+     // }
+ #endif  // INFO_SOURCE_LOC
  
 -inline void debug(const std::string &msg, const std::source_location location = std::source_location::current()) {
 -    __msg("Debug", BLUE, location.file_name(), location.line(), msg);
