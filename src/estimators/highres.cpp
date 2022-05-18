@@ -41,18 +41,18 @@
 
 // Log
 inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
-    const double a = log2(norms[max_idx - 1]),
-                 b = log2(norms[max_idx]),
-                 c = log2(norms[max_idx + 1]);
+    const double a = log(norms[max_idx - 1]),
+                 b = log(norms[max_idx]),
+                 c = log(norms[max_idx + 1]);
     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
 
     return max_idx + p;
 }
 
 inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
-    const double a = log2(norms[max_idx - 1]),
-                 b = log2(norms[max_idx]),
-                 c = log2(norms[max_idx + 1]);
+    const double a = log(norms[max_idx - 1]),
+                 b = log(norms[max_idx]),
+                 c = log(norms[max_idx + 1]);
     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
 
     amp = exp2(b - (0.25 * (a - c) * p));
