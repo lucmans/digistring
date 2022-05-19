@@ -55,7 +55,7 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_
                  c = log(norms[max_idx + 1]);
     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
 
-    amp = exp2(b - (0.25 * (a - c) * p));
+    amp = exp(b - (0.25 * (a - c) * p));
 
     return max_idx + p;
 }
