@@ -19,7 +19,7 @@
 
 
 // Linear
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1]) {
 //     const double a = norms[max_idx - 1],
 //                  b = norms[max_idx],
 //                  c = norms[max_idx + 1];
@@ -28,7 +28,7 @@
 //     return max_idx + p;
 // }
 
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1], double &amp) {
 //     const double a = norms[max_idx - 1],
 //                  b = norms[max_idx],
 //                  c = norms[max_idx + 1];
@@ -40,7 +40,7 @@
 // }
 
 // Log
-inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1]) {
     const double a = log(norms[max_idx - 1]),
                  b = log(norms[max_idx]),
                  c = log(norms[max_idx + 1]);
@@ -49,7 +49,7 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
     return max_idx + p;
 }
 
-inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
+inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1], double &amp) {
     const double a = log(norms[max_idx - 1]),
                  b = log(norms[max_idx]),
                  c = log(norms[max_idx + 1]);
@@ -61,7 +61,7 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
 }
 
 // dB
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1]) {
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1]) {
 //     const double a = 20.0 * log10(norms[max_idx - 1]),
 //                  b = 20.0 * log10(norms[max_idx]),
 //                  c = 20.0 * log10(norms[max_idx + 1]);
@@ -70,7 +70,7 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE 
 //     return max_idx + p;
 // }
 
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE / 2) + 1], double &amp) {
+// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1], double &amp) {
 //     const double a = 20.0 * log10(norms[max_idx - 1]),
 //                  b = 20.0 * log10(norms[max_idx]),
 //                  c = 20.0 * log10(norms[max_idx + 1]);
@@ -159,6 +159,20 @@ void HighRes::calc_envelope(const double norms[(FRAME_SIZE_PADDED / 2) + 1], dou
 
 void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks) {
     for(int i = 1; i < (FRAME_SIZE_PADDED / 2); i++) {
+        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1])
+            peaks.push_back(i);
+    }
+
+    // Filter quiet peaks
+    for(size_t i = peaks.size(); i > 0; i--) {
+        if(norms[peaks[i - 1]] < PEAK_THRESHOLD)
+            peaks.erase(peaks.begin() + (i - 1));
+    }
+}
+
+// Low-passed version
+void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin) {
+    for(int i = 1; i < std::min(low_pass_bin, (FRAME_SIZE_PADDED / 2)); i++) {
         if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1])
             peaks.push_back(i);
     }
@@ -349,6 +363,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     std::vector<int> peaks;
     if(power > POWER_THRESHOLD)
         envelope_peaks(norms, envelope, peaks, max_norm);
+        // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED));
 
     // // Find peaks on min-dy
     // std::vector<int> peaks;
