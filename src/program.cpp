@@ -23,13 +23,15 @@
 #include <thread>  // sleep
 #include <utility>  // std::move()
 #include <cmath>  // std::round()
+#include <cstring>  // memcpy()
 
 
 Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDeviceID *const _out) : graphics(_g) {
+    // As early as possible, so it is very likely enough time has passed to render next frame when main loop is running
+    prev_frame = std::chrono::steady_clock::now();
+
     in_dev = _in;
     out_dev = _out;
-
-    prev_frame = std::chrono::steady_clock::now();
 
     // We let the estimator create the input buffer for optimal size and better alignment
     input_buffer = NULL;
@@ -77,12 +79,6 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
             error("Can't slowdown if SampleGetter is blocking (audio in devices)");
             exit(EXIT_FAILURE);
         }
-
-        if(!cli_args.sync_with_audio && !cli_args.synth) {
-            error("Slowdown mode does nothing without syncing or synthesizing audio");
-            hint("Either disable SLOWDOWN in config/audio.h or pass --sync/--synth flag");
-            exit(EXIT_FAILURE);
-        }
     }
 
     synth_buffer = nullptr;
@@ -99,12 +95,24 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         synth = synth_factory(cli_args.synth_type);
     }
 
+    if(cli_args.stereo_split) {
+        playback_buffer_n_samples = input_buffer_n_samples;
+        try {
+            playback_buffer = new float[playback_buffer_n_samples];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate playback_buffer (" + STR(e.what()) + ")");
+            hint("Try using an Estimator with a smaller input buffer size or don't playback sound");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     mouse_clicked = false;
 
     if(cli_args.output_file)
         results_file = new ResultsFile(cli_args.output_filename);
 
-    lag = 0;
+    lag = 0;  // DEBUG
 
     note_change_time = std::chrono::duration<double>(NOTE_TIME + 1);
 }
@@ -117,6 +125,11 @@ Program::~Program() {
         if(synth_buffer != nullptr)  // Check, as Program may be destroyed while synth_buffer is reallocated
             delete[] synth_buffer;
         delete synth;
+    }
+
+    if(cli_args.stereo_split) {
+        if(playback_buffer != nullptr)  // Check, as Program may be destroyed while synth_buffer is reallocated
+            delete[] playback_buffer;
     }
 
     delete sample_getter;
@@ -189,6 +202,9 @@ void Program::main_loop() {
         if(cli_args.synth)
             synthesize_audio(estimated_events, new_samples);
 
+        if(cli_args.stereo_split)
+            play_split_audio(new_samples);
+
         // Print note estimation to CLI
         // print_results(estimated_events);
 
@@ -201,7 +217,7 @@ void Program::main_loop() {
             std::cout << perf << std::endl;
 
         // Always has to be done when using audio out to prevent program running faster than audio
-        // Otherwise, when no audio out is used and REAL_TIME_OUTPUT is true, it will simulate this behavior
+        // Otherwise, when no audio out is used and cli_args.sync_with_audio is true, it will simulate this behavior
         sync_with_audio(new_samples);
 
 
@@ -237,9 +253,30 @@ void Program::playback_audio(const int new_samples) {
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
             warning("Audio underrun; no audio left to play");
 
-    if(SDL_QueueAudio(*out_dev, input_buffer + (input_buffer_n_samples - new_samples), new_samples * sizeof(float))) {
-        error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
+    if(cli_args.stereo_split) {
+        if(new_samples > playback_buffer_n_samples) {
+            delete[] playback_buffer;
+            playback_buffer = nullptr;  // In case Program is destroyed between delete[] and new float[]
+
+            playback_buffer_n_samples = new_samples;
+            try {
+                debug("Reallocating playback buffer to accommodate SLOWDOWN");
+                playback_buffer = new float[playback_buffer_n_samples];
+            }
+            catch(const std::bad_alloc &e) {
+                error("Failed to allocate new (larger) playback_buffer (" + STR(e.what()) + ")");
+                hint("SLOWDOWN_FACTOR may be too large, which causes the need for large reallocated synth buffers");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        memcpy(playback_buffer, input_buffer + (input_buffer_n_samples - new_samples), new_samples * sizeof(float));
+    }
+    else {
+        if(SDL_QueueAudio(*out_dev, input_buffer + (input_buffer_n_samples - new_samples), new_samples * sizeof(float))) {
+            error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
+            exit(EXIT_FAILURE);
+        }
     }
 
     // Waiting till samples are played is done in sync_with_audio()
@@ -360,6 +397,7 @@ void Program::adjust_events(NoteEvents &events, const int new_samples) {
 
 
 void Program::slowdown(NoteEvents &events, int &new_samples) {
+    // TODO: No moves, just edit events in place
     NoteEvents slowed;
     for(const auto &event : events) {
         const int new_offset = std::round((double)event.offset * SLOWDOWN_FACTOR);
@@ -369,7 +407,7 @@ void Program::slowdown(NoteEvents &events, int &new_samples) {
     }
     events = std::move(slowed);
 
-    new_samples = std::round((double)new_samples * SLOWDOWN_FACTOR);;
+    new_samples = std::round((double)new_samples * SLOWDOWN_FACTOR);
 }
 
 
@@ -382,7 +420,7 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
     if constexpr(SLOWDOWN) {
         if(new_samples > synth_buffer_n_samples) {
             delete[] synth_buffer;
-            synth_buffer = nullptr;
+            synth_buffer = nullptr;  // In case Program is destroyed between delete[] and new float[]
 
             synth_buffer_n_samples = new_samples;
             try {
@@ -399,12 +437,41 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
 
     synth->synthesize(notes, synth_buffer, new_samples);
 
-    if(SDL_QueueAudio(*out_dev, synth_buffer, new_samples * sizeof(float))) {
-        error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
+    if(!cli_args.stereo_split) {
+        if(SDL_QueueAudio(*out_dev, synth_buffer, new_samples * sizeof(float))) {
+            error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
+            exit(EXIT_FAILURE);
+        }
     }
 
     // Waiting till samples are played is done in sync_with_audio()
+}
+
+
+void Program::play_split_audio(const int new_samples) {
+    int played = 0;
+
+    float buf[SAMPLES_PER_BUFFER * 2];
+    while(played < new_samples) {
+        const int block = std::min(new_samples - played, (int)SAMPLES_PER_BUFFER);
+        for(int i = 0; i < block; i++) {
+            if(cli_args.stereo_split_playback_left) {
+                buf[(i * 2) + 0] = playback_buffer[played + i];
+                buf[(i * 2) + 1] = synth_buffer[played + i];
+            }
+            else {
+                buf[(i * 2) + 0] = synth_buffer[played + i];
+                buf[(i * 2) + 1] = playback_buffer[played + i];
+            }
+        }
+
+        played += block;
+
+        if(SDL_QueueAudio(*out_dev, buf, block * 2 * sizeof(float))) {
+            error("Failed to queue audio for playback\nSDL error: " + STR(SDL_GetError()));
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 
@@ -423,7 +490,7 @@ void Program::sync_with_audio(const int new_samples) {
     }
 
     // Otherwise, we have to time the number of used samples ourselves to enforce a virtual sample out rate
-    else if(cli_args.sync_with_audio){
+    else if(cli_args.sync_with_audio) {
         static std::chrono::steady_clock::time_point last_call = std::chrono::steady_clock::now();
 
         // First call will wait too long, as "last_call" is just set, so return immediately

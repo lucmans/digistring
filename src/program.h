@@ -41,6 +41,10 @@ class Program {
         float *synth_buffer;
         int synth_buffer_n_samples;
 
+        // Only used during stereo split playback-synth
+        float *playback_buffer;
+        int playback_buffer_n_samples;
+
         // Frame limiting (graphics)
         std::chrono::duration<double, std::milli> frame_time;
         std::chrono::steady_clock::time_point prev_frame;
@@ -82,6 +86,8 @@ class Program {
 
         // Queues samples in audio out buffer, but doesn't block (is done by sync_with_audio())
         void synthesize_audio(const NoteEvents &notes, const int new_samples);
+
+        void play_split_audio(const int new_samples);
 
         // Wait till one frame is left in systems audio out buffer (needed when fetching samples is faster than playing)
         // In case of no audio out, simulate the behavior by timing duration between calls and waiting the appropriate time

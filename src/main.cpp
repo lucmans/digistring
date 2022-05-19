@@ -27,7 +27,7 @@
 #include <numeric>  // std::accumulate()
 
 
-void print_audio_settings(SDL_AudioSpec &specs, bool input) {
+void print_audio_settings(SDL_AudioSpec &specs, bool input, const int n_channels) {
     // Table headers
     const std::string sample_rate = "Sample rate",
                       format = "Format",
@@ -49,7 +49,7 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
         std::max({
             std::to_string(SAMPLE_RATE).size(),
             std::to_string(AUDIO_FORMAT).size(),
-            std::to_string(N_CHANNELS).size(),
+            std::to_string(n_channels).size(),
             std::to_string(SAMPLES_PER_BUFFER).size()
         }) + spacing,
         std::max({
@@ -68,7 +68,7 @@ void print_audio_settings(SDL_AudioSpec &specs, bool input) {
        << "|-" << std::string(std::accumulate(column_width.begin(), column_width.end(), 0), '-')                                                                            << "-|\n"
        << "| " << std::setw(column_width[0]) << sample_rate        << std::setw(column_width[1]) << SAMPLE_RATE        << std::setw(column_width[2]) << specs.freq          << " |\n"
        << "| " << std::setw(column_width[0]) << format             << std::setw(column_width[1]) << AUDIO_FORMAT       << std::setw(column_width[2]) << specs.format        << " |\n"
-       << "| " << std::setw(column_width[0]) << channels           << std::setw(column_width[1]) << N_CHANNELS         << std::setw(column_width[2]) << (int)specs.channels << " |\n"
+       << "| " << std::setw(column_width[0]) << channels           << std::setw(column_width[1]) << n_channels         << std::setw(column_width[2]) << (int)specs.channels << " |\n"
        << "| " << std::setw(column_width[0]) << samples_per_buffer << std::setw(column_width[1]) << SAMPLES_PER_BUFFER << std::setw(column_width[2]) << specs.samples       << " |\n"
        << "| " << std::setw(column_width[0]) << buffer_size        << std::setw(column_width[1]) << "-"                << std::setw(column_width[2]) << specs.size          << " |\n"
        << "| " << std::setw(column_width[0]) << silence_value      << std::setw(column_width[1]) << "-"                << std::setw(column_width[2]) << (int)specs.silence  << " |\n"
@@ -169,30 +169,37 @@ void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev, c
     SDL_memset(&want, 0, sizeof(want));
     want.freq = SAMPLE_RATE;
     want.format = AUDIO_FORMAT;
-    want.channels = N_CHANNELS;
+    want.channels = (cli_args.stereo_split ? 2 : 1);
     want.samples = SAMPLES_PER_BUFFER;
     want.callback = NULL;
 
     if(cli_args.out_dev_name == "")
-        out_dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
+        out_dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     else
-        out_dev = SDL_OpenAudioDevice(cli_args.out_dev_name.c_str(), 0, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
+        out_dev = SDL_OpenAudioDevice(cli_args.out_dev_name.c_str(), 0, &want, &have, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     if(out_dev == 0) {
         error("Failed to open audio output\n" + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
+    if(want.channels != have.channels) {
+        error("Failed to get " + STR(want.channels) + " audio channels on playback audio device");
+        if(want.channels == 2)
+            hint("Try disabling stereo split playback and synthesis");
+        exit(EXIT_FAILURE);
+    }
     if(print_out_dev)
-        print_audio_settings(have, false);
+        print_audio_settings(have, false, have.channels);
 
+    want.channels = 1;
     if(cli_args.in_dev_name == "")
-        in_dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0/*SDL_AUDIO_ALLOW_ANY_CHANGE*/);
+        in_dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0);
     else
-        in_dev = SDL_OpenAudioDevice(cli_args.in_dev_name.c_str(), 1, &want, &have, 0/*SDL_AUDIO_ALLOW_ANY_CHANGE*/);
+        in_dev = SDL_OpenAudioDevice(cli_args.in_dev_name.c_str(), 1, &want, &have, 0);
     if(in_dev == 0) {
         error("Failed to open audio input\n" + STR(SDL_GetError()));
         exit(EXIT_FAILURE);
     }
-    print_audio_settings(have, true);
+    print_audio_settings(have, true, have.channels);
 }
 
 
@@ -250,6 +257,10 @@ int main(int argc, char *argv[]) {
     set_signal_handlers();
 
     parse_args(argc, argv);
+    if(!verify_cli_args()) {
+        // TODO: Print something? (verify_cli_args() already prints error)
+        exit(EXIT_FAILURE);
+    }
 
     if(!verify_rsc_dir()) {
         hint("You have to point to the resource directory if not running from project root using '--rsc <path>'");

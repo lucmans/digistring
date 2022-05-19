@@ -55,8 +55,8 @@ Argument parameters in <> are required and in [] are optional.
 `--gen-completions <file>`: Generate Bash completions to file (overwriting it).  
 `-n [note]`: Generate note (default is A4).  
 `-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
-`--over <note> [n] [midi]`: Print n (default is 5) overtones of given note; optionally toggle midi number column by passing midi_on/midi_off (default to midi_off).  
-`-p`: Play input audio back.  
+`--over <note> [n] [midi]`: Print n (default is 5) overtones of given note; optionally toggle midi number column by passing "midi_on" or "midi_off" (default to "midi_off").  
+`-p [left/right]`: Play input audio back. When also synthesizing, pass "left" or "right" to set playback to this channel (and synthesis to the other).  
 `--perf`: Print performance stats to stdout.  
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
@@ -91,22 +91,23 @@ Digistring includes a few tools:
 
 
 # TODO
-Playback on left and synth on right audio out if both on (or swapped).  
-Chance sqrt(x^2 + y^2) to hypot(x, y).  
-Make SLOWDOWN a cli arg instead of compile time parameter.  
-Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
-Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
-Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
-Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).  
-Convex envelope and low passed-spectrum peak picking.  
-Correct signal power and note dB calculation.  
-Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
-Ability to cache FFTW3 knowledge.  
-Don't copy whole input buffer when OVERLAP_NONBLOCK.  
-Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).  
-Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
-Set cache directory location based on project root instead of relative to rsc directory.  
-Estimator graphics data wipe after frame (now have to manually .clear() old data).
+- Adjustable synth volume.  
+- Program::slowdown() without std::move().  
+- Chance sqrt(x^2 + y^2) to hypot(x, y).  
+- Make SLOWDOWN a cli arg instead of compile time parameter.  
+- Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
+- Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
+- Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
+- Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).  
+- Convex envelope and low passed-spectrum peak picking.  
+- Correct signal power and note dB calculation.  
+- Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
+- Ability to cache FFTW3 knowledge.  
+- Don't copy whole input buffer when OVERLAP_NONBLOCK.  
+- Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).  
+- Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
+- Set cache directory location based on project root instead of relative to rsc directory.  
+- Estimator graphics data wipe after frame (now have to manually .clear() old data).
 
 
 # BUGS

@@ -125,6 +125,17 @@ void ArgParser::generate_completions() {
                        << indent(4) << "return 0;;\n";
                     break;
 
+                case OptType::opt_left_right:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"left right -\" -- $cur))\n"
+                       << indent(4) << "elif [[ ${cur:0:1} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_FLAGS\" -- $cur))\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"left right\" -- $cur))\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
                 case OptType::midi_switch:
                     ss << indent(4) << "COMPREPLY=($(compgen -W \"midi_on midi_off\" -- $cur))\n"
                        << indent(4) << "return 0;;\n";

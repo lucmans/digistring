@@ -56,7 +56,7 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         {"-o",                  ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
         {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
         {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::midi_switch, OptType::last_arg})},
-        {"-p",                  ParseObj(&ArgParser::parse_playback,            {})},
+        {"-p",                  ParseObj(&ArgParser::parse_playback,            {OptType::opt_left_right})},
         {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
         {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
         // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
@@ -79,8 +79,8 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"-h | --help",                 "Print command line argument information. Optionally pass 'readme' for readme formatting"},
     {"-n [note]",                   "Generate note (default is A4)"},
     {"-o | --output [file]",        "Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")"},
-    {"--over <note> [n] [midi]",    "Print n (default is 5) overtones of given note; optionally toggle midi number column by passing midi_on/midi_off (default to midi_off)"},
-    {"-p",                          "Play recorded audio back"},
+    {"--over <note> [n] [midi]",    "Print n (default is 5) overtones of given note; optionally toggle midi number column by passing \"midi_on\" or \"midi_off\" (default to midi_off)"},
+    {"-p",                          "Play recorded audio back; when also synthesizing, pass \"left\" or \"right\" to set playback to this channel (and synthesis to the other)"},
     {"--perf",                      "Output performance information to stdout"},
     {"-r <w> <h>",                  "Start GUI with given resolution"},
     // {"--real-time",                 "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
@@ -367,8 +367,26 @@ void ArgParser::parse_print_overtone() {
 
 
 void ArgParser::parse_playback() {
-    if(cli_args.synth) {
+    const char *lr_cstring;
+    if(fetch_opt(lr_cstring)) {
+        const std::string lr_string = lr_cstring;
+        if(lr_string == "left") {
+            cli_args.stereo_split = true;
+            cli_args.stereo_split_playback_left = true;
+        }
+        else if(lr_string == "right") {
+            cli_args.stereo_split = true;
+            cli_args.stereo_split_playback_left = false;
+        }
+        else {
+            error("Invalid argument passed to playback flag; expected 'left' or 'right'");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if(cli_args.synth && !cli_args.stereo_split) {
         error("Can't playback input audio while synthesizing");
+        hint("To split playback and synthesis over stereo channels, pass 'left' or 'right' to playback");
         exit(EXIT_FAILURE);
     }
 
@@ -492,8 +510,9 @@ void ArgParser::parse_sync_with_audio() {
 
 
 void ArgParser::parse_synth() {
-    if(cli_args.playback) {
+    if(cli_args.playback && !cli_args.stereo_split) {
         error("Can't synthesize sound while playing back input");
+        hint("To split playback and synthesis over stereo channels, pass 'left' or 'right' to playback");
         exit(EXIT_FAILURE);
     }
 

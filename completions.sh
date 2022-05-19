@@ -37,6 +37,15 @@ function _generate_digistring_compl() {
                     COMPREPLY=($(compgen -A file -- $cur))
                 fi
                 return 0;;
+            -p)
+                if [[ ${#cur} == 0 ]]; then
+                    COMPREPLY=($(compgen -W "left right -" -- $cur))
+                elif [[ ${cur:0:1} == "-" ]]; then
+                    COMPREPLY=($(compgen -W "$ALL_FLAGS" -- $cur))
+                else
+                    COMPREPLY=($(compgen -W "left right" -- $cur))
+                fi
+                return 0;;
             -r)
                 if [[ ${#cur} == 0 ]]; then
                     OLD_IFS="$IFS"

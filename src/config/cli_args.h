@@ -6,6 +6,9 @@
 #include "synth/synth.h"  // Only for Synths enum
 #include "sample_getter/sample_getter.h"  // Only for SampleGetters enum
 
+#include "config/audio.h"
+#include "config/graphics.h"
+
 #include <string>
 
 
@@ -30,6 +33,9 @@ struct CLIArgs {
     bool playback = false;
     bool synth = false;
     Synths synth_type = Synths::sine;
+    // Playback both separated over stereo options
+    bool stereo_split = false;  // If true, implies cli_args.playback is true
+    bool stereo_split_playback_left;  // == stereo_split_synth_right
 
     // Sync Digistring components (graphics etc.) with audio output rate
     // Program constructor may set value back to false if syncing is not a valid choice!
@@ -51,6 +57,25 @@ struct CLIArgs {
     std::string output_filename;
 };
 extern CLIArgs cli_args;
+
+
+// Checks if combination of cli_args is valid
+inline bool verify_cli_args() {
+    if constexpr(SLOWDOWN) {
+        if(!cli_args.sync_with_audio && !cli_args.synth) {
+            error("Slowdown mode does nothing without syncing or synthesizing audio");
+            hint("Either disable SLOWDOWN in config/audio.h or pass --sync/--synth flag");
+            return false;
+        }
+    }
+
+    if(cli_args.stereo_split && !cli_args.synth) {
+        error("Passing 'left' or 'right' to playback flag has no effect without synthesizing");
+        return false;
+    }
+
+    return true;
+}
 
 
 #endif  // DIGISTRING_CONFIG_CLI_ARGS_H
