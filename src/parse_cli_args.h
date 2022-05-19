@@ -69,7 +69,7 @@ class ArgParser {
 // The OptType determines what kind of tab complete to perform on arguments of flags
 // last_arg will prevent further completions to be given (useful for signalling no other flags are possible)
 enum class OptType {
-    dir, file, output_file, completions_file, integer, opt_integer, note, opt_note, last_arg, opt_synth, opt_left_right, audio_in_device, audio_out_device, midi_switch
+    dir, file, output_file, completions_file, opt_decimal, integer, opt_integer, note, opt_note, last_arg, opt_synth, opt_left_right, audio_in_device, audio_out_device, midi_switch
 };
 
 // Struct holding the parse function and OptTypes

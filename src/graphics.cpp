@@ -89,7 +89,7 @@ Graphics::Graphics() {
     max_display_frequency_text = create_txt_texture(renderer, "Max displayed frequency: ", info_font, {0xff, 0xff, 0xff, 0xff});
     max_display_frequency_number = create_txt_texture(renderer, std::to_string((int)max_display_frequency), info_font, {0xff, 0xff, 0xff, 0xff});
 
-    max_recorded_value_text = create_txt_texture(renderer, "Max recorded value: ", info_font, {0xff, 0xff, 0xff, 0xff});;
+    max_recorded_value_text = create_txt_texture(renderer, "Max recorded value: ", info_font, {0xff, 0xff, 0xff, 0xff});
     max_recorded_value_number = create_txt_texture(renderer, std::to_string((int)max_recorded_value), info_font, {0xff, 0xff, 0xff, 0xff});
 
     n_samples_text = create_txt_texture(renderer, "Queued input samples: ", info_font, {0xff, 0xff, 0xff, 0xff});

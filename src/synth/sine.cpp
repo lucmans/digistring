@@ -19,7 +19,7 @@ Sine::~Sine() {
 }
 
 
-void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples) {
+void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume) {
     const int n_events = note_events.size();
 
     // Output silence if there are no notes
@@ -35,7 +35,7 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
                     if(next_sample > 0.0)
                         break;
 
-                    synth_buffer[i] = next_sample;
+                    synth_buffer[i] = volume * next_sample;
                 }
             }
             else /*if(last_phase < 0.5)*/ {
@@ -44,7 +44,7 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
                     if(next_sample < 0.0)
                         break;
 
-                    synth_buffer[i] = next_sample;
+                    synth_buffer[i] = volume * next_sample;
                 }
             }
         }
@@ -79,7 +79,7 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
     const Note &out_note = out_event.note;
     const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
     for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++)
-        synth_buffer[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
+        synth_buffer[i] = volume * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
 
     last_phase = fmod(last_phase + (out_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
 

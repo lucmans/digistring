@@ -34,7 +34,7 @@ class Synth {
         Synth();
         virtual ~Synth();
 
-        virtual void synthesize(const NoteEvents &notes, float *const synth_buffer, const int n_samples) = 0;
+        virtual void synthesize(const NoteEvents &notes, float *const synth_buffer, const int n_samples, const double volume) = 0;
 
         void reset_max_amp();
         void set_max_amp(const double _max_amp);

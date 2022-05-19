@@ -61,9 +61,9 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
         // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
         {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
-        {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_integer})},
+        {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_decimal})},
         {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
-        {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth})},
+        {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth, OptType::opt_decimal})},
         {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
     },
     flag_ordering
@@ -85,9 +85,9 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"-r <w> <h>",                  "Start GUI with given resolution"},
     // {"--real-time",                 "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
     {"--rsc",                       "Set alternative resource directory location"},
-    {"-s [f]",                      "Generate sine wave with frequency f (default is 1000 Hz) instead of using recording device"},
+    {"-s [f]",                      "Generate sine wave with frequency f (default is 1000.0 Hz) instead of using recording device"},
     {"--sync",                      "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
-    {"--synth [synth]",             "Synthesize sound based on note estimation from audio input (default synth is sine)"},
+    {"--synth [synth] [volume]",    "Synthesize sound based on note estimation from audio input (default synth is sine, default volume is 1.0)"},
     {"--synths",                    "List available synthesizers"},
 };
 
@@ -488,7 +488,7 @@ void ArgParser::parse_generate_sine() {
         f = std::stod(arg);
     }
     catch(const std::out_of_range &e) {
-        error("Frequency is cannot be represented by a double");
+        error("Given frequency cannot be represented by a double");
         exit(EXIT_FAILURE);
     }
     catch(const std::exception &e) {
@@ -496,7 +496,7 @@ void ArgParser::parse_generate_sine() {
         exit(EXIT_FAILURE);
     }
     if(f < 1.0) {
-        error("Frequency below 1 Hz (" + STR(f) + ")");
+        error("Can't set frequency below 1 Hz (got " + STR(f) + ")");
         exit(EXIT_FAILURE);
     }
     cli_args.generate_sine_freq = f;
@@ -530,6 +530,33 @@ void ArgParser::parse_synth() {
         error("Unknown synth type '" + std::string(synth_string) + "'");
         exit(EXIT_FAILURE);
     }
+
+    const char *volume_string;
+    if(!fetch_opt(volume_string))  // No more arguments, so use default value (set in config.h)
+        return;
+
+    double volume;
+    try {
+        volume = std::stod(volume_string);
+    }
+    catch(const std::out_of_range &e) {
+        error("Given volume cannot be represented by a double");
+        exit(EXIT_FAILURE);
+    }
+    catch(const std::exception &e) {
+        error("Failed to parse given volume as a floating point number (" + STR(e.what()) + ")");
+        exit(EXIT_FAILURE);
+    }
+    if(volume < 0.0) {
+        error("Can't set volume below 0.0 (got " + STR(volume) + ")");
+        exit(EXIT_FAILURE);
+    }
+    if(volume > 1.0) {
+        error("Can't set volume above 1.0 (got " + STR(volume) + ")");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.volume = volume;
 }
 
 

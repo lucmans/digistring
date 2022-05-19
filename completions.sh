@@ -65,16 +65,16 @@ function _generate_digistring_compl() {
                 if [[ ${#cur} == 0 ]]; then
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Please enter an integer or type - for flag completions${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Please enter a decimal or type - for flag completions${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 elif [[ ${cur:0:1} == "-" ]]; then
                     COMPREPLY=($(compgen -W "$ALL_FLAGS" -- $cur))
-                elif [[ $cur =~ ^-?[0123456789]+$ ]]; then
+                elif [[ $cur =~ ^[-+]?[0-9]+\.?[0-9]*$ ]]; then
                     COMPREPLY=(${cur})
                 else
                     OLD_IFS="$IFS"
                     IFS=$'\n'
-                    COMPREPLY=($(compgen -W "Error: Not an integer or -${IFS}..." -- ""))
+                    COMPREPLY=($(compgen -W "Error: Not a decimal or -${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 fi
                 return 0;;
@@ -187,6 +187,23 @@ function _generate_digistring_compl() {
                     OLD_IFS="$IFS"
                     IFS=$'\n'
                     COMPREPLY=($(compgen -W "Error: Not an integer or -${IFS}..." -- ""))
+                    IFS="$OLD_IFS"
+                fi
+                return 0;;
+            --synth)
+                if [[ ${#cur} == 0 ]]; then
+                    OLD_IFS="$IFS"
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -W "Please enter a decimal or type - for flag completions${IFS}..." -- ""))
+                    IFS="$OLD_IFS"
+                elif [[ ${cur:0:1} == "-" ]]; then
+                    COMPREPLY=($(compgen -W "$ALL_FLAGS" -- $cur))
+                elif [[ $cur =~ ^[-+]?[0-9]+\.?[0-9]*$ ]]; then
+                    COMPREPLY=(${cur})
+                else
+                    OLD_IFS="$IFS"
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -W "Error: Not a decimal or -${IFS}..." -- ""))
                     IFS="$OLD_IFS"
                 fi
                 return 0;;

@@ -2,8 +2,8 @@
 #define DIGISTRING_CONFIG_SYNTH_H
 
 
-// Let AMP_SCALING be x, the amplitude of the out wave is calculated using note.amp^x / max_amp^x
-constexpr double AMP_SCALING = 1.0;
+// Amount of synth volume change for every keypress
+constexpr double D_SYNTH_VOLUME = 0.025;
 
 
 #endif  // DIGISTRING_CONFIG_SYNTH_H

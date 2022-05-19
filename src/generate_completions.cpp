@@ -89,6 +89,25 @@ void ArgParser::generate_completions() {
                        << indent(4) << "return 0;;\n";
                     break;
 
+                case OptType::opt_decimal:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a decimal or type - for flag completions${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "elif [[ ${cur:0:1} == \"-\" ]]; then\n"  // Flag is started
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_FLAGS\" -- $cur))\n"
+                       << indent(4) << "elif [[ $cur =~ ^[-+]?[0-9]+\\.?[0-9]*$ ]]; then\n"  // A decimal is typed
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Error: Not a decimal or -${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
                 case OptType::integer:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"

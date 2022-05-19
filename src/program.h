@@ -40,9 +40,9 @@ class Program {
         Synth *synth;
         float *synth_buffer;
         int synth_buffer_n_samples;
+        double volume;
 
-        // Only used during stereo split playback-synth
-        float *playback_buffer;
+        float *playback_buffer;  // Only used during stereo split playback-synth
         int playback_buffer_n_samples;
 
         // Frame limiting (graphics)

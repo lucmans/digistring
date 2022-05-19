@@ -12,7 +12,7 @@ class Square : public Synth {
         Square();
         ~Square() override;
 
-        void synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples);
+        void synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume);
 
 
     private:

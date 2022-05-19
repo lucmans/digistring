@@ -62,7 +62,7 @@ Argument parameters in <> are required and in [] are optional.
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
 `--sync`: Run Digistring "real-time"; in other words, sync graphics etc. as if audio was playing back.  
-`--synth [synth_type]`: Generate sound based on note estimation (default is sine).  
+`--synth [synth_type] [volume]`: Generate sound based on note estimation (default synth is sine, default volume is 1.0).  
 `--synths`: List available synthesizers (`synth_type`s for `--synth`).
 
 All command line arguments can also be printed by running Digistring with `-h`/`--help`.
@@ -74,6 +74,7 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 **Keyboard controls:**  
 `-`/`+`: Decrease/increase the frequency of the generated sine wave or note. Note that frame containing samples representing the old frequency has to finish playing before new frame is played.  
 `[`/`]`: Decrease/increase the maximum displayed frequency.  
+`;`/`'`: Decrease/increase synth volume.  
 `,`/`.`: Zoom in/out waveform plot.  
 `p`: Change plot type.  
 `r`: Reset loudest recorded value.  
@@ -84,14 +85,13 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 # Tools
 Digistring includes a few tools:  
-`dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.  
-`float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.  
-`generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.  
-`patch_tools`: A few tools which help with checking, applying and creating patches.
+- `dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.  
+- `float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.  
+- `generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.  
+- `patch_tools`: A few tools which help with checking, applying and creating patches.
 
 
 # TODO
-- Adjustable synth volume.  
 - Program::slowdown() without std::move().  
 - Chance sqrt(x^2 + y^2) to hypot(x, y).  
 - Make SLOWDOWN a cli arg instead of compile time parameter.  
@@ -111,4 +111,4 @@ Digistring includes a few tools:
 
 
 # BUGS
-Audio click and pops from synthesizer when using NoteEvent offset and length.
+- Audio click and pops from synthesizer when using NoteEvent offset and length.

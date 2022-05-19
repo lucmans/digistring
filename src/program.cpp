@@ -94,6 +94,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
         }
         synth = synth_factory(cli_args.synth_type);
     }
+    volume = cli_args.volume;
 
     if(cli_args.stereo_split) {
         playback_buffer_n_samples = input_buffer_n_samples;
@@ -435,7 +436,7 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
         }
     }
 
-    synth->synthesize(notes, synth_buffer, new_samples);
+    synth->synthesize(notes, synth_buffer, new_samples, volume);
 
     if(!cli_args.stereo_split) {
         if(SDL_QueueAudio(*out_dev, synth_buffer, new_samples * sizeof(float))) {
@@ -578,6 +579,20 @@ void Program::handle_sdl_events() {
 
                     case SDLK_RIGHTBRACKET:
                         graphics->add_max_display_frequency(D_MAX_DISPLAYED_FREQUENCY);
+                        break;
+
+                    case SDLK_SEMICOLON:
+                        volume -= D_SYNTH_VOLUME;
+                        if(volume < 0.0)
+                            volume = 0.0;
+                        info("Set synth volume to " + STR(volume));
+                        break;
+
+                    case SDLK_QUOTE:
+                        volume += D_SYNTH_VOLUME;
+                        if(volume > 1.0)
+                            volume = 1.0;
+                        info("Set synth volume to " + STR(volume));
                         break;
 
                     case SDLK_COMMA:

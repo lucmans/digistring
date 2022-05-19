@@ -22,7 +22,7 @@ SineAmped::~SineAmped() {
 }
 
 
-void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples) {
+void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume) {
     const int n_events = note_events.size();
 
     // Output silence if there are no notes
@@ -40,7 +40,7 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
                     if(next_sample > 0.0)
                         break;
 
-                    synth_buffer[i] = next_sample * prev_frame_amp;
+                    synth_buffer[i] = volume * next_sample * prev_frame_amp;
                 }
             }
             else /*if(last_phase < 0.5)*/ {
@@ -49,7 +49,7 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
                     if(next_sample < 0.0)
                         break;
 
-                    synth_buffer[i] = next_sample * prev_frame_amp;
+                    synth_buffer[i] = volume * next_sample * prev_frame_amp;
                 }
             }
 
@@ -90,11 +90,11 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
     prev_frame_silent = false;
 
     // Write samples to buffer
-    const double amp_mod = std::pow(out_note.amp, AMP_SCALING) / std::pow(max_amp, AMP_SCALING);  // Target synthesized amplitude based on input note amplitude
+    const double amp_mod = out_note.amp / max_amp;  // Target synthesized amplitude based on input note amplitude
     const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
     for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++) {
         const double amp_i = (double)(i - out_event.offset) * ((amp_mod - prev_frame_amp) / (double)out_event.length);  // Linearly interpolate between the output amplitude of the previous frame and the current frame to prevent clicks in audio
-        synth_buffer[i] = (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
+        synth_buffer[i] = volume * (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
     }
 
     last_phase = fmod(last_phase + (out_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
