@@ -92,7 +92,8 @@ Digistring includes a few tools:
 
 
 # TODO
-- Program::slowdown() without std::move().  
+- Use `MIN_NONBLOCK_OVERLAP_RATIO` and `MAX_NONBLOCK_OVERLAP_RATIO` instead `MIN_NEW_SAMPLES_NONBLOCK` and `MAX_NEW_SAMPLES_NONBLOCK`.  
+- Tuned sine synth.  
 - Chance sqrt(x^2 + y^2) to hypot(x, y).  
 - Make SLOWDOWN a cli arg instead of compile time parameter.  
 - Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  

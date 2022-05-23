@@ -69,14 +69,20 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
             error("No entry in switch to construct given SampleGetters type");
             exit(EXIT_FAILURE);
     }
-    if(sample_getter->is_blocking() && cli_args.sync_with_audio) {
-        warning("You should not sync with audio during real-time usage for optimal performance; disabling syncing...");
-        cli_args.sync_with_audio = false;
+    if(sample_getter->is_audio_recording_device()) {
+        if constexpr(SLOWDOWN) {
+            error("Can't slowdown if SampleGetter is an audio recording device (SampleGetter is blocking)");
+            exit(EXIT_FAILURE);
+        }
+        if(cli_args.sync_with_audio) {
+            warning("You should not sync with audio during real-time usage for optimal performance; disabling syncing...");
+            cli_args.sync_with_audio = false;
+        }
     }
-
-    if constexpr(SLOWDOWN) {
-        if(sample_getter->is_blocking()) {
-            error("Can't slowdown if SampleGetter is blocking (audio in devices)");
+    else {
+        if constexpr(DO_OVERLAP_NONBLOCK) {
+            error("Can't perform nonblocking overlap on samples getters which do not block (audio recording devices)");
+            hint("Enable normal overlapping instead in config/transcription.h or choose a different sample getter");
             exit(EXIT_FAILURE);
         }
     }
@@ -151,6 +157,7 @@ void Program::main_loop() {
         results_file->start_array("note events");  // Stopped after while loop, so only note events can be pushed from now on
     }
 
+    std::chrono::steady_clock::time_point start_estimation_loop = std::chrono::steady_clock::now();
     while(!poll_quit()) {
         perf.clear_time_points();
         perf.push_time_point("Start");
@@ -185,7 +192,7 @@ void Program::main_loop() {
 
         // If less than input_buffer_n_samples new samples are retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
         if(new_samples < input_buffer_n_samples)
-            adjust_events(estimated_events, new_samples);
+            adjust_events(estimated_events, input_buffer_n_samples, new_samples);
         // DEBUG: Sanity check
         else if(new_samples > input_buffer_n_samples) {
             error("Received too many samples from SampleGetter");
@@ -226,6 +233,9 @@ void Program::main_loop() {
         if constexpr(ENABLE_ARPEGGIATOR)
             arpeggiate();
     }
+    std::chrono::steady_clock::time_point stop_estimation_loop = std::chrono::steady_clock::now();
+    std::chrono::duration<double> estimation_loop_time = stop_estimation_loop - start_estimation_loop;
+    info("Pitch estimation time: " + STR(estimation_loop_time.count()) + " s");
 
     if(cli_args.output_file) {
         // Write silent note event to explicitly stop the last note
@@ -294,8 +304,8 @@ void Program::write_result_header() {
         results_file->write_double("Overlap ratio", OVERLAP_RATIO);
 
     if(DO_OVERLAP_NONBLOCK) {
-        results_file->write_int("Minimum samples overlap", MIN_NEW_SAMPLES_NONBLOCK);
-        results_file->write_int("Maximum samples overlap", MAX_NEW_SAMPLES_NONBLOCK);
+        results_file->write_int("Minimum new samples non-blocking overlap", MIN_NEW_SAMPLES_NONBLOCK);
+        results_file->write_int("Maximum new samples non-blocking overlap", MAX_NEW_SAMPLES_NONBLOCK);
     }
 }
 
@@ -378,35 +388,54 @@ void Program::update_graphics(const NoteEvents &note_events) {
 }
 
 
-void Program::adjust_events(NoteEvents &events, const int new_samples) {
-    NoteEvents adjusted;
+void Program::adjust_events(NoteEvents &events, const int n_frame_samples, const int new_samples) {
+    /*                  OLD                NEW
+     *    +-----------------------------+-------+
+     *  1 |               |------>      |       |
+     *  2 |                        |------->    |
+     *  3 |                             | |---> |
+     *    +-------------------------------------+
+     *  These are the three different cases when adjusting events, see image above
+     *  The first case, we can simply discard
+     *  In the second case, we have to shorten the length by "old_samples - event.offset" and set offset to 0
+     *  In the third case, we copy the length and set the offset to "event.offset - old_samples"
+     */
+    const int old_samples = n_frame_samples - new_samples;
 
+    // Make second NoteEvents and move events, so that case 1 event deletion doesn't interfere with the loop
+    NoteEvents adjusted;
     for(const auto &event : events) {
-        // As only the first 'new_samples' samples will be relevant, discard events starting later
-        if(event.offset >= (unsigned int)new_samples)
+        // Case 1
+        if(event.offset + event.length < old_samples)
             continue;
 
-        const int new_offset = event.offset;
-        const int new_length = std::min(new_samples - new_offset, new_samples);  // Can't be <= 1 because of if above
+        // Case 2
+        // Else if below only filters for case 2, as case 1 is filtered by previous if
+        else if(event.offset < old_samples) {
+            const int offset_before_new = old_samples - event.offset;
+            const int new_length = event.length - offset_before_new;
+            const int new_offset = 0;
+            adjusted.push_back(NoteEvent(std::move(event.note), new_length, new_offset));
+        }
 
-        adjusted.push_back(NoteEvent(std::move(event.note), new_length, new_offset));
+        // Case 3
+        else {
+            const int new_offset = event.offset - old_samples;
+            const int new_length = event.length;
+            adjusted.push_back(NoteEvent(std::move(event.note), new_length, new_offset));
+        }
     }
-
     events = std::move(adjusted);
+
     perf.push_time_point("NoteEvents adjusted");
 }
 
 
 void Program::slowdown(NoteEvents &events, int &new_samples) {
-    // TODO: No moves, just edit events in place
-    NoteEvents slowed;
-    for(const auto &event : events) {
-        const int new_offset = std::round((double)event.offset * SLOWDOWN_FACTOR);
-        const int new_length = std::round((double)event.length * SLOWDOWN_FACTOR);
-
-        slowed.push_back(NoteEvent(std::move(event.note), new_length, new_offset));
+    for(auto &event : events) {
+        event.offset = std::round((double)event.offset * SLOWDOWN_FACTOR);
+        event.length = std::round((double)event.length * SLOWDOWN_FACTOR);
     }
-    events = std::move(slowed);
 
     new_samples = std::round((double)new_samples * SLOWDOWN_FACTOR);
 }

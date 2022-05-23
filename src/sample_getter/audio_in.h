@@ -14,7 +14,7 @@ class AudioIn : public SampleGetter {
 
         SampleGetters get_type() const override;
 
-        bool is_blocking() const override;
+        bool is_audio_recording_device() const override;
 
         // DEBUG
         void read_increment(float *const in, const int n_samples);

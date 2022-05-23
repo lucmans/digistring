@@ -39,7 +39,7 @@ SampleGetters AudioIn::get_type() const {
 }
 
 
-bool AudioIn::is_blocking() const {
+bool AudioIn::is_audio_recording_device() const {
     return true;
 }
 
@@ -224,6 +224,7 @@ void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, con
 
 
 void AudioIn::copy_nonblocking_overlap(float *const in, const int n_samples) {
+    // TODO: Swap buffer instead of copying
     memcpy(overlap_buffer, in + (n_samples - overlap_buffer_size), overlap_buffer_size * sizeof(float));
 }
 

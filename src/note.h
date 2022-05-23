@@ -77,10 +77,11 @@ Note string_to_note(const std::string &in_string);
 struct NoteEvent {
     Note note;
 
-    unsigned int length;  // Length of NoteEvent in number of samples
-    unsigned int offset;  // Displacement of note start from beginning of frame in number of samples
+    // Both should never be negative
+    int length;  // Length of NoteEvent in number of samples
+    int offset;  // Displacement of note start from beginning of frame in number of samples
 
-    constexpr NoteEvent(const Note &_note, const unsigned int _length, const unsigned int _offset) : note(_note), length(_length), offset(_offset) {};
+    constexpr NoteEvent(const Note &_note, const int _length, const int _offset) : note(_note), length(_length), offset(_offset) {};
 };
 typedef std::vector<NoteEvent> NoteEvents;
 

@@ -26,7 +26,7 @@ constexpr double ZERO_PAD_FACTOR = 7.0;  // Calculates number of zeros to pad; c
 constexpr int FRAME_SIZE_PADDED = FRAME_SIZE + (FRAME_SIZE * ZERO_PAD_FACTOR);  // Size of the frame with padding
 
 // Dolph Chebyshev attanuation
-constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (can't be <45 dB)
+constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (shouldn't be <45 dB, as equivalent noise bandwidth will increase much)
 
 // Gaussian average settings (for peak picking)
 constexpr double KERNEL_WIDTH_FACTOR = 0.000478;  // Width of kernel with respect to spectrum size
@@ -64,6 +64,13 @@ constexpr bool DO_OVERLAP_NONBLOCK = false;
 constexpr int MIN_NEW_SAMPLES_NONBLOCK = 14 * 1024;  // samples
 constexpr int MAX_NEW_SAMPLES_NONBLOCK = (16 * 1024) - 1;  // samples
 static_assert(MIN_NEW_SAMPLES_NONBLOCK < MAX_NEW_SAMPLES_NONBLOCK, "MAX_NEW_SAMPLES_NONBLOCK can't be smaller than MIN_NEW_SAMPLES_NONBLOCK");
+
+// TODO: Use these instead of MIN_NEW_SAMPLES_NONBLOCK and MAX_NEW_SAMPLES_NONBLOCK
+constexpr double MIN_NONBLOCK_OVERLAP_RATIO = 0.65;
+constexpr double MAX_NONBLOCK_OVERLAP_RATIO = 0.99999;
+static_assert(MIN_NONBLOCK_OVERLAP_RATIO > 0.0 && MIN_NONBLOCK_OVERLAP_RATIO < 1.0, "Minimum non-blocking overlap ratio should be between 0.0 and 1.0");
+static_assert(MAX_NONBLOCK_OVERLAP_RATIO > 0.0 && MAX_NONBLOCK_OVERLAP_RATIO < 1.0, "Maximum non-blocking overlap ratio should be between 0.0 and 1.0");
+static_assert(MIN_NONBLOCK_OVERLAP_RATIO < MAX_NONBLOCK_OVERLAP_RATIO, "MAX_NONBLOCK_OVERLAP_RATIO can't be smaller than MIN_NONBLOCK_OVERLAP_RATIO");
 
 static_assert(!(DO_OVERLAP && DO_OVERLAP_NONBLOCK), "Can't set both DO_OVERLAP and DO_OVERLAP_NONBLOCK");
 

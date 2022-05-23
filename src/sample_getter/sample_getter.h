@@ -34,10 +34,11 @@ class SampleGetter {
         // This function should only return its type as named in SampleGetters
         virtual SampleGetters get_type() const = 0;
 
+        // Returns true when getting samples from real sample source (e.g. audio recording device)
         // Shows if getting samples may block, which implies it should be the limiting factor of program loop
         // In other words, don't perform any audio syncing in Program if a SampleGetter blocks
         // This helps with minimizing the latency of Digistring on blocking SampleGetters
-        virtual bool is_blocking() const {return false;};
+        virtual bool is_audio_recording_device() const {return false;};
 
         long get_played_samples() const;
         double get_played_time() const;  // In seconds

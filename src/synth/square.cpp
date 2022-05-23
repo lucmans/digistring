@@ -37,7 +37,7 @@ void Square::synthesize(const NoteEvents &note_events, float *const synth_buffer
     const NoteEvent &out_event = note_events[event_idx];
 
     // DEBUG: Sanity check
-    if(out_event.offset + out_event.length > (unsigned int)n_samples) {
+    if(out_event.offset + out_event.length > n_samples) {
         error("Note event passed to synthesizer is longer than the synth_buffer\nOr the synth_buffer was created shorter than input_buffer_n_samples or Estimator gave note event information from beyond its buffer.");
         exit(EXIT_FAILURE);
     }
@@ -45,7 +45,7 @@ void Square::synthesize(const NoteEvents &note_events, float *const synth_buffer
     // Write samples to buffer
     const Note &out_note = out_event.note;
     const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
-    for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++)
+    for(int i = out_event.offset; i < out_event.offset + out_event.length; i++)
         if(sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE) >= 0)
             synth_buffer[i] = volume;
         else

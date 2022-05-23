@@ -77,7 +77,7 @@ class Program {
 
         // If less than input_buffer_n_samples is retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
         // Adjust the note events to reflect this smaller frame (Estimator doesn't know about overlap, so gives full frame lengths to note events)
-        void adjust_events(NoteEvents &events, const int new_samples);
+        void adjust_events(NoteEvents &events, const int n_frame_samples, const int new_samples);
 
         void slowdown(NoteEvents &events, int &new_samples);
 

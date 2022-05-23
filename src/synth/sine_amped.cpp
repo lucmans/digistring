@@ -79,7 +79,7 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
         max_amp = out_note.amp;
 
     // DEBUG: Sanity check
-    if(out_event.offset + out_event.length > (unsigned int)n_samples) {
+    if(out_event.offset + out_event.length > n_samples) {
         error("Note event passed to synthesizer is longer than the synth_buffer\nOr the synth_buffer was created shorter than input_buffer_n_samples or Estimator gave note event information from beyond its buffer.");
         exit(EXIT_FAILURE);
     }
@@ -92,7 +92,7 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
     // Write samples to buffer
     const double amp_mod = out_note.amp / max_amp;  // Target synthesized amplitude based on input note amplitude
     const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
-    for(unsigned int i = out_event.offset; i < out_event.offset + out_event.length; i++) {
+    for(int i = out_event.offset; i < out_event.offset + out_event.length; i++) {
         const double amp_i = (double)(i - out_event.offset) * ((amp_mod - prev_frame_amp) / (double)out_event.length);  // Linearly interpolate between the output amplitude of the previous frame and the current frame to prevent clicks in audio
         synth_buffer[i] = volume * (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
     }
