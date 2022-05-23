@@ -20,6 +20,12 @@ AudioIn::AudioIn(const int input_buffer_size, SDL_AudioDeviceID *const _in) : Sa
 
     conv_buf = nullptr;
     conv_buf_size = -1;
+
+    if(sizeof(float) != 4 && AUDIO_FORMAT == AUDIO_F32SYS) {
+        error("Floats are not 32 bits on this platform; which is a problem when directly interfacing with sample formats");
+        hint("Add conversion to 32 bit floats, like is done with integers");
+        exit(EXIT_FAILURE);
+    }
 }
 
 AudioIn::~AudioIn() {

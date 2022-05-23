@@ -62,8 +62,13 @@ Tuned::Tuned(float *&input_buffer, int &buffer_size) {
 
     // Create the planners which actually perform the Fourier transform
     // TODO: Exhaustive planner and graphics to show "optimizing planner"
-    for(int i = 0; i < 12; i++)
+    for(int i = 0; i < 12; i++) {
         plans[i] = fftwf_plan_dft_r2c_1d(buffer_sizes[i], ins[i], outs[i], FFTW_ESTIMATE);
+        if(plans[i] == NULL) {
+            error("Failed to create FFTW3 plan");
+            exit(EXIT_FAILURE);
+        }
+    }
 
 
     // Pre-calculate window functions

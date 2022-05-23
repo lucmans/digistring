@@ -37,8 +37,14 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
     }
 
     if(wav_spec.format == AUDIO_F32SYS) {
+        if(sizeof(float) != 4) {
+            error("Floats are not 32 bits on this platform; which is a problem when directly interfacing with sample formats");
+            hint("Add conversion to 32 bit floats, like is done with integers");
+            exit(EXIT_FAILURE);
+        }
+
         if(read_buffer_bytes % sizeof(float) != 0) {
-            error("WAV file '" + file + "' has a non 4 byte float sample");
+            error("WAV file '" + file + "' has a non 32 bit float sample");
             exit(EXIT_FAILURE);
         }
 

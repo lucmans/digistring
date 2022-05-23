@@ -37,6 +37,10 @@ BasicFourier::BasicFourier(float *&input_buffer, int &buffer_size) {
 
     // TODO: Exhaustive planner and graphics to show "optimizing planner"
     p = fftwf_plan_dft_r2c_1d(FRAME_SIZE, input_buffer, out, FFTW_ESTIMATE);
+    if(p == NULL) {
+        error("Failed to create FFTW3 plan");
+        exit(EXIT_FAILURE);
+    }
 
     // Pre-calculate window function
     if(!dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION, true)) {
@@ -135,7 +139,7 @@ void BasicFourier::perform(float *const input_buffer, NoteEvents &note_events) {
         Spectrum &spectrum = basic_fourier_graphics->get_spectrum();
         spectrum.clear();
 
-        // Start at i = 1 to skip rendering DC offset (envelope has no DC offset, so do first explicitly)
+        // Start at i = 1 to skip rendering DC offset
         for(int i = 1; i < (FRAME_SIZE / 2) + 1; i++)
             spectrum.add_data(i * ((double)SAMPLE_RATE / (double)FRAME_SIZE), norms[i], (double)SAMPLE_RATE / (double)FRAME_SIZE);
         spectrum.sort();

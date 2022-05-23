@@ -42,6 +42,7 @@ class HighRes : public Estimator {
 
         void all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks);
         void all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin);
+        void all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin, const int max_norm);
         void envelope_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], const double envelope[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks);
         void envelope_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], const double envelope[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int max_norm);
 

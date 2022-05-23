@@ -105,6 +105,10 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) {
 
     // TODO: Exhaustive planner and graphics to show "optimizing planner"
     p = fftwf_plan_dft_r2c_1d(FRAME_SIZE_PADDED, input_buffer, out, FFTW_ESTIMATE);
+    if(p == NULL) {
+        error("Failed to create FFTW3 plan");
+        exit(EXIT_FAILURE);
+    }
 
     // Pre-calculate window function
     if(!dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION, true)) {
@@ -174,6 +178,19 @@ void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vect
 void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin) {
     for(int i = 1; i < std::min(low_pass_bin, (FRAME_SIZE_PADDED / 2)); i++) {
         if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1])
+            peaks.push_back(i);
+    }
+
+    // Filter quiet peaks
+    for(size_t i = peaks.size(); i > 0; i--) {
+        if(norms[peaks[i - 1]] < PEAK_THRESHOLD)
+            peaks.erase(peaks.begin() + (i - 1));
+    }
+}
+
+void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin, const int max_norm) {
+    for(int i = 1; i < std::min(low_pass_bin, (FRAME_SIZE_PADDED / 2)); i++) {
+        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1] && norms[i] > max_norm * SIGNAL_TO_NOISE_FILTER)
             peaks.push_back(i);
     }
 
@@ -363,6 +380,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     std::vector<int> peaks;
     if(power > POWER_THRESHOLD)
         envelope_peaks(norms, envelope, peaks, max_norm);
+        // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED), max_norm);
         // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED));
 
     // // Find peaks on min-dy
