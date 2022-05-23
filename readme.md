@@ -85,29 +85,29 @@ Left mouse button: Display the frequency corresponding to the cursor's location.
 
 # Tools
 Digistring includes a few tools:  
-- `dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.  
-- `float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.  
-- `generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.  
+- `dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.
+- `float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.
+- `generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.
 - `patch_tools`: A few tools which help with checking, applying and creating patches.
 
 
 # TODO
-- Use `MIN_NONBLOCK_OVERLAP_RATIO` and `MAX_NONBLOCK_OVERLAP_RATIO` instead `MIN_NEW_SAMPLES_NONBLOCK` and `MAX_NEW_SAMPLES_NONBLOCK`.  
-- Tuned sine synth.  
-- Chance sqrt(x^2 + y^2) to hypot(x, y).  
-- Make SLOWDOWN a cli arg instead of compile time parameter.  
-- Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.  
-- Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).  
-- Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.  
-- Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).  
-- Convex envelope and low passed-spectrum peak picking.  
-- Correct signal power and note dB calculation.  
-- Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.  
-- Ability to cache FFTW3 knowledge.  
-- Don't copy whole input buffer when OVERLAP_NONBLOCK.  
-- Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).  
-- Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).  
-- Set cache directory location based on project root instead of relative to rsc directory.  
+- Use `MIN_NONBLOCK_OVERLAP_RATIO` and `MAX_NONBLOCK_OVERLAP_RATIO` instead `MIN_NEW_SAMPLES_NONBLOCK` and `MAX_NEW_SAMPLES_NONBLOCK`.
+- Tuned sine synth.
+- Chance sqrt(x^2 + y^2) to hypot(x, y).
+- Make SLOWDOWN a cli arg instead of compile time parameter.
+- Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.
+- Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).
+- Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.
+- Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).
+- Convex envelope and low passed-spectrum peak picking.
+- Correct signal power and note dB calculation.
+- Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.
+- Ability to cache FFTW3 knowledge.
+- Don't copy whole input buffer when OVERLAP_NONBLOCK.
+- Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).
+- Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).
+- Set cache directory location based on project root instead of relative to rsc directory.
 - Estimator graphics data wipe after frame (now have to manually .clear() old data).
 
 
