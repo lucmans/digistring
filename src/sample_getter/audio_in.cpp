@@ -87,6 +87,12 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
     // debug("Sleeping for " + STR((int)(sample_left_time - 0.0)) + " ms");
     // std::this_thread::sleep_for(std::chrono::milliseconds((int)(sample_left_time - SLEEP_OVERHEAD_TIME)));
 
+    // Print if more samples could've been read
+    // if constexpr(DO_OVERLAP_NONBLOCK) {
+    //     const int samples_ready = SDL_GetQueuedAudioSize(*in_dev) / sizeof(float);
+    //     debug(STR(samples_ready));
+    // }
+
     uint32_t read = 0;
     while(read < n_samples * sizeof(float)) {
         const uint32_t ret = SDL_DequeueAudio(*in_dev, in + (read / sizeof(float)), (n_samples * sizeof(float)) - read);
@@ -150,10 +156,10 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
     }
 
     // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
-    const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(uint32_t));
-    const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
+    // const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(uint32_t));
+    // const double sample_left_time = ((double)samples_left / (double)SAMPLE_RATE) * 1000.0;  // ms
     // debug("Sleeping for " + STR((int)(sample_left_time * SLEEP_FACTOR * 1000.0)) + " μs");
-    std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
+    // std::this_thread::sleep_for(std::chrono::microseconds((int)(sample_left_time * SLEEP_FACTOR * 1000.0)));
 
     uint32_t read = 0;
     while(read < n_samples * sizeof(int32_t)) {
@@ -185,10 +191,10 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
         read += ret;
 
         // A full means enough samples were ready to be retrieved, which implies we could've read earlier (less latency)
-        if(ret == n_samples * sizeof(uint32_t)) {
-            warning("Full read; implies sleeping too long before first SDL_DequeueAudio()");
-            hint("Try lowering SLEEP_FACTOR in config/audio.h");
-        }
+        // if(ret == n_samples * sizeof(uint32_t)) {
+        //     warning("Full read; implies sleeping too long before first SDL_DequeueAudio()");
+        //     hint("Try lowering SLEEP_FACTOR in config/audio.h");
+        // }
     }
 
     perf.push_time_point("Read frame and converted from int32 to float32");
