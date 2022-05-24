@@ -30,5 +30,10 @@ const EstimatorGraphics *Estimator::get_estimator_graphics() {
 
 
 void Estimator::next_plot_type() {
+    if(estimator_graphics == nullptr) {
+        warning("Current Estimator has no graphics");
+        return;
+    }
+
     estimator_graphics->next_plot();
 }

@@ -33,7 +33,7 @@ struct CLIArgs {
     bool playback = false;
     bool synth = false;
     Synths synth_type = Synths::sine;
-    double volume = 1.0;
+    double volume = 0.7;
     // Playback both separated over stereo options
     bool stereo_split = false;  // If true, implies cli_args.playback is true
     bool stereo_split_playback_left;  // == stereo_split_synth_right

@@ -69,7 +69,7 @@ All command line arguments can also be printed by running Digistring with `-h`/`
 
 ## GUI controls
 **Mouse controls**  
-Left mouse button: Display the frequency corresponding to the cursor's location.
+Left mouse button: Display the frequency and relative amplitude corresponding to the cursor's location.
 
 **Keyboard controls:**  
 `-`/`+`: Decrease/increase the frequency of the generated sine wave or note. Note that frame containing samples representing the old frequency has to finish playing before new frame is played.  
@@ -94,6 +94,7 @@ Digistring includes a few tools:
 # TODO
 - Use `MIN_NONBLOCK_OVERLAP_RATIO` and `MAX_NONBLOCK_OVERLAP_RATIO` instead `MIN_NEW_SAMPLES_NONBLOCK` and `MAX_NEW_SAMPLES_NONBLOCK`.
 - Tuned sine synth.
+- SampleGetter which uses Synth to generate samples.
 - Chance sqrt(x^2 + y^2) to hypot(x, y).
 - Make SLOWDOWN a cli arg instead of compile time parameter.
 - Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.

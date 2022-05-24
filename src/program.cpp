@@ -157,7 +157,8 @@ void Program::main_loop() {
         results_file->start_array("note events");  // Stopped after while loop, so only note events can be pushed from now on
     }
 
-    std::chrono::steady_clock::time_point start_estimation_loop = std::chrono::steady_clock::now();
+    const std::chrono::steady_clock::time_point start_estimation_loop = std::chrono::steady_clock::now();
+    unsigned long processed_samples = 0;
     while(!poll_quit()) {
         perf.clear_time_points();
         perf.push_time_point("Start");
@@ -179,6 +180,7 @@ void Program::main_loop() {
         // Read a frame
         // new_samples is not const, as slowdown may alter it
         int new_samples = sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
+        processed_samples += new_samples;
         perf.push_time_point("Got frame full of audio samples");
 
         // Play input_buffer back to the user before it is altered by estimator->perform()
@@ -233,22 +235,19 @@ void Program::main_loop() {
         if constexpr(ENABLE_ARPEGGIATOR)
             arpeggiate();
     }
-    std::chrono::steady_clock::time_point stop_estimation_loop = std::chrono::steady_clock::now();
-    std::chrono::duration<double> estimation_loop_time = stop_estimation_loop - start_estimation_loop;
+    const std::chrono::steady_clock::time_point stop_estimation_loop = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> estimation_loop_time = stop_estimation_loop - start_estimation_loop;
     info("Pitch estimation time: " + STR(estimation_loop_time.count()) + " s");
+    if(!cli_args.sync_with_audio && !cli_args.playback && !cli_args.synth && !sample_getter->is_audio_recording_device()) {
+        info("Processed samples time: " + STR((double)processed_samples / (double)SAMPLE_RATE) + " s");
+        info("Estimator was at least " + STR(((double)processed_samples / (double)SAMPLE_RATE) / estimation_loop_time.count()) + " times real-time");
+    }
 
     if(cli_args.output_file) {
         // Write silent note event to explicitly stop the last note
-        results_file->start_dict();
-        results_file->write_double("t (s)", sample_getter->get_played_time());
-        results_file->write_null("note");
-        results_file->write_null("frequency");
-        results_file->write_null("amplitude");
-        results_file->write_null("error");
-        results_file->write_null("midi_number");
-        results_file->stop_dict();
+        write_results(NoteEvents(), 0);
 
-        // Note events array
+        // End note events array
         results_file->stop_array();
     }
 }
@@ -312,13 +311,16 @@ void Program::write_result_header() {
 void Program::write_results(const NoteEvents &note_events, const int new_samples) {
     results_file->start_dict();
 
-    const double start_frame_time = (double)(sample_getter->get_played_samples() - new_samples) / (double)SAMPLE_RATE;
+    const int start_frame_samples = sample_getter->get_played_samples() - new_samples;
+    const double start_frame_time = (double)start_frame_samples / (double)SAMPLE_RATE;
 
     const int n_notes = note_events.size();
     if(n_notes == 0) {
         if constexpr(WRITE_SILENCE) {
-            results_file->write_double("t (s)", start_frame_time);
-            results_file->write_null("duration (s)");
+            results_file->write_double("note_start (samples)", start_frame_samples);
+            results_file->write_double("note_start (seconds)", start_frame_time);
+            results_file->write_null("note_duration (samples)");
+            results_file->write_null("note_duration (seconds)");
             results_file->write_null("note");
             results_file->write_null("frequency");
             results_file->write_null("amplitude");
@@ -327,25 +329,24 @@ void Program::write_results(const NoteEvents &note_events, const int new_samples
         }
     }
 
-    else if(n_notes == 1) {
-        const std::string note = note_to_string_ascii(note_events[0].note);
-        results_file->write_double("t (s)", start_frame_time + ((double)note_events[0].offset / (double)SAMPLE_RATE));
-        results_file->write_double("duration (s)", (double)note_events[0].length / (double)SAMPLE_RATE);
+    for(const auto &note_event : note_events) {
+        const std::string note = note_to_string_ascii(note_event.note);
+        results_file->write_double("note_start (samples)", start_frame_samples + note_event.offset);
+        results_file->write_double("note_start (seconds)", start_frame_time + ((double)note_event.offset / (double)SAMPLE_RATE));
+        results_file->write_double("note_duration (samples)", note_event.length);
+        results_file->write_double("note_duration (seconds)", (double)note_event.length / (double)SAMPLE_RATE);
         results_file->write_string("note", note);
-        results_file->write_double("frequency", note_events[0].note.freq);
-        results_file->write_double("amplitude", note_events[0].note.amp);
-        results_file->write_double("error", note_events[0].note.error);
-        results_file->write_int("midi_number", note_events[0].note.midi_number);
+        results_file->write_double("frequency", note_event.note.freq);
+        results_file->write_double("amplitude", note_event.note.amp);
+        results_file->write_double("error", note_event.note.error);
+        results_file->write_int("midi_number", note_event.note.midi_number);
     }
-
-    else  // n_notes > 1
-        warning("Polyphonic output is not yet supported");  // TODO: Support
 
     results_file->stop_dict();
 }
 
 
-void Program::print_results(const NoteEvents &note_events) {
+void Program::print_results(const NoteEvents &note_events) const {
     if(note_events.size() == 0)
         return;
 
@@ -388,7 +389,7 @@ void Program::update_graphics(const NoteEvents &note_events) {
 }
 
 
-void Program::adjust_events(NoteEvents &events, const int n_frame_samples, const int new_samples) {
+/*static*/ void Program::adjust_events(NoteEvents &events, const int n_frame_samples, const int new_samples) {
     /*                  OLD                NEW
      *    +-----------------------------+-------+
      *  1 |               |------>      |       |
@@ -431,7 +432,7 @@ void Program::adjust_events(NoteEvents &events, const int n_frame_samples, const
 }
 
 
-void Program::slowdown(NoteEvents &events, int &new_samples) {
+/*static*/ void Program::slowdown(NoteEvents &events, int &new_samples) {
     for(auto &event : events) {
         event.offset = std::round((double)event.offset * SLOWDOWN_FACTOR);
         event.length = std::round((double)event.length * SLOWDOWN_FACTOR);

@@ -19,7 +19,7 @@ Synth *synth_factory(const Synths &synth_type) {
             return new SineAmped();
 
         default:
-            error("Switch block which creates synth instance doesn't recognize synth type");
+            error("Synth factory doesn't recognize synth type");
             exit(EXIT_FAILURE);
     }
 }

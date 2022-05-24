@@ -25,7 +25,7 @@ SampleGetter::SampleGetter(const int input_buffer_size) {
         }
         catch(const std::bad_alloc &e) {
             error("Failed to create overlap buffer");
-            hint("Setting a lower value for OVERLAP_RATIO in config/transcription.h or disable overlapping completely");
+            hint("Try setting a lower value for OVERLAP_RATIO in config/transcription.h or disable overlapping completely");
             exit(EXIT_FAILURE);
         }
 

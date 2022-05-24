@@ -358,6 +358,13 @@ void Graphics::render_current_note(const Note *const note) {
             SDL_RenderCopy(renderer, note_error_minus, NULL, &dst);
         }
 
+        // For displaying/printing average error; useful for checking different quadratic interpolation weights
+        // static double total_error = 0.0;
+        // static double n_errors = 0.0;
+        // total_error += abs_error;
+        // n_errors += 1.0;
+        // std::cout << total_error / n_errors << "\r" << std::flush;
+
         SDL_Texture *note_error_number = create_txt_texture(renderer, std::to_string(abs_error), info_font, {0xff, 0xff, 0xff, 0xff});
         SDL_QueryTexture(note_error_number, NULL, NULL, &w2, &h);
         dst = {w + w_minus, 2 * h, w2, h};

@@ -4,6 +4,10 @@ import json
 
 
 def parse_noteevents(digistring_results: str) -> ne.NoteEvents:
+    print("Digistring currently uses a newer JSON output formatting")
+    print("If you still have old output files, remove this exit condition in 'src/parse_digistring.py'")
+    exit(-1)
+
     # Read and parse the JSON file
     with open(digistring_results) as file:
         json_events = json.load(file)
