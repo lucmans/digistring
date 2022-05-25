@@ -105,7 +105,6 @@ Digistring includes a few tools:
 - Correct signal power and note dB calculation.
 - Building requirements (GCC, Make +version of these and libs) in requirements section of this readme.
 - Ability to cache FFTW3 knowledge.
-- Don't copy whole input buffer when OVERLAP_NONBLOCK.
 - Plot freezing? (Was implemented before; code still partially there, but there is a new graphics rendering structure).
 - Implement Dolph-Chebyshev window in C++ (instead of calling Python using SciPy to compute the window).
 - Set cache directory location based on project root instead of relative to rsc directory.
