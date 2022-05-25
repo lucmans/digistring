@@ -202,13 +202,6 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 
 
 void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, const int bytes_per_sample) {
-    // DEBUG
-    if(MIN_NEW_SAMPLES_NONBLOCK > n_samples) {
-        error("MIN_NEW_SAMPLES_NONBLOCK too large");
-        hint("MIN_NEW_SAMPLES_NONBLOCK is set in config/transcription.h");
-        exit(EXIT_FAILURE);
-    }
-
     const int samples_queued = SDL_GetQueuedAudioSize(*in_dev) / bytes_per_sample;
 
     // Clamp to at least get at minimum MIN_NEW_SAMPLES_NONBLOCK and at maximum MAX_NEW_SAMPLES_NONBLOCK new samples
@@ -224,7 +217,6 @@ void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, con
 
 
 void AudioIn::copy_nonblocking_overlap(float *const in, const int n_samples) {
-    // TODO: Swap buffer instead of copying
     memcpy(overlap_buffer, in + (n_samples - overlap_buffer_size), overlap_buffer_size * sizeof(float));
 }
 
