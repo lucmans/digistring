@@ -155,7 +155,9 @@ void AudioFile::seek(const int d_samples) {
     // If seeked behind start
     if(played_samples <= 0) {
         played_samples = 0;
-        std::fill_n(overlap_buffer, overlap_buffer_size, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
+
+        if constexpr(DO_OVERLAP)
+            std::fill_n(overlap_buffer, overlap_buffer_size, 0.0);  // memset() might be faster, but assumes IEEE 754 floats/doubles
 
         // debug("Seeked to " + STR((double)played_samples / (double)SAMPLE_RATE) + " seconds; " + STR(played_samples) + " samples");
         return;
