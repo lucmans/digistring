@@ -1,0 +1,11 @@
+# The binary
+/delayed_playback
+
+# Object files 
+/obj/
+
+# Make dependency files
+/dep/
+
+# Segfault dumps
+/vgcore.*
