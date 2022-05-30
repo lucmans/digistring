@@ -46,6 +46,7 @@ class ArgParser {
         static const std::map<const std::string, const ParseObj, compare_func_t> flag_to_func;
 
 
+        void parse_audio();
         void parse_audio_in();
         void parse_audio_out();
         void parse_fullscreen();

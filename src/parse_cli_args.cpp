@@ -2,6 +2,7 @@
 #include "generate_completions.cpp"
 
 #include "note.h"
+#include "init_sdl_audio.h"
 #include "error.h"
 
 #include "synth/synth.h"  // Note not synths.h
@@ -11,6 +12,8 @@
 #include "config/transcription.h"
 #include "config/graphics.h"
 #include "config/results_file.h"
+
+#include <SDL2/SDL.h>  // Init SDL for checking audio devices
 
 #include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
 #include <string>  // std::stoi(), std::stod()
@@ -45,6 +48,7 @@ bool flag_ordering(const std::string lhs, const std::string rhs) {
 // const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
 const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::flag_to_func = {
     {
+        {"--audio",             ParseObj(&ArgParser::parse_audio,               {OptType::last_arg})},
         {"--audio_in",          ParseObj(&ArgParser::parse_audio_in,            {OptType::audio_in_device})},
         {"--audio_out",         ParseObj(&ArgParser::parse_audio_out,           {OptType::audio_out_device})},
         {"-f",                  ParseObj(&ArgParser::parse_fullscreen,          {})},
@@ -71,6 +75,7 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
 
 
 const std::pair<const std::string, const std::string> help_strings[] = {
+    {"--audio",                     "Print used audio driver and available audio devices"},
     {"--audio_in <device name>",    "Set the recording device to device name (as provided by Digistring at start-up"},
     {"--audio_out <device name>",   "Set the playback device to device name (as provided by Digistring at start-up"},
     {"-f",                          "Start in fullscreen (also set the fullscreen resolution with '-r')"},
@@ -174,6 +179,24 @@ void ArgParser::parse_args() {
             exit(EXIT_FAILURE);
         }
     }
+}
+
+
+
+void ArgParser::parse_audio() {
+    if(SDL_Init(SDL_INIT_AUDIO) < 0) {
+        error("SDL could not initialize\nSDL Error: " + STR(SDL_GetError()));
+        exit(EXIT_FAILURE);
+    }
+
+    print_audio_driver();
+
+    print_playback_devices();
+    print_recording_devices();
+
+    SDL_Quit();
+
+    exit(EXIT_SUCCESS);
 }
 
 

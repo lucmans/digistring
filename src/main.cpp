@@ -1,6 +1,7 @@
 #include "parse_cli_args.h"
 #include "program.h"
 #include "graphics.h"
+#include "init_sdl_audio.h"
 #include "cache.h"
 #include "performance.h"
 #include "quit.h"
@@ -19,67 +20,13 @@
 #include <filesystem>  // is_directory, exists
 #include <fstream>  // Reading rsc dir verification file
 #include <string>
-#include <iostream>
 
 #include <sstream>  // Output formatting
-#include <iomanip>  // std::setw()
-#include <algorithm>  // std::max()
-#include <numeric>  // std::accumulate()
+#include <algorithm>  // std::clamp(), std::min(), std::max()
 
 
-void print_audio_settings(SDL_AudioSpec &specs, bool input, const int n_channels) {
-    // Table headers
-    const std::string sample_rate = "Sample rate",
-                      format = "Format",
-                      channels = "Channels",
-                      samples_per_buffer = "Samples per buffer",
-                      buffer_size = "Buffer size",
-                      silence_value = "Silence value";
-
-    const int spacing = 2;
-    const std::vector<size_t> column_width = {
-        std::max({
-            sample_rate.size(),
-            format.size(),
-            channels.size(),
-            samples_per_buffer.size(),
-            buffer_size.size(),
-            silence_value.size()
-        }),
-        std::max({
-            std::to_string(SAMPLE_RATE).size(),
-            std::to_string(AUDIO_FORMAT).size(),
-            std::to_string(n_channels).size(),
-            std::to_string(SAMPLES_PER_BUFFER).size()
-        }) + spacing,
-        std::max({
-            std::to_string(specs.freq).size(),
-            std::to_string(specs.format).size(),
-            std::to_string(specs.channels).size(),
-            std::to_string(specs.samples).size(),
-            std::to_string(specs.size).size(),
-            std::to_string(specs.silence).size()
-        }) + spacing
-    };
-
+void print_transcription_config() {
     std::stringstream ss;
-    ss << "--- Audio " << (input ? "input" : "output") << " config ---\n"
-       << "| " << std::setw(column_width[0]) << "setting"          << std::setw(column_width[1]) << "want"             << std::setw(column_width[2]) << "have"              << " |\n"
-       << "|-" << std::string(std::accumulate(column_width.begin(), column_width.end(), 0), '-')                                                                            << "-|\n"
-       << "| " << std::setw(column_width[0]) << sample_rate        << std::setw(column_width[1]) << SAMPLE_RATE        << std::setw(column_width[2]) << specs.freq          << " |\n"
-       << "| " << std::setw(column_width[0]) << format             << std::setw(column_width[1]) << AUDIO_FORMAT       << std::setw(column_width[2]) << specs.format        << " |\n"
-       << "| " << std::setw(column_width[0]) << channels           << std::setw(column_width[1]) << n_channels         << std::setw(column_width[2]) << (int)specs.channels << " |\n"
-       << "| " << std::setw(column_width[0]) << samples_per_buffer << std::setw(column_width[1]) << SAMPLES_PER_BUFFER << std::setw(column_width[2]) << specs.samples       << " |\n"
-       << "| " << std::setw(column_width[0]) << buffer_size        << std::setw(column_width[1]) << "-"                << std::setw(column_width[2]) << specs.size          << " |\n"
-       << "| " << std::setw(column_width[0]) << silence_value      << std::setw(column_width[1]) << "-"                << std::setw(column_width[2]) << (int)specs.silence  << " |\n"
-       << std::flush;
-
-    info(ss.str());
-}
-
-void print_program_config_info() {
-    std::stringstream ss;
-
     ss << "--- Transcription config ---\n";
 
     ss << "  - Frame size: " << FRAME_SIZE << '\n'
@@ -110,100 +57,7 @@ void print_program_config_info() {
     // if constexpr(!HEADLESS)
     //     ss << "Max data history RAM usage: " << (double)(((FRAME_SIZE / 2) + 1) * sizeof(double) * MAX_HISTORY_DATAPOINTS) / (double)(1024 * 1024) << " Mb\n"
 
-    ss << std::flush;
     info(ss.str());
-}
-
-
-void print_audio_driver() {
-    info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
-
-    // std::stringstream ss;
-    // ss << "--- Available audio drivers ---\n";
-    // const int count = SDL_GetNumAudioDrivers();
-    // for(int i = 0; i < count; i++)
-    //     ss << "  * " << SDL_GetAudioDriver(i) << '\n';
-    // ss << std::flush;
-    // info(ss.str());
-}
-
-
-void print_audio_devices(const bool print_out_dev) {
-    __msg("");  // Print newline for clarity
-
-    if(print_out_dev) {
-        const int count = SDL_GetNumAudioDevices(0);
-        if(count == -1)
-            warning("Failed to get list of playback devices");
-        else {
-            std::stringstream out_info;
-            out_info << "--- Playback devices ---\n";
-            out_info << " " << (cli_args.out_dev_name == "" ? "->" : "  ") << " "
-                     << "Device 0: System default" << "\n";
-            for(int i = 0; i < count; i++) {
-                const std::string device_name = SDL_GetAudioDeviceName(i, 0);
-                out_info << " " << (device_name == cli_args.out_dev_name ? "->" : "  ") << " "
-                         << "Device " << i + 1 << ": '" << device_name << "'\n";
-            }
-            out_info << std::flush;
-            info(out_info.str());
-        }
-    }
-
-    const int count = SDL_GetNumAudioDevices(1);
-    if(count == -1)
-        warning("Failed to get list of recording devices");
-    else {
-        std::stringstream in_info;
-        in_info << "--- Recording devices ---\n";
-        in_info << " " << (cli_args.in_dev_name == "" ? "->" : "  ") << " "
-                << "Device 0: System default" << "\n";
-        for(int i = 0; i < count; i++) {
-            const std::string device_name = SDL_GetAudioDeviceName(i, 1);
-            in_info << " " << (device_name == cli_args.in_dev_name ? "->" : "  ") << " "
-                    << "Device " << i + 1 << ": '" << device_name << "'\n";
-        }
-        in_info << std::flush;
-        info(in_info.str());
-    }
-}
-
-void init_audio_devices(SDL_AudioDeviceID &in_dev, SDL_AudioDeviceID &out_dev, const bool print_out_dev) {
-    SDL_AudioSpec want, have;
-    SDL_memset(&want, 0, sizeof(want));
-    want.freq = SAMPLE_RATE;
-    want.format = AUDIO_FORMAT;
-    want.channels = (cli_args.stereo_split ? 2 : 1);
-    want.samples = SAMPLES_PER_BUFFER;
-    want.callback = NULL;
-
-    if(cli_args.out_dev_name == "")
-        out_dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
-    else
-        out_dev = SDL_OpenAudioDevice(cli_args.out_dev_name.c_str(), 0, &want, &have, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
-    if(out_dev == 0) {
-        error("Failed to open audio output\n" + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
-    }
-    if(want.channels != have.channels) {
-        error("Failed to get " + STR(want.channels) + " audio channels on playback audio device");
-        if(want.channels == 2)
-            hint("Try disabling stereo split playback and synthesis");
-        exit(EXIT_FAILURE);
-    }
-    if(print_out_dev)
-        print_audio_settings(have, false, have.channels);
-
-    want.channels = 1;
-    if(cli_args.in_dev_name == "")
-        in_dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0);
-    else
-        in_dev = SDL_OpenAudioDevice(cli_args.in_dev_name.c_str(), 1, &want, &have, 0);
-    if(in_dev == 0) {
-        error("Failed to open audio input\n" + STR(SDL_GetError()));
-        exit(EXIT_FAILURE);
-    }
-    print_audio_settings(have, true, have.channels);
 }
 
 
@@ -280,12 +134,27 @@ int main(int argc, char *argv[]) {
     }
 
     // Init audio devices
-    SDL_AudioDeviceID in_dev, out_dev;
-    print_audio_driver();
-    print_audio_devices(cli_args.playback || cli_args.synth);
-    init_audio_devices(in_dev, out_dev, cli_args.playback || cli_args.synth);
+    const bool playing_back = cli_args.playback || cli_args.synth;
+    const bool recording = cli_args.audio_input_method == SampleGetters::audio_in;  // TODO: Condition
 
-    print_program_config_info();  // Audio and transcription settings
+    if(playing_back || recording) {
+        print_audio_driver();
+        __msg("");  // Print newline for clarity
+    }
+
+    SDL_AudioDeviceID out_dev;
+    if(playing_back) {
+        print_playback_devices();
+        init_playback_device(out_dev);
+    }
+
+    SDL_AudioDeviceID in_dev;
+    if(recording) {
+        print_recording_devices();
+        init_recording_device(in_dev);
+    }
+
+    print_transcription_config();
 
     Graphics *graphics = nullptr;
     if constexpr(!HEADLESS) {

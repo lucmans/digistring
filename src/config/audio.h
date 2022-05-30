@@ -15,7 +15,12 @@ constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_F32SYS;  // 32 bit floats
 // Check if audio format can be converted to float32 (AUDIO_F32SYS)
 static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Audio format has to be either int32 or float32");
 
-constexpr unsigned int SAMPLES_PER_BUFFER = 128;
+constexpr unsigned int SAMPLES_PER_BUFFER = 64;
+
+
+// If the audio hardware doesn't support the requested audio settings, SDL can implicitly convert the given audio data
+// With this setting, we can disallow this implicit conversion and generate error instead
+constexpr bool ALLOW_PLAYBACK_CHANGE = true;
 
 
 // When processing takes longer than playing the samples back, underruns occur
