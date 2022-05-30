@@ -303,8 +303,8 @@ void Program::write_result_header() {
         results_file->write_double("Overlap ratio", OVERLAP_RATIO);
 
     if(DO_OVERLAP_NONBLOCK) {
-        results_file->write_int("Minimum new samples non-blocking overlap", MIN_NEW_SAMPLES_NONBLOCK);
-        results_file->write_int("Maximum new samples non-blocking overlap", MAX_NEW_SAMPLES_NONBLOCK);
+        results_file->write_int("Minimum non-blocking overlap ratio", MIN_NONBLOCK_OVERLAP_RATIO);
+        results_file->write_int("Maximum non-blocking overlap ratio", MAX_NONBLOCK_OVERLAP_RATIO);
     }
 }
 
@@ -730,6 +730,10 @@ void Program::handle_sdl_events() {
             case SDL_RENDER_DEVICE_RESET:
                 warning("Graphics had a mishap");
                 break;
+
+            // default:
+            //     debug("Unhandled event of type " + STR(e.type));
+            //     break;
         }
     }
 }

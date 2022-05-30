@@ -92,14 +92,18 @@ void print_program_config_info() {
     }
 
     if(DO_OVERLAP) {
-        const int overlap_n_samples = std::max((int)(OVERLAP_RATIO * (double)FRAME_SIZE), 1);
+        const int overlap_n_samples = std::clamp((int)(OVERLAP_RATIO * (double)FRAME_SIZE), 1, FRAME_SIZE - 1);
         ss << "  - Overlap ratio: " << OVERLAP_RATIO << "  (" << overlap_n_samples << " overlapping samples)" << '\n'
            << "  - Frame time without overlap: " << ((double)(FRAME_SIZE - overlap_n_samples) / (double)SAMPLE_RATE) * 1000.0 << " ms\n";
     }
 
     if(DO_OVERLAP_NONBLOCK) {
-        ss << "  - Minimum non-blocking frame advance: " << MIN_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MIN_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n"
-           << "  - Maximum non-blocking frame advance: " << MAX_NEW_SAMPLES_NONBLOCK << " samples  (" << ((double)MAX_NEW_SAMPLES_NONBLOCK * 1000.0) / (double)SAMPLE_RATE << " ms)\n";
+        const int min_overlap_n_samples = std::max((int)(MIN_NONBLOCK_OVERLAP_RATIO * (double)FRAME_SIZE), 1);
+        const int max_overlap_n_samples = std::min((int)(MAX_NONBLOCK_OVERLAP_RATIO * (double)FRAME_SIZE), FRAME_SIZE - 1);
+
+        ss << "  - Minimum non-blocking overlap ratio: " << MIN_NONBLOCK_OVERLAP_RATIO << "  (" << min_overlap_n_samples << " overlapping samples)\n"
+           << "  - Maximum non-blocking overlap ratio: " << MAX_NONBLOCK_OVERLAP_RATIO << "  (" << max_overlap_n_samples << " overlapping samples)\n"
+           << "  - Frame time between " << ((MIN_NONBLOCK_OVERLAP_RATIO * FRAME_SIZE) * 1000.0) / (double)SAMPLE_RATE << " and " << ((MAX_NONBLOCK_OVERLAP_RATIO * FRAME_SIZE) * 1000.0) / (double)SAMPLE_RATE << " ms\n";
     }
 
     // TODO: Better estimate

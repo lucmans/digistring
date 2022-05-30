@@ -59,13 +59,6 @@ static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should 
 
 // When reading from audio in, instead of reading a fixed ratio, read as many samples as possible without blocking
 constexpr bool DO_OVERLAP_NONBLOCK = false;
-// Minimum number of samples to overlap
-// Should not be more than the size of a frame!
-constexpr int MIN_NEW_SAMPLES_NONBLOCK = 14 * 1024;  // samples
-constexpr int MAX_NEW_SAMPLES_NONBLOCK = (16 * 1024) - 1;  // samples
-static_assert(MIN_NEW_SAMPLES_NONBLOCK < MAX_NEW_SAMPLES_NONBLOCK, "MAX_NEW_SAMPLES_NONBLOCK can't be smaller than MIN_NEW_SAMPLES_NONBLOCK");
-
-// TODO: Use these instead of MIN_NEW_SAMPLES_NONBLOCK and MAX_NEW_SAMPLES_NONBLOCK
 constexpr double MIN_NONBLOCK_OVERLAP_RATIO = 0.65;
 constexpr double MAX_NONBLOCK_OVERLAP_RATIO = 0.99999;
 static_assert(MIN_NONBLOCK_OVERLAP_RATIO > 0.0 && MIN_NONBLOCK_OVERLAP_RATIO < 1.0, "Minimum non-blocking overlap ratio should be between 0.0 and 1.0");

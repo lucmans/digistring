@@ -204,8 +204,10 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
 void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, const int bytes_per_sample) {
     const int samples_queued = SDL_GetQueuedAudioSize(*in_dev) / bytes_per_sample;
 
-    // Clamp to at least get at minimum MIN_NEW_SAMPLES_NONBLOCK and at maximum MAX_NEW_SAMPLES_NONBLOCK new samples
-    const int n_overlap = std::clamp(n_samples - samples_queued, n_samples - MAX_NEW_SAMPLES_NONBLOCK, n_samples - MIN_NEW_SAMPLES_NONBLOCK);
+    const int min_overlap_samples = std::max((int)((double)n_samples * MIN_NONBLOCK_OVERLAP_RATIO), 1);
+    const int max_overlap_samples = std::min((int)((double)n_samples * MAX_NONBLOCK_OVERLAP_RATIO), n_samples - 1);
+
+    const int n_overlap = std::clamp(n_samples - samples_queued, min_overlap_samples, max_overlap_samples);
 
     // Paste the end of overlap_buffer to start of 'in'
     memcpy(in, overlap_buffer + (overlap_buffer_size - n_overlap), n_overlap * sizeof(float));
@@ -217,7 +219,11 @@ void AudioIn::calc_and_paste_nonblocking_overlap(float *&in, int &n_samples, con
 
 
 void AudioIn::copy_nonblocking_overlap(float *const in, const int n_samples) {
-    memcpy(overlap_buffer, in + (n_samples - overlap_buffer_size), overlap_buffer_size * sizeof(float));
+    memcpy(overlap_buffer, in, n_samples * sizeof(float));
+
+    // Possible optimization if n_samples is the same every call
+    // const int max_overlap_samples = std::min((int)((double)n_samples * MAX_NONBLOCK_OVERLAP_RATIO), n_samples - 1);
+    // memcpy(overlap_buffer + (n_samples - max_overlap_samples), in + (n_samples - max_overlap_samples), max_overlap_samples * sizeof(float));
 }
 
 

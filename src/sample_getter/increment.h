@@ -15,6 +15,11 @@ class Increment : public SampleGetter {
 
         SampleGetters get_type() const override;
 
+        bool is_audio_recording_device() const override;
+
+        void calc_and_paste_nonblocking_overlap(float *&in, int &n_samples);
+        void copy_nonblocking_overlap(float *const in, const int n_samples);
+
         int get_frame(float *const in, const int n_samples);
 
 

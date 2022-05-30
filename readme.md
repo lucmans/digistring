@@ -92,11 +92,11 @@ Digistring includes a few tools:
 
 
 # TODO
-- Use `MIN_NONBLOCK_OVERLAP_RATIO` and `MAX_NONBLOCK_OVERLAP_RATIO` instead `MIN_NEW_SAMPLES_NONBLOCK` and `MAX_NEW_SAMPLES_NONBLOCK`.
 - Tuned sine synth.
 - SampleGetter which uses Synth to generate samples.
 - Chance sqrt(x^2 + y^2) to hypot(x, y).
 - Make SLOWDOWN a cli arg instead of compile time parameter.
+- Abstract away all SDL audio code into own Audio class to allow switching audio back-ends.
 - Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.
 - Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).
 - Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.

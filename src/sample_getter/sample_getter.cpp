@@ -34,10 +34,14 @@ SampleGetter::SampleGetter(const int input_buffer_size) {
     // overlap_buffer = nullptr;
     // overlap_buffer_size = 0;
     // if constexpr(DO_OVERLAP || DO_OVERLAP_NONBLOCK) {
-    //     if constexpr(DO_OVERLAP)
-    //         overlap_buffer_size = input_buffer_size * OVERLAP_RATIO;
-    //     else if constexpr(DO_OVERLAP_NONBLOCK)
-    //         overlap_buffer_size = input_buffer_size - MIN_NEW_SAMPLES_NONBLOCK;
+    //     if constexpr(DO_OVERLAP) {
+    //         const int n_overlap = std::clamp((int)(input_buffer_size * OVERLAP_RATIO), 1, input_buffer_size - 1);
+    //         overlap_buffer_size = input_buffer_size * n_overlap;
+    //     }
+    //     else if constexpr(DO_OVERLAP_NONBLOCK) {
+    //         const int min_overlap_samples = std::max((int)((double)input_buffer_size * MIN_NONBLOCK_OVERLAP_RATIO), 1);
+    //         overlap_buffer_size = input_buffer_size - min_overlap_samples;
+    //     }
 
     //     try {
     //         overlap_buffer = new float[overlap_buffer_size];
@@ -77,7 +81,7 @@ void SampleGetter::calc_and_paste_overlap(float *&in, int &n_samples) const {
     // Calculate the remainder of the buffer
     in += n_overlap;
     n_samples -= n_overlap;
-    
+
 
     /* Optimization to only use minimal copying necessary
      * However, this prohibits get_frame() from getting more samples in a subsequent call
