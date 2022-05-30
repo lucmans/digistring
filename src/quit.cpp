@@ -40,6 +40,7 @@ void quit_signal_handler(const int signum) {
     info("Signal 'SIG" + STR(sigabbrev_np(signum)) + "' received");
 
     set_quit();
+    hint("Sending another terminating signal will force quit");
 }
 
 

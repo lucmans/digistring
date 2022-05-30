@@ -22,8 +22,8 @@
 +    info("Signal number " + STR(signum) + " received");
  
      set_quit();
- }
-@@ -47,7 +46,7 @@
+     hint("Sending another terminating signal will force quit");
+@@ -48,7 +47,7 @@
      if(signum == SIGSEGV)
          error("Segmentation fault occurred; printing stack trace (use addr2line to resolve offsets)...");
      else
