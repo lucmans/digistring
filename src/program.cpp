@@ -364,28 +364,29 @@ void Program::update_graphics(const NoteEvents &note_events) {
     const EstimatorGraphics *const estimator_graphics = estimator->get_estimator_graphics();
     perf.push_time_point("Graphics parsed data");
 
-    // Render data
+    // Limit FPS
     frame_time = std::chrono::steady_clock::now() - prev_frame;
-    if(frame_time.count() > 1000.0 / MAX_FPS) {
-        graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
+    if(frame_time.count() < 1000.0 / MAX_FPS)
+        return;
+    prev_frame = std::chrono::steady_clock::now();
 
-        if(cli_args.audio_input_method == SampleGetters::audio_in)
-            graphics->set_queued_samples(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8));
-        else if(cli_args.audio_input_method == SampleGetters::audio_file)
-            graphics->set_file_played_time(sample_getter->get_played_time());  // TODO: Subtract new_samples(_time) from playtime?
+    // Set render data and render frame
+    graphics->set_clicked((mouse_clicked ? mouse_x : -1), mouse_y);
 
-        const int n_notes = note_events.size();
-        if(n_notes == 0)
-            graphics->render_frame(nullptr, estimator_graphics);
-        else if(n_notes == 1)
-            graphics->render_frame(&note_events[0].note, estimator_graphics);
-        else  // n_notes > 1
-            warning("Polyphonic graphics not yet supported");  // TODO: Support
+    if(cli_args.audio_input_method == SampleGetters::audio_in)
+        graphics->set_queued_samples(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8));
+    else if(cli_args.audio_input_method == SampleGetters::audio_file)
+        graphics->set_file_played_time(sample_getter->get_played_time());  // TODO: Subtract new_samples(_time) from playtime?
 
-        perf.push_time_point("Frame rendered");
+    const int n_notes = note_events.size();
+    if(n_notes == 0)
+        graphics->render_frame(nullptr, estimator_graphics);
+    else if(n_notes == 1)
+        graphics->render_frame(&note_events[0].note, estimator_graphics);
+    else  // n_notes > 1
+        warning("Polyphonic graphics not yet supported");  // TODO: Support
 
-        prev_frame = std::chrono::steady_clock::now();
-    }
+    perf.push_time_point("Frame rendered");
 }
 
 

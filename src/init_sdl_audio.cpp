@@ -10,6 +10,7 @@
 #include <iomanip>  // std::setw(), std::setprecision()
 #include <algorithm>  // std::max()
 #include <numeric>  // std::accumulate()
+#include <vector>
 
 
 // SDL uses 0 or 1 to differentiate between a playback and recording audio device
@@ -108,7 +109,12 @@ bool check_change(const SDL_AudioSpec &want, const SDL_AudioSpec &have, const st
 
 
 void print_audio_driver() {
-    info("Using audio driver: " + STR(SDL_GetCurrentAudioDriver()));
+    const char *const current_driver = SDL_GetCurrentAudioDriver();
+    if(current_driver == NULL) {
+        error("No audio driver was initialized");
+        exit(EXIT_FAILURE);
+    }
+    info("Using audio driver: " + STR(current_driver));
 
     // std::stringstream ss;
     // ss << "--- Available audio drivers ---\n";

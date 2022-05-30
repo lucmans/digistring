@@ -190,6 +190,7 @@ void ArgParser::parse_audio() {
     }
 
     print_audio_driver();
+    __msg("");  // Print newline for clarity
 
     print_playback_devices();
     print_recording_devices();
