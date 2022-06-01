@@ -44,6 +44,7 @@ def main(args):
     fig, ax = plt.subplots()
     if INVERT_ORDER:
         ax.violinplot(durations, vert=False, positions=list(range(1, len(titles)))[::-1])
+        titles = titles[0:1] + titles[-1:0:-1]
     else:
         ax.violinplot(durations, vert=False)
 
