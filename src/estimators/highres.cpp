@@ -1,7 +1,6 @@
 #include "highres.h"
 
 #include "error.h"
-#include "performance.h"
 #include "note.h"
 
 #include "window_func.h"
@@ -82,7 +81,7 @@ inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_
 // }
 
 
-HighRes::HighRes(float *&input_buffer, int &buffer_size) {
+HighRes::HighRes(float *&input_buffer, int &buffer_size) : perf("HighRes") {
     // Let the called know the number of samples to request from SampleGetter each call
     buffer_size = FRAME_SIZE;
 
@@ -352,6 +351,9 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
         memcpy(wave_samples.data(), input_buffer, FRAME_SIZE * sizeof(float));
     }
 
+    perf.clear_time_points();
+    perf.push_time_point("Start");
+
     /* Fourier transform */
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
@@ -360,18 +362,19 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
 
     // Do the actual transform
     fftwf_execute(p);
-    perf.push_time_point("Fourier transformed");
+    perf.push_time_point("Executed FFT");
 
     // Calculate amplitude of every frequency component
     double norms[(FRAME_SIZE_PADDED / 2) + 1];
     double power, max_norm;
     calc_norms(out, norms, (FRAME_SIZE_PADDED / 2) + 1, max_norm, power);
-    perf.push_time_point("Norms calculated");
+    perf.push_time_point("Calculated norms");
 
     /* Peak picking */
     // Compute Gaussian envelope
     double envelope[(FRAME_SIZE_PADDED / 2) + 1];
     calc_envelope(norms, envelope);
+    perf.push_time_point("Calculated Gaussian envelope");
 
     // TODO: Convex envelope
     // Start from highest/lowest peaks, then advance both left/right to next highest peak until no peaks left
@@ -382,6 +385,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
         envelope_peaks(norms, envelope, peaks, max_norm);
         // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED), max_norm);
         // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED));
+    perf.push_time_point("Selected peaks");
 
     // // Find peaks on min-dy
     // std::vector<int> peaks;
@@ -391,12 +395,14 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Interpolate peak locations
     NoteSet candidate_notes;
     interpolate_peaks(candidate_notes, norms, peaks);
+    perf.push_time_point("Interpolated peaks");
 
     // Extract played note from the peaks
     NoteSet noteset;  // Noteset, so polyphony can easily be supported
     // get_loudest_peak(noteset, candidate_notes);
     // get_lowest_peak(noteset, candidate_notes);
     get_likeliest_note(noteset, candidate_notes);
+    perf.push_time_point("Created noteset");
 
     // Add note to output note_events if not filtered
     if(noteset.size() > 0) {
@@ -415,6 +421,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
             note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
     }
     prev_power = power;
+    perf.push_time_point("Filtered notes");
 
 
     // Graphics

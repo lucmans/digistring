@@ -9,45 +9,38 @@
 #include <ostream>
 
 #include <map>
+#include <set>
 
 
 typedef std::pair<std::string, std::chrono::steady_clock::time_point> Timestamp;
 
 
-const int DEFAULT_DATA_SIZE = 128;  // Largest a ring buffer can be
-const int N_FRAMES_FPS = 30;  // Number of frames the average FPS is calculated over
-
-
 class Performance {
     public:
-        Performance();
+        Performance(const std::string subtask);
+        Performance() : Performance("") {};
         ~Performance();
 
-        /* All get_time() functions return number of milliseconds */
-        double get_program_time() const;  // Time since program start
-        double get_init_time() const;  // Program init time
-        void set_init_time();  // Only called once before main loop
-
-        /* Automatic timing and printing functions */
-        void push_time_point(const std::string &name);  // Pushes timepoint with given name
+        void push_time_point(const std::string &name);  // Pushes timepoint now with given name
         void push_time_point(const std::string &name, const std::chrono::steady_clock::time_point &tp);
-        void clear_time_points();  // Call after every frame
 
+        // Writes the time point durations to durations if output file is set in cli_args
+        void clear_time_points();
+
+        // For perf object printing (ostream << overload)
         // std::vector<Timestamp>::const_iterator begin() const;
         // std::vector<Timestamp>::const_iterator end() const;
         const std::vector<Timestamp> *get_time_points() const;
 
 
     private:
-        // Timing
         std::vector<Timestamp> time_points;
-        std::chrono::steady_clock::time_point start_program;
-
         std::map<const std::string, std::vector<double>> durations;
 
-        double init_time;  // Milliseconds
+        inline static std::set<std::string> outfiles;
+        std::string subtask;
+        std::string outfile;
 };
-extern Performance perf;
 
 
 std::ostream& operator<<(std::ostream &s, const Performance &p);

@@ -1,7 +1,6 @@
 #include "graphics.h"
 
 #include "graphics_func.h"
-#include "performance.h"
 #include "error.h"
 
 #include "note.h"

@@ -56,9 +56,6 @@ class Program {
         // Output results file
         ResultsFile *results_file;
 
-        // DEBUG
-        int lag;  // ms
-
         // Arpeggiator (easter egg)
         bool plus_held_down, minus_held_down;
         std::chrono::duration<double, std::milli> note_change_time;
@@ -82,7 +79,7 @@ class Program {
         static void slowdown(NoteEvents &events, int &new_samples);
 
         // This function should only be called if HEADLESS is false
-        void update_graphics(const NoteEvents &note_events);
+        bool update_graphics(const NoteEvents &note_events);
 
         // Queues samples in audio out buffer, but doesn't block (is done by sync_with_audio())
         void synthesize_audio(const NoteEvents &notes, const int new_samples);

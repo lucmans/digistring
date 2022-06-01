@@ -1,6 +1,5 @@
 #include "tuned.h"
 
-#include "performance.h"
 #include "note.h"
 #include "error.h"
 
@@ -128,18 +127,18 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
     // Copy input to each array
     for(int i = 1; i < 12; i++)
         memcpy(ins[i], input_buffer + (buffer_sizes[0] - buffer_sizes[i]), buffer_sizes[i] * sizeof(float));
-    perf.push_time_point("Copied input buffer over");
+    // perf.push_time_point("Copied input buffer over");
 
     // Apply window functions to minimize spectral leakage
     for(int i = 0; i < 12; i++)
         for(int j = 0; j < buffer_sizes[j]; j++)
             ins[i][j] *= window_funcs[i][j];
-    perf.push_time_point("Applied window functions");
+    // perf.push_time_point("Applied window functions");
 
     // Do the actual transform
     for(int i = 0; i < 12; i++)
         fftwf_execute(plans[i]);  // TODO: OMP multi threading
-    perf.push_time_point("Fourier transforms performed");
+    // perf.push_time_point("Fourier transforms performed");
 
     // Calculate the amplitudes of each measured frequency
     TunedGraphics *tuned_graphics = nullptr;  // Assign nullptr to prevent warning (it's only set and used when not in headless mode)
@@ -188,7 +187,7 @@ void Tuned::perform(float *const input_buffer, NoteEvents &note_events) {
         spectrum.sort();
     }
 
-    perf.push_time_point("Norms calculated");
+    // perf.push_time_point("Norms calculated");
 
 
     note_events.push_back(NoteEvent(Note(LOWEST_NOTE.midi_number + max_power_channel_idx), buffer_sizes[0], 0));

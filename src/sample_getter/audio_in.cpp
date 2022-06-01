@@ -1,6 +1,5 @@
 #include "audio_in.h"
 
-#include "performance.h"
 #include "error.h"
 #include "quit.h"
 
@@ -76,7 +75,7 @@ void AudioIn::read_increment(float *const in, const int n_samples) {
 
 
 void AudioIn::read_frame_float32_audio_device(float *const in, const int n_samples) {
-    perf.push_time_point("Start waiting for frame");
+    // perf.push_time_point("Start waiting for frame");
 
     // Wait till almost enough samples are ready to be retrieved to minimize CPU usage when idle
     // const int samples_left = n_samples - (SDL_GetQueuedAudioSize(*in_dev) / sizeof(float));
@@ -134,11 +133,11 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
     // }
     // debug(STR(lowest) + " " + STR(highest));
 
-    perf.push_time_point("Read samples from recording device");
+    // perf.push_time_point("Read samples from recording device");
 }
 
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {
-    perf.push_time_point("Start waiting for frame");
+    // perf.push_time_point("Start waiting for frame");
 
     // TODO: Allocate once (or use vector/realloc for faster resizing)
     if(n_samples > conv_buf_size) {
@@ -197,7 +196,7 @@ void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples
         // }
     }
 
-    perf.push_time_point("Read frame and converted from int32 to float32");
+    // perf.push_time_point("Read frame and converted from int32 to float32");
 }
 
 

@@ -2,7 +2,7 @@
 #define DIGISTRING_ERROR_H
 
 
-#include "performance.h"
+#include "startup_timer.h"
 
 #include <cerrno>
 #include <cstdio>
@@ -59,7 +59,7 @@
 //     out_msg += BOLD;
 //     if constexpr(PRINT_PROGRAM_TIME) {
 //         out_msg += "[";
-//         out_msg += perf.get_program_time();
+//         out_msg += startup_timer.get_program_time();
 //         out_msg += "] ";
 //     }
 
@@ -92,13 +92,13 @@ inline void __msg(const char *type, const char *color, const std::string &msg) {
     if(isatty(STDERR_FILENO) == 1) {
         std::cerr << BOLD;
         if constexpr(PRINT_PROGRAM_TIME)
-            std::cerr << "[" << perf.get_program_time() << "] ";
+            std::cerr << "[" << startup_timer.get_program_time() << "] ";
 
         std::cerr << color << type << RESET << ": " << msg << std::endl;
     }
     else {
         if constexpr(PRINT_PROGRAM_TIME)
-            std::cerr << "[" << perf.get_program_time() << "] ";
+            std::cerr << "[" << startup_timer.get_program_time() << "] ";
 
         std::cerr << type << ": " << msg << std::endl;
     }
@@ -109,13 +109,13 @@ inline void __msg(const char *type, const char *color, const char *file, const i
     if(isatty(STDERR_FILENO) == 1) {
         std::cerr << BOLD;
         if constexpr(PRINT_PROGRAM_TIME)
-            std::cerr << "[" << perf.get_program_time() << "] ";
+            std::cerr << "[" << startup_timer.get_program_time() << "] ";
 
         std::cerr << color << type << RESET << ": " << msg << " (" << file << ":" << line << ")" << std::endl;
     }
     else {
         if constexpr(PRINT_PROGRAM_TIME)
-            std::cerr << "[" << perf.get_program_time() << "] ";
+            std::cerr << "[" << startup_timer.get_program_time() << "] ";
 
         std::cerr << type << ": " << msg << " (" << file << ":" << line << ")" << std::endl;
     }

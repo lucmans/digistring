@@ -1,7 +1,6 @@
 #include "basic_fourier.h"
 
 #include "error.h"
-#include "performance.h"
 #include "note.h"
 
 #include "window_func.h"

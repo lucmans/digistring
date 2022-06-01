@@ -6,29 +6,59 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <filesystem>  // std::filesystem::exists()
 
 #include <map>
 #include <fstream>
 
 
-Performance perf;
+Performance::Performance(const std::string _subtask) {
+    // Don't find a filename if no output file is going to be created
+    if(cli_args.perf_output_file == "")
+        return;
 
+    subtask = _subtask;
 
-Performance::Performance() {
-    start_program = std::chrono::steady_clock::now();
-    init_time = -1;
+    // Original filename
+    const std::string o_filename = cli_args.perf_output_file;
+
+    // Separate basename and extension
+    std::string o_basename, o_extension;
+    const size_t pos = o_filename.find_last_of('.');
+    if(pos == std::string::npos || pos == 0)
+        o_basename = o_filename;
+    else {  // pos > 0
+        o_basename = o_filename.substr(0, pos);
+        o_extension = o_filename.substr(pos);
+    }
+    const std::string o_ext_filename = o_basename + (_subtask != "" ? '_' + _subtask : "") + o_extension;
+
+    // Try to generate a new unique filename inserting a number between name and extension
+    std::string g_filename = o_ext_filename;  // Generated filename
+    for(int i = 2; std::filesystem::exists(g_filename) || Performance::outfiles.count(g_filename) == 1; i++)
+        g_filename = o_basename + (_subtask != "" ? '_' + _subtask : "") + '_' + std::to_string(i) + o_extension;
+
+    if(g_filename != o_ext_filename)
+        warning("File '" + o_ext_filename + "' already exists; naming it '" + g_filename + "' instead");
+
+    outfile = g_filename;
+    Performance::outfiles.insert(g_filename);
 }
 
 Performance::~Performance() {
     if(cli_args.perf_output_file == "")
         return;
 
-    const std::string filename = cli_args.perf_output_file;
-    info("Writing Digistring's performance statistics to '" + filename + "'");
+    if(durations.size() == 0) {
+        warning((subtask == "" ? "main" : subtask) + " performance counter has no timepoints");
+        return;
+    }
 
-    std::fstream output_stream(filename, std::fstream::out);
+    info("Writing Digistring's " + (subtask == "" ? "main" : subtask) + " performance statistics to '" + outfile + "'");
+
+    std::fstream output_stream(outfile, std::fstream::out);
     if(!output_stream.is_open()) {
-        error("Failed to create/open file '" + filename + "'");
+        error("Failed to create/open file '" + outfile + "'");
         exit(EXIT_FAILURE);
     }
 
@@ -40,36 +70,6 @@ Performance::~Performance() {
     }
 
     output_stream.close();
-}
-
-
-double Performance::get_program_time() const {
-    std::chrono::duration<double, std::milli> dur = std::chrono::steady_clock::now() - start_program;
-
-    return dur.count();
-}
-
-
-double Performance::get_init_time() const {
-    if(init_time < 0) {
-        warning("Tried to get init time before setting init time");
-        return -1;
-    }
-
-    return init_time;
-}
-
-void Performance::set_init_time() {
-    // Only allow being called once
-    static bool called = false;
-    if(called) {
-        warning("Performance::set_init_time() is called again");
-        return;
-    }
-    called = true;
-
-    std::chrono::duration<double, std::milli> t = std::chrono::steady_clock::now() - start_program;
-    init_time = t.count();
 }
 
 
@@ -91,13 +91,13 @@ void Performance::clear_time_points() {
             return;
         }
 
-        const std::string total_str = "Total frame time";
+        const std::string total_str = "Total time";
         const std::chrono::duration<double, std::milli> total_dur = time_points[n_time_points - 1].second - time_points[0].second;
         durations[total_str].push_back(total_dur.count());
 
         for(size_t i = 1; i < n_time_points; i++) {
             if(time_points[i].first == total_str) {
-                error("Timepoint label is the same as total frame time label (" + total_str + ")");
+                error("Timepoint label is the same as total time label (" + total_str + ")");
                 exit(EXIT_FAILURE);
             }
 

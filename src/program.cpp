@@ -119,8 +119,6 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     if(cli_args.output_file)
         results_file = new ResultsFile(cli_args.output_filename);
 
-    lag = 0;  // DEBUG
-
     note_change_time = std::chrono::duration<double>(NOTE_TIME + 1);
 }
 
@@ -157,6 +155,8 @@ void Program::main_loop() {
         results_file->start_array("note events");  // Stopped after while loop, so only note events can be pushed from now on
     }
 
+    Performance perf;
+
     const std::chrono::steady_clock::time_point start_estimation_loop = std::chrono::steady_clock::now();
     unsigned long processed_samples = 0;
     while(!poll_quit()) {
@@ -167,21 +167,13 @@ void Program::main_loop() {
         handle_sdl_events();
         if(poll_quit())
             break;
-
-        // DEBUG
-        if(lag != 0) {  // Lag might have been increased by in handle_sdl_events()
-            debug("Lagging for " + STR(lag) + " ms");
-            std::this_thread::sleep_for(std::chrono::milliseconds(lag));
-            lag = 0;
-        }
-
         perf.push_time_point("Handled SDL events");
 
         // Read a frame
         // new_samples is not const, as slowdown may alter it
         int new_samples = sample_getter->get_frame(input_buffer, input_buffer_n_samples);  // TODO: Don't block on this call (or still handle SDL events during)
         processed_samples += new_samples;
-        perf.push_time_point("Got frame full of audio samples");
+        perf.push_time_point("Got samples");
 
         // Play input_buffer back to the user before it is altered by estimator->perform()
         if(cli_args.playback)
@@ -190,7 +182,7 @@ void Program::main_loop() {
         // Send frame to estimator
         NoteEvents estimated_events;
         estimator->perform(input_buffer, estimated_events);
-        perf.push_time_point("Performed estimation");
+        perf.push_time_point("Pitch estimated");
 
         // If less than input_buffer_n_samples new samples are retrieved, only the NoteEvents regarding the first 'new_samples' samples are relevant, as the rest is "overwritten" in the next cycle
         if(new_samples < input_buffer_n_samples)
@@ -209,8 +201,10 @@ void Program::main_loop() {
             slowdown(estimated_events, new_samples);
 
         // Arg parser disallows both cli_args.playback and cli_args.synth to be true
-        if(cli_args.synth)
+        if(cli_args.synth) {
             synthesize_audio(estimated_events, new_samples);
+            perf.push_time_point("Synthesized audio");
+        }
 
         if(cli_args.stereo_split)
             play_split_audio(new_samples);
@@ -219,8 +213,11 @@ void Program::main_loop() {
         // print_results(estimated_events);
 
         // Graphics
-        if constexpr(!HEADLESS)
-            update_graphics(estimated_events);
+        if constexpr(!HEADLESS) {
+            const bool new_frame = update_graphics(estimated_events);
+            if(new_frame)
+                perf.push_time_point("Frame rendered");
+        }
 
         // Print performance information to CLI
         if(cli_args.output_performance)
@@ -359,15 +356,14 @@ void Program::print_results(const NoteEvents &note_events) const {
 }
 
 
-void Program::update_graphics(const NoteEvents &note_events) {
+bool Program::update_graphics(const NoteEvents &note_events) {
     // Get the pointer to the graphics object here, as it is only valid till next call to Estimator::perform()
     const EstimatorGraphics *const estimator_graphics = estimator->get_estimator_graphics();
-    perf.push_time_point("Graphics parsed data");
 
     // Limit FPS
     frame_time = std::chrono::steady_clock::now() - prev_frame;
     if(frame_time.count() < 1000.0 / MAX_FPS)
-        return;
+        return false;
     prev_frame = std::chrono::steady_clock::now();
 
     // Set render data and render frame
@@ -386,7 +382,7 @@ void Program::update_graphics(const NoteEvents &note_events) {
     else  // n_notes > 1
         warning("Polyphonic graphics not yet supported");  // TODO: Support
 
-    perf.push_time_point("Frame rendered");
+    return true;
 }
 
 
@@ -428,8 +424,6 @@ void Program::update_graphics(const NoteEvents &note_events) {
         }
     }
     events = std::move(adjusted);
-
-    perf.push_time_point("NoteEvents adjusted");
 }
 
 
@@ -556,6 +550,9 @@ void Program::arpeggiate() {
 
 
 void Program::handle_sdl_events() {
+    // DEBUG
+    static int lag = 0;
+
     SDL_Event e;
     while(SDL_PollEvent(&e) && !poll_quit()) {
         switch(e.type) {
@@ -638,6 +635,7 @@ void Program::handle_sdl_events() {
                     //     graphics->toggle_freeze_graph();
                     //     break;
 
+                    // DEBUG
                     case SDLK_s:
                         debug("Creating lag spike");
                         lag += 250;
@@ -736,5 +734,12 @@ void Program::handle_sdl_events() {
             //     debug("Unhandled event of type " + STR(e.type));
             //     break;
         }
+    }
+
+    // DEBUG
+    if(lag != 0) {  // Lag might have been increased by in handle_sdl_events()
+        debug("Lagging for " + STR(lag) + " ms");
+        std::this_thread::sleep_for(std::chrono::milliseconds(lag));
+        lag = 0;
     }
 }

@@ -125,6 +125,8 @@ lines:
 	@echo
 	wc -l tools/dolph_chebyshev_window/src/*.py
 	@echo
+	wc -l tools/performance_plot/src/*.py
+	@echo
 	@echo -e "\033[1mDelayed playback tool\033[0m"
 	make -C tools/delayed_playback/ --no-print-directory lines
 	@echo -e "\n\033[1mDigistring (C++) code\033[0m"

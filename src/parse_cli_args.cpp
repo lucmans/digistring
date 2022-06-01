@@ -86,7 +86,7 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"-o | --output [file]",        "Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")"},
     {"--over <note> [n] [midi]",    "Print n (default is 5) overtones of given note; optionally toggle midi number column by passing \"midi_on\" or \"midi_off\" (default to midi_off)"},
     {"-p [left/right]",             "Play recorded audio back; when also synthesizing, pass \"left\" or \"right\" to set playback to this channel (and synthesis to the other)"},
-    {"--perf [file]",               "Output performance information to stdout, or write it to file (used by performance plot tool)"},
+    {"--perf <file>",               "Write performance statistics to file, which can be used by our `performance_plot` tool (may generate different files for different subtasks)"},
     {"-r <w> <h>",                  "Start GUI with given resolution"},
     // {"--real-time",                 "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
     {"--rsc <path>",                "Set alternative resource directory location to path"},

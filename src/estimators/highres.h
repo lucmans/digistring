@@ -4,6 +4,8 @@
 
 #include "estimator.h"
 
+#include "performance.h"
+
 #include "estimator_graphics/spectrogram.h"
 #include "estimator_graphics/bins.h"
 #include "estimator_graphics/waterfall.h"
@@ -36,6 +38,8 @@ class HighRes : public Estimator {
         double gaussian[KERNEL_WIDTH];
 
         double prev_power;
+
+        Performance perf;
 
 
         void calc_envelope(const double norms[(FRAME_SIZE_PADDED / 2) + 1], double envelope[(FRAME_SIZE_PADDED / 2) + 1]);
