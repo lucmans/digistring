@@ -16,7 +16,7 @@ Performance::Performance() {
 }
 
 Performance::~Performance() {
-
+    error("Goodbye");
 }
 
 
@@ -78,7 +78,13 @@ const std::vector<Timestamp> *Performance::get_time_points() const {
 
 
 std::ostream& operator<<(std::ostream &s, const Performance &p) {
-    const std::vector<Timestamp> *time_points = p.get_time_points();
+    const std::vector<Timestamp> *const time_points = p.get_time_points();
+
+    if(time_points->size() < 2) {
+        warning("Need at least 2 time points for any performance statistics");
+        return s;
+    }
+
     std::chrono::duration<double, std::milli> dur = (*time_points)[time_points->size() - 1].second - (*time_points)[0].second;
     const double frame_time = dur.count();
 
