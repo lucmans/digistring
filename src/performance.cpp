@@ -1,10 +1,14 @@
 #include "performance.h"
 
 #include "error.h"
+#include "config/cli_args.h"
 
 #include <string>
 #include <vector>
 #include <ostream>
+
+#include <map>
+#include <fstream>
 
 
 Performance perf;
@@ -16,7 +20,26 @@ Performance::Performance() {
 }
 
 Performance::~Performance() {
-    error("Goodbye");
+    if(cli_args.perf_output_file == "")
+        return;
+
+    const std::string filename = cli_args.perf_output_file;
+    info("Writing Digistring's performance statistics to '" + filename + "'");
+
+    std::fstream output_stream(filename, std::fstream::out);
+    if(!output_stream.is_open()) {
+        error("Failed to create/open file '" + filename + "'");
+        exit(EXIT_FAILURE);
+    }
+
+    for(const auto &[desc, times] : durations) {
+        output_stream << desc << std::endl;  // << "  (" << times.size() << " timepoints)" << std::endl;
+        for(const auto &t : times)
+            output_stream << t << ' ';
+        output_stream << std::endl << std::endl;
+    }
+
+    output_stream.close();
 }
 
 
@@ -60,6 +83,29 @@ void Performance::push_time_point(const std::string &name, const std::chrono::st
 
 
 void Performance::clear_time_points() {
+    // Only save durations if outputting it to a file
+    if(cli_args.perf_output_file != "") {
+        const size_t n_time_points = time_points.size();
+        if(n_time_points < 2) {
+            time_points.clear();
+            return;
+        }
+
+        const std::string total_str = "Total frame time";
+        const std::chrono::duration<double, std::milli> total_dur = time_points[n_time_points - 1].second - time_points[0].second;
+        durations[total_str].push_back(total_dur.count());
+
+        for(size_t i = 1; i < n_time_points; i++) {
+            if(time_points[i].first == total_str) {
+                error("Timepoint label is the same as total frame time label (" + total_str + ")");
+                exit(EXIT_FAILURE);
+            }
+
+            const std::chrono::duration<double, std::milli> dur = time_points[i].second - time_points[i - 1].second;
+            durations[time_points[i].first].push_back(dur.count());
+        }
+    }
+
     time_points.clear();
 }
 
@@ -80,17 +126,18 @@ const std::vector<Timestamp> *Performance::get_time_points() const {
 std::ostream& operator<<(std::ostream &s, const Performance &p) {
     const std::vector<Timestamp> *const time_points = p.get_time_points();
 
-    if(time_points->size() < 2) {
+    const size_t n_time_points = time_points->size();
+    if(n_time_points < 2) {
         warning("Need at least 2 time points for any performance statistics");
         return s;
     }
 
-    std::chrono::duration<double, std::milli> dur = (*time_points)[time_points->size() - 1].second - (*time_points)[0].second;
+    std::chrono::duration<double, std::milli> dur = (*time_points)[n_time_points - 1].second - (*time_points)[0].second;
     const double frame_time = dur.count();
 
     s.precision(3);
     s << "Frame time usage: " << frame_time << " ms" << std::endl;
-    for(size_t i = 1; i < time_points->size(); i++) {
+    for(size_t i = 1; i < n_time_points; i++) {
         dur = (*time_points)[i].second - (*time_points)[i - 1].second;
         s << "  " << (*time_points)[i].first << ": " << dur.count() << " ms  (" << (dur.count() / frame_time) * 100.0 << "%)" << std::endl;
     }

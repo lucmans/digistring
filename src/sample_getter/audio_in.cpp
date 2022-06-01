@@ -134,7 +134,7 @@ void AudioIn::read_frame_float32_audio_device(float *const in, const int n_sampl
     // }
     // debug(STR(lowest) + " " + STR(highest));
 
-    perf.push_time_point("Read " + std::to_string(n_samples) + " samples");
+    perf.push_time_point("Read samples from recording device");
 }
 
 void AudioIn::read_frame_int32_audio_device(float *const in, const int n_samples) {

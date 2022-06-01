@@ -1,7 +1,7 @@
 # This file is generated using Digistring's completions generator
 function _generate_digistring_compl() {
     local cur=${COMP_WORDS[COMP_CWORD]}
-    local ALL_FLAGS="-f -h -n -o -p -r -s --audio_in --audio_out --file --gen-completions --help --output --over --perf --rsc --sync --synth --synths"
+    local ALL_FLAGS="-f -h -n -o -p -r -s --audio --audio_in --audio_out --file --gen-completions --help --output --over --perf --rsc --sync --synth --synths"
     local ALL_SYNTHS="sine sine_amped square"
 
     if (( $COMP_CWORD - 1 >= 1 )); then
@@ -78,6 +78,8 @@ function _generate_digistring_compl() {
                     IFS="$OLD_IFS"
                 fi
                 return 0;;
+            --audio)
+                return 0;;
             --audio_in)
                 if [[ ${#cur} == 0 ]]; then
                     OLD_IFS="$IFS"
@@ -135,6 +137,13 @@ function _generate_digistring_compl() {
                     IFS=$'\n'
                     COMPREPLY=($(compgen -W "Error: Not a note name (e.g. A#4)${IFS}..." -- ""))
                     IFS="$OLD_IFS"
+                fi
+                return 0;;
+            --perf)
+                if [[ ${#cur} == 0 ]]; then
+                    COMPREPLY=("perf_statistics.txt")
+                else
+                    COMPREPLY=($(compgen -A file -- $cur))
                 fi
                 return 0;;
             --rsc)

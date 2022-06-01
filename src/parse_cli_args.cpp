@@ -61,7 +61,7 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
         {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::midi_switch, OptType::last_arg})},
         {"-p",                  ParseObj(&ArgParser::parse_playback,            {OptType::opt_left_right})},
-        {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {})},
+        {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {OptType::perf_file})},
         {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
         // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
         {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
@@ -86,7 +86,7 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"-o | --output [file]",        "Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")"},
     {"--over <note> [n] [midi]",    "Print n (default is 5) overtones of given note; optionally toggle midi number column by passing \"midi_on\" or \"midi_off\" (default to midi_off)"},
     {"-p [left/right]",             "Play recorded audio back; when also synthesizing, pass \"left\" or \"right\" to set playback to this channel (and synthesis to the other)"},
-    {"--perf",                      "Output performance information to stdout"},
+    {"--perf [file]",               "Output performance information to stdout, or write it to file (used by performance plot tool)"},
     {"-r <w> <h>",                  "Start GUI with given resolution"},
     // {"--real-time",                 "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
     {"--rsc <path>",                "Set alternative resource directory location to path"},
@@ -424,7 +424,14 @@ void ArgParser::parse_playback() {
 
 
 void ArgParser::parse_print_performance() {
-    cli_args.output_performance = true;
+    const char *perf_file;
+    if(!fetch_opt(perf_file)) {
+        cli_args.output_performance = true;
+        return;
+    }
+    else {
+        cli_args.perf_output_file = perf_file;
+    }
 }
 
 

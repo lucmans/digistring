@@ -3,6 +3,7 @@
 
 
 #include "note.h"
+#include "error.h"
 #include "synth/synth.h"  // Only for Synths enum
 #include "sample_getter/sample_getter.h"  // Only for SampleGetters enum
 
@@ -26,8 +27,10 @@ struct CLIArgs {
     // This path is verified (and string is cleaned) at start of main()
     std::string rsc_dir = "rsc/";
 
-    // Print performance measurements every frame
+    // Print performance measurements to CLI every frame
     bool output_performance = false;
+    // File to write performance number to (which can be plotted with the performance plot tool)
+    std::string perf_output_file = "";  // Empty filename means "don't generate performance file"
 
     // Play recorded audio or synthesize audio based on estimated note
     bool playback = false;

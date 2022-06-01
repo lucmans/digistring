@@ -80,6 +80,15 @@ void ArgParser::generate_completions() {
                        << indent(4) << "return 0;;\n";
                     break;
 
+                case OptType::perf_file:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
+                       << indent(4) << "    COMPREPLY=(\"" << DEFAULT_PERF_FILENAME << "\")\n"
+                       << indent(4) << "else\n"  // Or suggest existing files on non-empty tab
+                       << indent(4) << "    COMPREPLY=($(compgen -A file -- $cur))\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
                 case OptType::completions_file:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"  // Give default output name on empty tab
                        << indent(4) << "    COMPREPLY=(\"completions.sh\")\n"

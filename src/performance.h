@@ -8,6 +8,8 @@
 #include <chrono>
 #include <ostream>
 
+#include <map>
+
 
 typedef std::pair<std::string, std::chrono::steady_clock::time_point> Timestamp;
 
@@ -40,6 +42,8 @@ class Performance {
         // Timing
         std::vector<Timestamp> time_points;
         std::chrono::steady_clock::time_point start_program;
+
+        std::map<const std::string, std::vector<double>> durations;
 
         double init_time;  // Milliseconds
 };

@@ -58,7 +58,7 @@ Argument parameters in <> are required and in [] are optional.
 `-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
 `--over <note> [n] [midi]`: Print n (default is 5) overtones of given note; optionally toggle midi number column by passing "midi_on" or "midi_off" (default to "midi_off").  
 `-p [left/right]`: Play input audio back. When also synthesizing, pass "left" or "right" to set playback to this channel (and synthesis to the other).  
-`--perf`: Print performance stats to stdout.  
+`--perf [file]`: Print performance stats to stdout, or write it to file (used by performance plot tool).  
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
