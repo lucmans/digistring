@@ -53,7 +53,7 @@ inline unsigned int get_spectrum_size(const SpectrumData &spectrum, const bool p
 
 void Waterfall::make_line(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const Spectrum &spectrum) const {
     const SpectrumData spectrum_data = spectrum.get_data();
-    static const unsigned int spectrum_size = get_spectrum_size(spectrum_data);
+    static const unsigned int spectrum_size = get_spectrum_size(spectrum_data, false);
 
     // DEBUG
     const unsigned int current_spectrum_size = get_spectrum_size(spectrum_data, false);
@@ -108,7 +108,7 @@ void Waterfall::render(SDL_Renderer *const renderer, const SDL_Rect &dst, const 
     #pragma GCC diagnostic ignored "-Wfloat-equal"
     if(last_max_display_frequency != graphics_data.max_display_frequency) {
         // const unsigned int spectrum_size = spectrum_data.size();
-        const unsigned int spectrum_size = get_spectrum_size(spectrum_data, false);
+        const unsigned int spectrum_size = get_spectrum_size(spectrum_data, true);
         unsigned int i;
         for(i = 0; i < spectrum_size; i++)
             if(spectrum_data[i].freq > graphics_data.max_display_frequency)
