@@ -26,10 +26,13 @@ class Graphics {
         SDL_Texture *driver_latency_txt;
         SDL_Texture *current_latency_txt;
         SDL_Texture *current_latency_ms_txt;
+        SDL_Texture *warning1_txt;
+        SDL_Texture *warning2_txt;
 
 
         void render_driver_latency(int &h_offset);
         void render_current_latency(const double current_latency, int &h_offset);
+        void render_warning(int &h_offset);
 };
 
 

@@ -41,9 +41,15 @@ Graphics::Graphics(const double driver_latency) {
 
     current_latency_txt = create_txt_texture("Current latency: ", TXT_COLOR);
     current_latency_ms_txt = create_txt_texture(" ms", TXT_COLOR);
+
+    warning1_txt = create_txt_texture("These latencies only account for software latency!", TXT_COLOR);
+    warning2_txt = create_txt_texture("See the readme for more information", TXT_COLOR);
 }
 
 Graphics::~Graphics() {
+    SDL_DestroyTexture(warning1_txt);
+    SDL_DestroyTexture(warning2_txt);
+
     SDL_DestroyTexture(current_latency_txt);
     SDL_DestroyTexture(current_latency_ms_txt);
 
@@ -92,6 +98,7 @@ void Graphics::render_frame(const double current_latency) {
     int h_offset = 0;
     render_driver_latency(h_offset);
     render_current_latency(current_latency, h_offset);
+    render_warning(h_offset);
 
     SDL_RenderPresent(renderer);
 }
@@ -130,5 +137,21 @@ void Graphics::render_current_latency(const double current_latency, int &h_offse
     SDL_RenderCopy(renderer, current_latency_ms_txt, NULL, &dst);
     latency_w_offset += w;
 
+    h_offset += h;
+}
+
+void Graphics::render_warning(int &h_offset) {
+    int w, h;
+    SDL_Rect dst;
+
+    SDL_QueryTexture(warning1_txt, NULL, NULL, &w, &h);
+    h_offset += h;  // Padding between warning and rest of output
+    dst = {RENDER_X_OFFSET, RENDER_Y_OFFSET + h_offset, w, h};
+    SDL_RenderCopy(renderer, warning1_txt, NULL, &dst);
+    h_offset += h;
+
+    SDL_QueryTexture(warning2_txt, NULL, NULL, &w, &h);
+    dst = {RENDER_X_OFFSET, RENDER_Y_OFFSET + h_offset, w, h};
+    SDL_RenderCopy(renderer, warning2_txt, NULL, &dst);
     h_offset += h;
 }
