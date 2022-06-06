@@ -241,7 +241,6 @@ void Program::main_loop() {
             std::cout << perf << std::endl;
 
         // Output MIDI events
-        // snd_rawmidi_write(midi_output_dev, all_notes_off_event, 3);  // Stop notes from previous frame
         std::set<int> frame_notes;
         for(const auto &event : estimated_events)
             frame_notes.insert(event.note.midi_number);
@@ -262,8 +261,15 @@ void Program::main_loop() {
             }
         }
 
-        // Swap
+        // Swap current events to prev events
         prev_frame_notes = std::move(frame_notes);
+
+        // // Trigger notes every frame
+        // snd_rawmidi_write(midi_output_dev, all_notes_off_event, 3);  // Stop notes from previous frame
+        // for(const auto &event : estimated_events) {
+        //     note_on_event[1] = event.note.midi_number;
+        //     snd_rawmidi_write(midi_output_dev, note_on_event, 3);
+        // }
 
         // Always has to be done when using audio out to prevent program running faster than audio
         // Otherwise, when no audio out is used and cli_args.sync_with_audio is true, it will simulate this behavior
