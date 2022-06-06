@@ -13,7 +13,7 @@ CXXFLAGS = -std=c++20 -g
 DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
 WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
 OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
-LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
+LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm `pkg-config --cflags --libs alsa`
 INCL = -Isrc/ -Ilib/include/
 CORES = 20
 

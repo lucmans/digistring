@@ -18,6 +18,9 @@
 
 #include <SDL2/SDL.h>
 
+#include <alsa/asoundlib.h>
+#include <set>
+
 #include <iomanip>  // std::setw()
 #include <chrono>
 #include <thread>  // sleep
@@ -157,6 +160,20 @@ void Program::main_loop() {
 
     Performance perf;
 
+    // MIDI output
+    snd_rawmidi_t *midi_output_dev;
+    int ret = snd_rawmidi_open(NULL, &midi_output_dev, "virtual", O_WRONLY);
+    if(ret < 0) {
+        error("Alsa failed to create raw MIDI output");
+        exit(EXIT_FAILURE);
+    }
+    uint8_t all_notes_off_event[3] = {0xB0, 123, 0};
+    uint8_t note_on_event[3] = {0x90, 0, 64};  // note_on_events[1] holds MIDI note number
+    uint8_t note_off_event[3] = {0x80, 0, 0};  // note_off_events[1] holds MIDI note number
+
+    std::set<int> prev_frame_notes;
+
+
     const std::chrono::steady_clock::time_point start_estimation_loop = std::chrono::steady_clock::now();
     unsigned long processed_samples = 0;
     while(!poll_quit()) {
@@ -223,6 +240,31 @@ void Program::main_loop() {
         if(cli_args.output_performance)
             std::cout << perf << std::endl;
 
+        // Output MIDI events
+        // snd_rawmidi_write(midi_output_dev, all_notes_off_event, 3);  // Stop notes from previous frame
+        std::set<int> frame_notes;
+        for(const auto &event : estimated_events)
+            frame_notes.insert(event.note.midi_number);
+
+        // Turn off stopped notes
+        for(const auto &prev_note : prev_frame_notes) {
+            if(frame_notes.count(prev_note) == 0) {
+                note_off_event[1] = prev_note;
+                snd_rawmidi_write(midi_output_dev, note_off_event, 3);
+            }
+        }
+
+        // Turn on started notes
+        for(const auto &current_note : frame_notes) {
+            if(prev_frame_notes.count(current_note) == 0) {
+                note_on_event[1] = current_note;
+                snd_rawmidi_write(midi_output_dev, note_on_event, 3);
+            }
+        }
+
+        // Swap
+        prev_frame_notes = std::move(frame_notes);
+
         // Always has to be done when using audio out to prevent program running faster than audio
         // Otherwise, when no audio out is used and cli_args.sync_with_audio is true, it will simulate this behavior
         sync_with_audio(new_samples);
@@ -246,6 +288,13 @@ void Program::main_loop() {
 
         // End note events array
         results_file->stop_array();
+    }
+
+    snd_rawmidi_write(midi_output_dev, all_notes_off_event, 3);  // Stop all notes
+    ret = snd_rawmidi_close(midi_output_dev);
+    if(ret < 0) {
+        error("Alsa failed to close raw MIDI output");
+        exit(EXIT_FAILURE);
     }
 }
 
