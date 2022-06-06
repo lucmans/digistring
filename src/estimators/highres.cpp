@@ -408,7 +408,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     if(noteset.size() > 0) {
         bool add_note = true;
         if constexpr(LOW_HIGH_FILTER) {
-            if(noteset[0].midi_number < LOWEST_NOTE.midi_number && noteset[0].midi_number > HIGHEST_NOTE.midi_number)
+            if(noteset[0].midi_number < LOWEST_NOTE.midi_number || noteset[0].midi_number > HIGHEST_NOTE.midi_number)
                 add_note = false;
         }
 

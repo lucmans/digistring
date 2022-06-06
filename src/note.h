@@ -2,6 +2,8 @@
 #define DIGISTRING_NOTE_H
 
 
+// #include "error.h"
+
 #include <vector>
 #include <string>
 #include <ostream>
@@ -74,14 +76,26 @@ void print_overtones(const Note &note, const int n_overtones, const bool print_m
 Note string_to_note(const std::string &in_string);
 
 
+// enum NoteEventType {
+//     note, transient
+// };
+
 struct NoteEvent {
     Note note;
+    // NoteEventType type;
 
     // Both should never be negative
     int length;  // Length of NoteEvent in number of samples
     int offset;  // Displacement of note start from beginning of frame in number of samples
 
     constexpr NoteEvent(const Note &_note, const int _length, const int _offset) : note(_note), length(_length), offset(_offset) {};
+    // constexpr NoteEvent(const Note &_note, const int _length, const int _offset) : note(_note), type(NoteEventType::note), length(_length), offset(_offset) {};
+    // constexpr NoteEvent(const NoteEventType &_type, const int _length, const int _offset) : note(-1), type(_type), length(_length), offset(_offset) {
+    //     if (type == NoteEventType::note) {
+    //         warning("NoteEvent of type note does not contain note information");
+    //         throw(std::runtime_error("NoteEvent of type 'note' does not contain note information"));
+    //     }
+    // };
 };
 typedef std::vector<NoteEvent> NoteEvents;
 

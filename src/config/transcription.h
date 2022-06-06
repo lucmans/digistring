@@ -55,7 +55,7 @@ constexpr double SIGNAL_TO_NOISE_FILTER = 0.05;  // Minimum height of peak compa
 constexpr bool DO_OVERLAP = true;
 // 0.0 < OVERLAP < 1.0: Ratio of old to new buffer, where higher numbers use more old buffer
 constexpr double OVERLAP_RATIO = 0.85;
-static_assert(OVERLAP_RATIO > 0.0 && OVERLAP_RATIO < 1.0, "Overlap ratio should be between 0.0 and 1.0");
+static_assert(OVERLAP_RATIO >= 0.0 && OVERLAP_RATIO <= 1.0, "Overlap ratio should be between 0.0 and 1.0");
 
 // When reading from audio in, instead of reading a fixed ratio, read as many samples as possible without blocking
 constexpr bool DO_OVERLAP_NONBLOCK = false;

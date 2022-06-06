@@ -93,7 +93,7 @@ void Spectrogram::draw_envelope(SDL_Renderer *const renderer, const SDL_Rect &ds
 
 void Spectrogram::draw_peaks(SDL_Renderer *const renderer, const SDL_Rect &dst, const GraphicsData &graphics_data, const std::vector<double> &peaks) const {
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
-    for(double peak_f : peaks) {
+    for(const double peak_f : peaks) {
         if(peak_f > graphics_data.max_display_frequency)
             break;
 
