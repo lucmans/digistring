@@ -167,11 +167,13 @@ void Program::main_loop() {
         error("Alsa failed to create raw MIDI output");
         exit(EXIT_FAILURE);
     }
+    const double MAX_VOLUME = 110.0;
     uint8_t all_notes_off_event[3] = {0xB0, 123, 0};
-    uint8_t note_on_event[3] = {0x90, 0, 64};  // note_on_events[1] holds MIDI note number
+    uint8_t note_on_event[3] = {0x90, 0, 64};  // note_on_events[1] holds MIDI note number, [2] hold volume
     uint8_t note_off_event[3] = {0x80, 0, 0};  // note_off_events[1] holds MIDI note number
 
     std::set<int> prev_frame_notes;
+    double loudest_note = 0.1;
 
 
     const std::chrono::steady_clock::time_point start_estimation_loop = std::chrono::steady_clock::now();
@@ -242,22 +244,25 @@ void Program::main_loop() {
 
         // Output MIDI events
         std::set<int> frame_notes;
-        for(const auto &event : estimated_events)
+        for(const auto &event : estimated_events) {
             frame_notes.insert(event.note.midi_number);
+
+            if(event.note.amp > loudest_note)
+                loudest_note = event.note.amp;
+
+            // Turn on started notes
+            if(prev_frame_notes.count(event.note.midi_number) == 0) {
+                note_on_event[1] = event.note.midi_number;
+                note_on_event[2] = (log2(event.note.amp) / log2(loudest_note)) * MAX_VOLUME;
+                snd_rawmidi_write(midi_output_dev, note_on_event, 3);
+            }
+        }
 
         // Turn off stopped notes
         for(const auto &prev_note : prev_frame_notes) {
             if(frame_notes.count(prev_note) == 0) {
                 note_off_event[1] = prev_note;
                 snd_rawmidi_write(midi_output_dev, note_off_event, 3);
-            }
-        }
-
-        // Turn on started notes
-        for(const auto &current_note : frame_notes) {
-            if(prev_frame_notes.count(current_note) == 0) {
-                note_on_event[1] = current_note;
-                snd_rawmidi_write(midi_output_dev, note_on_event, 3);
             }
         }
 
@@ -268,6 +273,7 @@ void Program::main_loop() {
         // snd_rawmidi_write(midi_output_dev, all_notes_off_event, 3);  // Stop notes from previous frame
         // for(const auto &event : estimated_events) {
         //     note_on_event[1] = event.note.midi_number;
+        //     note_on_event[2] = (event.note.amp / loudest_note) * 127.0;
         //     snd_rawmidi_write(midi_output_dev, note_on_event, 3);
         // }
 
