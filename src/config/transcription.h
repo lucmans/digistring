@@ -32,7 +32,6 @@ constexpr double DEFAULT_ATTENUATION = 50.0;  // dB (shouldn't be <45 dB, as equ
 constexpr double KERNEL_WIDTH_FACTOR = 0.000478;  // Width of kernel with respect to spectrum size
 constexpr int KERNEL_WIDTH = (FRAME_SIZE_PADDED * KERNEL_WIDTH_FACTOR) + ((int)(FRAME_SIZE_PADDED * KERNEL_WIDTH_FACTOR) % 2 == 0 ? 1 : 0);
 // constexpr int KERNEL_WIDTH = 47;  // Choose odd value
-constexpr int MID = KERNEL_WIDTH / 2;
 constexpr double SIGMA = 1.2;  // Higher values of sigma make values close to kernel center weight more
 // constexpr double ENVELOPE_MIN = 0.1;  // Minimum height of envelope at peaks
 constexpr double ENVELOPE_MIN = 0.25;  // Minimum height of envelope at peaks

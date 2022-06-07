@@ -1,5 +1,5 @@
-#ifndef DIGISTRING_ESTIMATORS_WINDOW_FUNC_H
-#define DIGISTRING_ESTIMATORS_WINDOW_FUNC_H
+#ifndef DIGISTRING_ESTIMATORS_ESTIMATION_FUNC_WINDOW_FUNC_H
+#define DIGISTRING_ESTIMATORS_ESTIMATION_FUNC_WINDOW_FUNC_H
 
 
 void rectangle_window(double window[], const int size);
@@ -25,4 +25,4 @@ void welch_window(float window[], const int size);
 bool dolph_chebyshev_window(float window[], const int size, const double attenuation, const bool cache = false);
 
 
-#endif  // DIGISTRING_ESTIMATORS_WINDOW_FUNC_H
+#endif  // DIGISTRING_ESTIMATORS_ESTIMATION_FUNC_WINDOW_FUNC_H

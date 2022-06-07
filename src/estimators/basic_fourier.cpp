@@ -3,7 +3,7 @@
 #include "error.h"
 #include "note.h"
 
-#include "window_func.h"
+#include "estimation_func/window_func.h"
 
 #include "config/audio.h"
 #include "config/transcription.h"

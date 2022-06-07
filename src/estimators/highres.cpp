@@ -3,8 +3,12 @@
 #include "error.h"
 #include "note.h"
 
-#include "window_func.h"
-#include "estimation_func.h"
+#include "estimation_func/window_func.h"
+#include "estimation_func/norms.h"
+#include "estimation_func/envelope.h"
+#include "estimation_func/peak_pickers.h"
+#include "estimation_func/interpolate_peaks.h"
+#include "estimation_func/note_selectors.h"
 
 #include "config/audio.h"
 #include "config/transcription.h"
@@ -15,70 +19,6 @@
 #include <cmath>
 #include <algorithm>
 #include <vector>
-
-
-// Linear
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1]) {
-//     const double a = norms[max_idx - 1],
-//                  b = norms[max_idx],
-//                  c = norms[max_idx + 1];
-//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
-
-//     return max_idx + p;
-// }
-
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1], double &amp) {
-//     const double a = norms[max_idx - 1],
-//                  b = norms[max_idx],
-//                  c = norms[max_idx + 1];
-//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
-
-//     amp = b - (0.25 * (a - c) * p);
-
-//     return max_idx + p;
-// }
-
-// Log
-inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1]) {
-    const double a = log(norms[max_idx - 1]),
-                 b = log(norms[max_idx]),
-                 c = log(norms[max_idx + 1]);
-    const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
-
-    return max_idx + p;
-}
-
-inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1], double &amp) {
-    const double a = log(norms[max_idx - 1]),
-                 b = log(norms[max_idx]),
-                 c = log(norms[max_idx + 1]);
-    const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
-
-    amp = exp(b - (0.25 * (a - c) * p));
-
-    return max_idx + p;
-}
-
-// dB
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1]) {
-//     const double a = 20.0 * log10(norms[max_idx - 1]),
-//                  b = 20.0 * log10(norms[max_idx]),
-//                  c = 20.0 * log10(norms[max_idx + 1]);
-//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
-
-//     return max_idx + p;
-// }
-
-// inline double interpolate_max(const int max_idx, const double norms[(FRAME_SIZE_PADDED / 2) + 1], double &amp) {
-//     const double a = 20.0 * log10(norms[max_idx - 1]),
-//                  b = 20.0 * log10(norms[max_idx]),
-//                  c = 20.0 * log10(norms[max_idx + 1]);
-//     const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
-
-//     amp = exp10((b - (0.25 * (a - c) * p)) / 20.0);
-
-//     return max_idx + p;
-// }
 
 
 HighRes::HighRes(float *&input_buffer, int &buffer_size) : perf("HighRes") {
@@ -118,8 +58,7 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) : perf("HighRes") {
     }
 
     // Pre-calculate Gaussian for envelope computation
-    for(int i = 0; i < KERNEL_WIDTH; i++)
-        gaussian[i] = exp(-M_PI * ((double)(i - MID) / ((double)MID * SIGMA)) * ((double)(i - MID) / ((double)MID * SIGMA)));
+    gaussian_envelope(NULL, NULL, 0);
 
     if constexpr(!HEADLESS) {
         HighResGraphics *const tmp_graphics = new HighResGraphics();
@@ -148,106 +87,6 @@ Estimators HighRes::get_type() const {
 }
 
 
-void HighRes::calc_envelope(const double norms[(FRAME_SIZE_PADDED / 2) + 1], double envelope[(FRAME_SIZE_PADDED / 2) + 1]) {
-    for(int i = 0; i < (FRAME_SIZE_PADDED / 2) + 1; i++) {
-        double sum = 0.0, weights = 0.0;
-        for(int j = std::max(-MID, -i); j <= std::min(MID, (FRAME_SIZE_PADDED / 2) - i); j++) {
-            sum += norms[i + j] * gaussian[j + MID];
-            weights += gaussian[j + MID];
-        }
-        envelope[i] = sum / weights;
-    }
-}
-
-
-void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks) {
-    for(int i = 1; i < (FRAME_SIZE_PADDED / 2); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1])
-            peaks.push_back(i);
-    }
-
-    // Filter quiet peaks
-    for(size_t i = peaks.size(); i > 0; i--) {
-        if(norms[peaks[i - 1]] < PEAK_THRESHOLD)
-            peaks.erase(peaks.begin() + (i - 1));
-    }
-}
-
-// Low-passed version
-void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin) {
-    for(int i = 1; i < std::min(low_pass_bin, (FRAME_SIZE_PADDED / 2)); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1])
-            peaks.push_back(i);
-    }
-
-    // Filter quiet peaks
-    for(size_t i = peaks.size(); i > 0; i--) {
-        if(norms[peaks[i - 1]] < PEAK_THRESHOLD)
-            peaks.erase(peaks.begin() + (i - 1));
-    }
-}
-
-void HighRes::all_max(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int low_pass_bin, const int max_norm) {
-    for(int i = 1; i < std::min(low_pass_bin, (FRAME_SIZE_PADDED / 2)); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1] && norms[i] > max_norm * SIGNAL_TO_NOISE_FILTER)
-            peaks.push_back(i);
-    }
-
-    // Filter quiet peaks
-    for(size_t i = peaks.size(); i > 0; i--) {
-        if(norms[peaks[i - 1]] < PEAK_THRESHOLD)
-            peaks.erase(peaks.begin() + (i - 1));
-    }
-}
-
-void HighRes::envelope_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], const double envelope[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks) {
-    for(int i = 5; i < (FRAME_SIZE_PADDED / 2); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]  // A local maximum
-           && norms[i] > envelope[i]  // Higher than envelope
-           && envelope[i] > ENVELOPE_MIN)  // Filter quiet peaks
-            peaks.push_back(i);
-    }
-}
-
-void HighRes::envelope_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], const double envelope[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks, const int max_norm) {
-    for(int i = 5; i < (FRAME_SIZE_PADDED / 2); i++) {
-        if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]  // A local maximum
-           && norms[i] > envelope[i]  // Higher than envelope
-           && envelope[i] > ENVELOPE_MIN  // Filter quiet peaks
-           && norms[i] > max_norm * SIGNAL_TO_NOISE_FILTER)
-            peaks.push_back(i);
-    }
-}
-
-
-void HighRes::min_dy_peaks(const double norms[(FRAME_SIZE_PADDED / 2) + 1], std::vector<int> &peaks) {
-    bool was_peak = false;  // If last extreme value was a peak
-    int extreme_value_idx = 0;
-
-    for(int i = 1; i < (FRAME_SIZE_PADDED / 2); i++) {
-        if(was_peak) {
-            // If previous extreme value was a peak, look for a valley
-            if(norms[i - 1] > norms[i] && norms[i] < norms[i + 1]) {
-                // If difference in y is significant enough
-                was_peak = false;
-                extreme_value_idx = i;
-            }
-        }
-        else {
-            // If previous extreme value was a valley, look for a peak
-            if(norms[i - 1] < norms[i] && norms[i] > norms[i + 1]) {
-                // If difference in y is significant enough
-                if(abs(norms[extreme_value_idx] - norms[i]) > MIN_PEAK_DY) {
-                    peaks.push_back(i);
-                }
-                was_peak = true;
-                extreme_value_idx = i;
-            }
-        }
-    }
-}
-
-
 void HighRes::interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE_PADDED / 2) + 1], const std::vector<int> &peaks) {
     for(int peak : peaks) {
         // Check if the interpolation will be in-bounds
@@ -257,88 +96,14 @@ void HighRes::interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE
         }
         else if(peak > FRAME_SIZE_PADDED / 2) {
             error("Peak found outside bins");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
 
         double amp;
-        const double freq = ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED) * interpolate_max(peak, norms, amp);
+        const double offset = interpolate_max_log(norms[peak], norms[peak - 1], norms[peak + 1], amp);
+        const double freq = ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED) * (peak + offset);
         noteset.push_back(Note(freq, amp));
     }
-}
-
-
-void HighRes::get_loudest_peak(NoteSet &out_notes, const NoteSet &candidate_notes) {
-    const int n_notes = candidate_notes.size();
-    if(n_notes == 0)
-        return;
-    else if(n_notes == 1) {
-        out_notes.push_back(candidate_notes[0]);
-        return;
-    }
-
-    int max_idx = 0;
-    for(int i = 1; i < n_notes; i++) {
-        if(candidate_notes[i].amp > candidate_notes[max_idx].amp)
-            max_idx = i;
-    }
-
-    out_notes.push_back(candidate_notes[max_idx]);
-}
-
-// TODO: Could be optimized by returning first peak, as the peak picking algorithms sorts the peaks
-void HighRes::get_lowest_peak(NoteSet &out_notes, const NoteSet &candidate_notes) {
-    const int n_notes = candidate_notes.size();
-    if(n_notes == 0)
-        return;
-    else if(n_notes == 1) {
-        out_notes.push_back(candidate_notes[0]);
-        return;
-    }
-
-    int low_idx = 0;
-    for(int i = 1; i < n_notes; i++) {
-        if(candidate_notes[i].freq < candidate_notes[low_idx].freq)
-            low_idx = i;
-    }
-
-    out_notes.push_back(candidate_notes[low_idx]);
-}
-
-void HighRes::get_likeliest_note(NoteSet &out_notes, const NoteSet &candidate_notes) {
-    const int n_notes = candidate_notes.size();
-    if(n_notes == 0)
-        return;
-    else if(n_notes == 1 && candidate_notes[0].amp > 0.0) {
-        out_notes.push_back(candidate_notes[0]);
-        return;
-    }
-
-    std::vector<int> n_harmonics(n_notes, 0);
-    for(int i = 0; i < n_notes; i++) {
-        for(int j = i + 1; j < n_notes; j++) {
-            const double detected_freq = candidate_notes[j].freq;
-            const double theoretical_freq = candidate_notes[i].freq * round(candidate_notes[j].freq / candidate_notes[i].freq);
-            const double cent_error = 1200.0 * log2(detected_freq / theoretical_freq);
-            if(cent_error > -OVERTONE_ERROR && cent_error < OVERTONE_ERROR)
-                n_harmonics[i]++;
-        }
-    }
-
-    int max_idx = 0;
-    for(int i = 1; i < n_notes; i++) {
-        if(n_harmonics[i] > n_harmonics[max_idx])
-            max_idx = i;
-    }
-
-    // Filter noise
-    if(candidate_notes[max_idx].amp < 0.0)
-        return;
-
-    // Filter transients
-    // if(candidate_notes.size() > n_harmonics[max_idx] * 2)
-    //     return;
-
-    out_notes.push_back(candidate_notes[max_idx]);
 }
 
 
@@ -373,7 +138,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     /* Peak picking */
     // Compute Gaussian envelope
     double envelope[(FRAME_SIZE_PADDED / 2) + 1];
-    calc_envelope(norms, envelope);
+    gaussian_envelope(norms, envelope, (FRAME_SIZE_PADDED / 2) + 1);
     perf.push_time_point("Calculated Gaussian envelope");
 
     // TODO: Convex envelope
@@ -382,9 +147,9 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Find peaks based on envelope
     std::vector<int> peaks;
     if(power > POWER_THRESHOLD)
-        envelope_peaks(norms, envelope, peaks, max_norm);
-        // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED), max_norm);
-        // all_max(norms, peaks, 3000.0 / ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED));
+        envelope_peaks(norms, envelope, (FRAME_SIZE_PADDED / 2) + 1, peaks, max_norm);
+        // all_max(norms, (FRAME_SIZE_PADDED / 2) + 1, peaks, max_norm);
+        // all_max(norms, (FRAME_SIZE_PADDED / 2) + 1, peaks);
     perf.push_time_point("Selected peaks");
 
     // // Find peaks on min-dy
@@ -393,15 +158,16 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
 
     /* Note estimation from peaks */
     // Interpolate peak locations
-    NoteSet candidate_notes;
-    interpolate_peaks(candidate_notes, norms, peaks);
+    NoteSet i_peaks;
+    interpolate_peaks(i_peaks, norms, peaks);
     perf.push_time_point("Interpolated peaks");
 
     // Extract played note from the peaks
     NoteSet noteset;  // Noteset, so polyphony can easily be supported
-    // get_loudest_peak(noteset, candidate_notes);
-    // get_lowest_peak(noteset, candidate_notes);
-    get_likeliest_note(noteset, candidate_notes);
+    // get_loudest_peak(noteset, i_peaks);
+    // get_lowest_peak(noteset, i_peaks);
+    get_most_overtones(noteset, i_peaks);
+    // get_most_overtone_power(noteset, i_peaks);
     perf.push_time_point("Created noteset");
 
     // Add note to output note_events if not filtered

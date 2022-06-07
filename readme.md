@@ -100,7 +100,6 @@ Digistring includes a few tools:
 - Abstract away all SDL audio code into own Audio class to allow switching audio back-ends.
 - Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.
 - Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).
-- Put estimation_func.{cpp,h} and helper functions in highres.cpp in estimation_func directory.
 - Pass SampleGetter to Estimator and add get_samples() to base class (which doesn't overlap).
 - Convex envelope and low passed-spectrum peak picking.
 - Correct signal power and note dB calculation.
