@@ -19,6 +19,10 @@ double interpolate_max_log(const double peak, const double l_neighbor, const dou
 double interpolate_max_db(const double peak, const double l_neighbor, const double r_neighbor);
 double interpolate_max_db(const double peak, const double l_neighbor, const double r_neighbor, double &amp);
 
+// Exponential scale (XQIFFT)
+double interpolate_max_exp(const double peak, const double l_neighbor, const double r_neighbor, const double e);
+double interpolate_max_exp(const double peak, const double l_neighbor, const double r_neighbor, const double e, double &amp);
+
 
 // void interpolate_peaks(NoteSet &noteset, const double norms[], const int n_norms, const std::vector<int> &peaks);
 

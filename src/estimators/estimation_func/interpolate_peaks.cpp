@@ -67,3 +67,24 @@ double interpolate_max_db(const double peak, const double l_neighbor, const doub
 
     return p;
 }
+
+// Exponential (XQIFFT)
+double interpolate_max_exp(const double peak, const double l_neighbor, const double r_neighbor, const double e) {
+    const double a = pow(l_neighbor, e),
+                 b = pow(peak, e),
+                 c = pow(r_neighbor, e);
+    const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+
+    return p;
+}
+
+double interpolate_max_exp(const double peak, const double l_neighbor, const double r_neighbor, const double e, double &amp) {
+    const double a = pow(l_neighbor, e),
+                 b = pow(peak, e),
+                 c = pow(r_neighbor, e);
+    const double p = 0.5 * ((a - c) / (a - (2.0 * b) + c));
+
+    amp = pow(b - (0.25 * (a - c) * p), 1.0 / e);
+
+    return p;
+}
