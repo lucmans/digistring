@@ -382,7 +382,7 @@ bool run_python_script(const std::string &tmp_file_path, const std::string &size
 }
 
 bool dolph_chebyshev_window(float window[], const int size, const double attenuation, const bool cache /*= false*/) {
-    bool generate_and_read = true;
+    bool generate_and_read;
     std::string dolph_window_file;
     if(cache) {
         // If the window isn't present in the cache, generate the window

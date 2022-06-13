@@ -11,9 +11,17 @@
 double interpolate_max(const double peak, const double l_neighbor, const double r_neighbor);
 double interpolate_max(const double peak, const double l_neighbor, const double r_neighbor, double &amp);
 
-// Log scale
+// Log scale (base e)
 double interpolate_max_log(const double peak, const double l_neighbor, const double r_neighbor);
 double interpolate_max_log(const double peak, const double l_neighbor, const double r_neighbor, double &amp);
+
+// Log scale (base 2)
+double interpolate_max_log2(const double peak, const double l_neighbor, const double r_neighbor);
+double interpolate_max_log2(const double peak, const double l_neighbor, const double r_neighbor, double &amp);
+
+// Log scale (base 10)
+double interpolate_max_log10(const double peak, const double l_neighbor, const double r_neighbor);
+double interpolate_max_log10(const double peak, const double l_neighbor, const double r_neighbor, double &amp);
 
 // dB scale (20 * log10(peak))
 double interpolate_max_db(const double peak, const double l_neighbor, const double r_neighbor);

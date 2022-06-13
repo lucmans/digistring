@@ -6,8 +6,8 @@
  # General compiler flags
 -# c++20 is required for std::source_location (error.h)
  CXX = g++
--CXXFLAGS = -std=c++20 -g
-+CXXFLAGS = -std=c++17 -g
+-CXXFLAGS = -std=c++20 -g -fopenmp
++CXXFLAGS = -std=c++17 -g -fopenmp
  DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
  WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
  OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
@@ -15,7 +15,7 @@
 
 --- src/graphics.cpp
 +++ src/graphics.cpp
-@@ -283,11 +283,12 @@
+@@ -282,11 +282,12 @@
      static bool warning_printed = false;
      if(estimator_graphics != nullptr) {
          set_max_recorded_value_if_larger(estimator_graphics->get_last_max_recorded_value());

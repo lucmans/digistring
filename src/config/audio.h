@@ -7,6 +7,7 @@
 
 // Sampling rate of input (and output if playback is enabled)
 constexpr int SAMPLE_RATE = 192000;
+// constexpr int SAMPLE_RATE = 96000;
 // constexpr int SAMPLE_RATE = 48000;
 // constexpr int SAMPLE_RATE = 44100;
 

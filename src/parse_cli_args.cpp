@@ -323,7 +323,7 @@ void ArgParser::parse_output_file() {
     }
 
     if(o_extension != ".json")
-        warning("Extension of output file is not '.json' " + o_extension);
+        warning("Extension of output file is not .json but '" + o_extension + "'");
 
     // Try to generate a new unique filename inserting a number between name and extension
     std::string g_filename = o_filename;  // Generated filename
