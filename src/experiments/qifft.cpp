@@ -14,6 +14,25 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <functional>
+#include <sstream>
+
+
+const int REPS_PER_FREQ = 8;
+
+
+// Needed because there interpolation funcs are overloaded version
+typedef double(*interpolation_func_t)(double, double, double, double&);
+
+
+std::vector<double> generate_test_freqs() {
+    std::vector<double> freqs;
+    for(int i = 0; i < 1200; i++)
+        freqs.push_back(110.0 * exp2((double)i / 1200.0));
+        // freqs.push_back(110.0 * (((double)i / 1200.0) + 1.0));
+
+    return freqs;
+}
 
 
 std::vector<std::pair<double, double>> make_range(const double range_min, const double range_max, const double step_size) {
@@ -22,7 +41,7 @@ std::vector<std::pair<double, double>> make_range(const double range_min, const 
     std::vector<std::pair<double, double>> exps;
     for(double e = range_min; e < range_max; e += step_size) {
         if(e == 0.0)
-            warning("Skipping exponent of 0.0...");
+            warning("Skipping invalid exponent (value of 0.0)...");
         else
             exps.push_back({e, 0.0});
     }
@@ -32,14 +51,24 @@ std::vector<std::pair<double, double>> make_range(const double range_min, const 
 }
 
 double iteratively_optimize_qxifft(const int frame_size, const int padding_size/*, const window_func*/) {
+    warning("Assuming frame size of " + STR(frame_size) + " samples with " + STR(padding_size) + " samples zero-padding"
+            ". You are responsible the optimization pitch estimation process matches the one the parameter is optimized for.");
     const int n_cores = omp_get_num_procs();
     const int min_steps = 8;
 
-    double min_range = -2.0;
-    double max_range = 2.0;
+    double min_range = -10.0;
+    double max_range = 10.0;
     double step_size = (max_range - min_range) / std::max(n_cores, min_steps);
 
+    std::stringstream ss;
+    ss << "Looking between " << min_range << " and " << max_range << " with a step size of " << step_size;
+    info(ss.str());
+
     std::vector<std::pair<double, double>> exps = make_range(min_range, max_range, step_size);
+    if(exps.size() == 0) {
+        warning("Range only contains 0.0");
+        return 0.0;
+    }
 
     std::vector<QIFFT *> transformers;
     for(int i = 0; i < n_cores; i++)
@@ -99,8 +128,11 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
         exps = make_range(min_range, max_range, step_size);
     }
 
-    if(min_idx != -1)
-        std::cout << "Best found exponent is " << exps[min_idx].first << " with a mean squared error of " << exps[min_idx].second /*<< " Hz"*/ << std::endl;
+    if(min_idx != -1) {
+        std::stringstream().swap(ss);  // Create new (empty) stream
+        ss << "Best found exponent is " << exps[min_idx].first << " with a mean squared error of " << exps[min_idx].second /*<< " Hz"*/;
+        info(ss.str());
+    }
 
     for(int i = 0; i < n_cores; i++)
         delete transformers[i];
@@ -159,59 +191,16 @@ QIFFT::~QIFFT() {
 }
 
 
-double QIFFT::no_qifft() {
-    const int reps_per_freq = 10;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
+double QIFFT::qifft_error(const std::function<double(double, double, double, double&)> interpolation_func) {
+    const std::vector<double> freqs = generate_test_freqs();
 
     double last_phase;
     double total_error = 0.0;
+    double total_squared_error = 0.0;
+    double max_error = 0.0;
     for(const double freq : freqs) {
         last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
-            const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
-            for(int i = 0; i < in_size; i++)
-                in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
-            last_phase = fmod(last_phase + (freq / ((double)SAMPLE_RATE / (double)in_size)), 1.0);
-
-            for(int i = 0; i < frame_size; i++)
-                in[i] *= window_func[i];
-
-            fftwf_execute(p);
-
-            calc_norms(out, norms, (in_size / 2) + 1);
-
-            int peak_idx = 1;
-            for(int i = 2; i < (in_size / 2); i++)
-                if(norms[i] > norms[peak_idx])
-                    peak_idx = i;
-
-            const double detected_freq = peak_idx * ((double)SAMPLE_RATE / (double)in_size);
-            // const double cent_error = 1200.0 * log2(detected_freq / freq);
-            const double hz_error = detected_freq - freq;
-
-            total_error += abs(hz_error);
-        }
-    }
-
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    std::cout << "Mean error " << mean_error << " Hz" << std::endl;
-
-    return mean_error;
-}
-
-double QIFFT::mqifft() {
-    const int reps_per_freq = 10;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
-
-    double last_phase;
-    double total_error = 0.0;
-    for(const double freq : freqs) {
-        last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
+        for(int r = 0; r < REPS_PER_FREQ; r++) {
             const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
             for(int i = 0; i < in_size; i++)
                 in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
@@ -230,200 +219,53 @@ double QIFFT::mqifft() {
                     peak_idx = i;
 
             double amp;
-            const double offset = interpolate_max(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
+            const double offset = interpolation_func(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
 
             const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
             // const double cent_error = 1200.0 * log2(detected_freq / freq);
             const double hz_error = detected_freq - freq;
 
-            total_error += abs(hz_error);
+            const double squared_error = hz_error * hz_error;
+            total_squared_error += squared_error;
+
+            const double abs_error = abs(hz_error);
+            total_error += abs_error;
+            max_error = std::max(max_error, abs_error);
         }
     }
 
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    std::cout << "Mean error " << mean_error << " Hz" << std::endl;
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-variable"
+    const double mean_error = total_error / (REPS_PER_FREQ * (double)freqs.size());
+    const double mean_squared_error = total_squared_error / (REPS_PER_FREQ * (double)freqs.size());
+    #pragma GCC diagnostic pop
 
-    return mean_error;
+    return mean_squared_error;
+}
+
+double QIFFT::no_qifft() {
+    return qifft_error([](const double peak, const double l, const double r, double &amp){amp = peak; return 0.0; amp = l+r;});
+}
+
+// Static casts are needed as interpolation funcs are overloaded
+double QIFFT::mqifft() {
+    return qifft_error(static_cast<interpolation_func_t>(&interpolate_max));
 }
 
 double QIFFT::lqifft() {
-    const int reps_per_freq = 10;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
-
-    double last_phase;
-    double total_error = 0.0;
-    for(const double freq : freqs) {
-        last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
-            const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
-            for(int i = 0; i < in_size; i++)
-                in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
-            last_phase = fmod(last_phase + (freq / ((double)SAMPLE_RATE / (double)in_size)), 1.0);
-
-            for(int i = 0; i < frame_size; i++)
-                in[i] *= window_func[i];
-
-            fftwf_execute(p);
-
-            calc_norms(out, norms, (in_size / 2) + 1);
-
-            int peak_idx = 1;
-            for(int i = 2; i < (in_size / 2); i++)
-                if(norms[i] > norms[peak_idx])
-                    peak_idx = i;
-
-            double amp;
-            const double offset = interpolate_max_log(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
-
-            const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
-            // const double cent_error = 1200.0 * log2(detected_freq / freq);
-            const double hz_error = detected_freq - freq;
-
-            total_error += abs(hz_error);
-        }
-    }
-
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    std::cout << "Mean error " << mean_error << " Hz" << std::endl;
-
-    return mean_error;
+    return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_log));
 }
 
 double QIFFT::lqifft2() {
-    const int reps_per_freq = 10;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
-
-    double last_phase;
-    double total_error = 0.0;
-    for(const double freq : freqs) {
-        last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
-            const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
-            for(int i = 0; i < in_size; i++)
-                in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
-            last_phase = fmod(last_phase + (freq / ((double)SAMPLE_RATE / (double)in_size)), 1.0);
-
-            for(int i = 0; i < frame_size; i++)
-                in[i] *= window_func[i];
-
-            fftwf_execute(p);
-
-            calc_norms(out, norms, (in_size / 2) + 1);
-
-            int peak_idx = 1;
-            for(int i = 2; i < (in_size / 2); i++)
-                if(norms[i] > norms[peak_idx])
-                    peak_idx = i;
-
-            double amp;
-            const double offset = interpolate_max_log2(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
-
-            const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
-            // const double cent_error = 1200.0 * log2(detected_freq / freq);
-            const double hz_error = detected_freq - freq;
-
-            total_error += abs(hz_error);
-        }
-    }
-
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    std::cout << "Mean error " << mean_error << " Hz" << std::endl;
-
-    return mean_error;
+    return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_log2));
 }
 
 double QIFFT::lqifft10() {
-    const int reps_per_freq = 10;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
-
-    double last_phase;
-    double total_error = 0.0;
-    for(const double freq : freqs) {
-        last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
-            const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
-            for(int i = 0; i < in_size; i++)
-                in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
-            last_phase = fmod(last_phase + (freq / ((double)SAMPLE_RATE / (double)in_size)), 1.0);
-
-            for(int i = 0; i < frame_size; i++)
-                in[i] *= window_func[i];
-
-            fftwf_execute(p);
-
-            calc_norms(out, norms, (in_size / 2) + 1);
-
-            int peak_idx = 1;
-            for(int i = 2; i < (in_size / 2); i++)
-                if(norms[i] > norms[peak_idx])
-                    peak_idx = i;
-
-            double amp;
-            const double offset = interpolate_max_log10(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
-
-            const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
-            // const double cent_error = 1200.0 * log2(detected_freq / freq);
-            const double hz_error = detected_freq - freq;
-
-            total_error += abs(hz_error);
-        }
-    }
-
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    std::cout << "Mean error " << mean_error << " Hz" << std::endl;
-
-    return mean_error;
+    return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_log10));
 }
 
 double QIFFT::dbqifft() {
-    const int reps_per_freq = 10;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
-
-    double last_phase;
-    double total_error = 0.0;
-    for(const double freq : freqs) {
-        last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
-            const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
-            for(int i = 0; i < in_size; i++)
-                in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
-            last_phase = fmod(last_phase + (freq / ((double)SAMPLE_RATE / (double)in_size)), 1.0);
-
-            for(int i = 0; i < frame_size; i++)
-                in[i] *= window_func[i];
-
-            fftwf_execute(p);
-
-            calc_norms(out, norms, (in_size / 2) + 1);
-
-            int peak_idx = 1;
-            for(int i = 2; i < (in_size / 2); i++)
-                if(norms[i] > norms[peak_idx])
-                    peak_idx = i;
-
-            double amp;
-            const double offset = interpolate_max_db(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
-
-            const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
-            // const double cent_error = 1200.0 * log2(detected_freq / freq);
-            const double hz_error = detected_freq - freq;
-
-            total_error += abs(hz_error);
-        }
-    }
-
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    std::cout << "Mean error " << mean_error << " Hz" << std::endl;
-
-    return mean_error;
+    return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_db));
 }
 
 
@@ -436,19 +278,15 @@ double QIFFT::xqifft_exp_error(const double exp) {
     }
     #pragma GCC diagnostic pop
 
-    const int reps_per_freq = 5;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
-        // freqs.push_back(110.0 * (((double)i / 1200.0) + 1.0));
-
+    const std::vector<double> freqs = generate_test_freqs();
 
     double last_phase;
     double total_error = 0.0;
-    // double max_error = 0.0;
+    double total_squared_error = 0.0;
+    double max_error = 0.0;
     for(const double freq : freqs) {
         last_phase = 0.0;
-        for(int r = 0; r < reps_per_freq; r++) {
+        for(int r = 0; r < REPS_PER_FREQ; r++) {
             const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
             for(int i = 0; i < in_size; i++)
                 in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
@@ -467,25 +305,28 @@ double QIFFT::xqifft_exp_error(const double exp) {
                     peak_idx = i;
 
             double amp;
-            // const double offset = interpolate_max_log(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
             const double offset = interpolate_max_exp(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], exp, amp);
 
             const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
             // const double cent_error = 1200.0 * log2(detected_freq / freq);
             const double hz_error = detected_freq - freq;
-            // std::cout << detected_freq << " " << cent_error << " " << peak_idx << std::endl;
 
-            // const double abs_error = abs(hz_error);
             const double squared_error = hz_error * hz_error;
-            total_error += squared_error;
-            // max_error = std::max(max_error, abs_error);
+            total_squared_error += squared_error;
+
+            const double abs_error = abs(hz_error);
+            total_error += abs_error;
+            max_error = std::max(max_error, abs_error);
         }
     }
 
-    const double mean_error = total_error / (reps_per_freq * (double)freqs.size());
-    // std::cout << "exp " << exp << " -> mean error " << mean_error << " Hz" << std::endl;
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-variable"
+    const double mean_error = total_error / (REPS_PER_FREQ * (double)freqs.size());
+    const double mean_squared_error = total_squared_error / (REPS_PER_FREQ * (double)freqs.size());
+    #pragma GCC diagnostic pop
 
-    return mean_error;
+    return mean_squared_error;
 }
 
 
@@ -504,70 +345,17 @@ double QIFFT::xqifft_exp_test_range(const double check_min, const double check_m
         return 0.0;
     }
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-    std::vector<std::pair<double, double>> exps;
-    for(double e = check_min; e <= check_max; e += check_step)
-        if(e == 0.0)
-            warning("Skipping exponent of 0.0...");
-        else
-            exps.push_back({e, 0.0});
-    #pragma GCC diagnostic pop
+    std::vector<std::pair<double, double>> exps = make_range(check_min, check_max, check_step);
     if(exps.size() == 0) {
         warning("Range only contains 0.0");
         return 0.0;
     }
 
-    const int reps_per_freq = 1;
-    std::vector<double> freqs;
-    for(int i = 0; i < 1200; i++)
-        freqs.push_back(110.0 * exp2((double)i / 1200.0));
+    for(auto &[exp, mean_squared_error] : exps) {
+        mean_squared_error = xqifft_exp_error(exp);
 
-
-    double last_phase;
-    for(auto &[exp, mean_error] : exps) {
-        double total_error = 0.0;
-        // std::cout << "Testing factor " << exp << std::endl;
-
-        for(const double freq : freqs) {
-            // std::cout << "Testing freq " << freq << std::endl;
-
-            last_phase = 0.0;
-            for(int r = 0; r < reps_per_freq; r++) {
-                const double phase_offset = last_phase * ((double)SAMPLE_RATE / freq);
-                for(int i = 0; i < in_size; i++)
-                    in[i] = sinf((2.0 * M_PI * ((double)i + phase_offset) * freq) / (double)SAMPLE_RATE);
-                last_phase = fmod(last_phase + (freq / ((double)SAMPLE_RATE / (double)in_size)), 1.0);
-
-                for(int i = 0; i < frame_size; i++)
-                    in[i] *= window_func[i];
-
-                fftwf_execute(p);
-
-                calc_norms(out, norms, (in_size / 2) + 1);
-
-                int peak_idx = 1;
-                for(int i = 2; i < (in_size / 2); i++)
-                    if(norms[i] > norms[peak_idx])
-                        peak_idx = i;
-
-                double amp;
-                // const double offset = interpolate_max_log(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], amp);
-                const double offset = interpolate_max_exp(norms[peak_idx], norms[peak_idx - 1], norms[peak_idx + 1], exp, amp);
-
-                const double detected_freq = (peak_idx + offset) * ((double)SAMPLE_RATE / (double)in_size);
-                // const double cent_error = 1200.0 * log2(detected_freq / freq);
-                const double hz_error = detected_freq - freq;
-                // std::cout << detected_freq << " " << cent_error << " " << peak_idx << std::endl;
-
-                total_error += abs(hz_error);
-            }
-        }
-
-        mean_error = total_error / (reps_per_freq * (double)freqs.size());
         if(print)
-            std::cout << "exp " << exp << " -> mean error " << mean_error << " Hz" << std::endl;
-        // std::cout << std::endl;
+            std::cout << "exp " << exp << " -> mean squared error " << mean_squared_error << std::endl;
     }
 
     // Find best exponent
@@ -576,10 +364,6 @@ double QIFFT::xqifft_exp_test_range(const double check_min, const double check_m
     for(int i = 1; i < n_exps; i++)
         if(exps[i].second < exps[min_idx].second)
             min_idx = i;
-
-    // for(int i = std::max(min_idx - 50, 0); i < std::min(min_idx + 50, n_exps - 1); i++)
-    //     std::cout << exps[i].first << "  " << exps[i].second << std::endl;
-
 
     out_error = exps[min_idx].second;
     return exps[min_idx].first;

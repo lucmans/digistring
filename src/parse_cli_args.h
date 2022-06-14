@@ -11,7 +11,7 @@
 class ParseObj;
 
 // Declare the function pointer to the compare function as compare_func_t
-typedef bool(*compare_func_t)(const std::string,const std::string);
+typedef bool(*compare_func_t)(const std::string, const std::string);
 
 
 // Helps hiding creating an ArgParser object
@@ -49,6 +49,8 @@ class ArgParser {
         void parse_audio();
         void parse_audio_in();
         void parse_audio_out();
+        void parse_experiment();
+        void parse_experiments();
         void parse_fullscreen();
         void parse_file();
         void parse_help();
@@ -71,7 +73,7 @@ class ArgParser {
 // last_arg will prevent further completions to be given (useful for signalling no other flags are possible)
 enum class OptType {
     dir, file, output_file, perf_file, completions_file, opt_decimal, integer, opt_integer, note, opt_note, last_arg,
-    opt_synth, opt_left_right, audio_in_device, audio_out_device, midi_switch
+    opt_synth, opt_left_right, audio_in_device, audio_out_device, midi_switch, experiment
 };
 
 // Struct holding the parse function and OptTypes

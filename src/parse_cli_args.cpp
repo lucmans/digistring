@@ -51,6 +51,8 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         {"--audio",             ParseObj(&ArgParser::parse_audio,               {OptType::last_arg})},
         {"--audio_in",          ParseObj(&ArgParser::parse_audio_in,            {OptType::audio_in_device})},
         {"--audio_out",         ParseObj(&ArgParser::parse_audio_out,           {OptType::audio_out_device})},
+        {"--experiment",        ParseObj(&ArgParser::parse_experiment,          {OptType::experiment})},
+        {"--experiments",       ParseObj(&ArgParser::parse_experiments,         {OptType::last_arg})},
         {"-f",                  ParseObj(&ArgParser::parse_fullscreen,          {})},
         {"--file",              ParseObj(&ArgParser::parse_file,                {OptType::file})},
         {"--gen-completions",   ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
@@ -78,6 +80,8 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"--audio",                     "Print used audio driver and available audio devices"},
     {"--audio_in <device name>",    "Set the recording device to device name (as provided by Digistring at start-up"},
     {"--audio_out <device name>",   "Set the playback device to device name (as provided by Digistring at start-up"},
+    {"--experiment <experiment>",   "Runs given experiment"},
+    {"--experiments",               "Lists available experiments"},
     {"-f",                          "Start in fullscreen (also set the fullscreen resolution with '-r')"},
     {"--file <file>",               "Play samples from given file"},
     {"--gen-completions <file>",    "Generate Bash completions to file (overwriting it) (default filename is completions.sh)"},
@@ -170,7 +174,8 @@ void ArgParser::parse_args() {
             parse_func(*this);
         }
         catch(const std::out_of_range &e) {
-            error("Incorrect usage; flag '" + std::string(arg) + "' not known\n");
+            error("Incorrect usage; flag '" + std::string(arg) + "' not known");
+            __msg("");  // Prints newline
             print_help();
             exit(EXIT_FAILURE);
         }
@@ -219,6 +224,31 @@ void ArgParser::parse_audio_out() {
     }
 
     cli_args.out_dev_name = out_dev_arg;
+}
+
+
+void ArgParser::parse_experiment() {
+    const char *exp_cstr;
+    if(!fetch_opt(exp_cstr)) {
+        error("No experiment selected");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.do_experiment = true;
+    cli_args.experiment_string = exp_cstr;
+
+    // exit(EXIT_SUCCESS) is done in main()
+}
+
+
+void ArgParser::parse_experiments() {
+    auto it = str_to_experiment.cbegin();
+    std::string experiments = it->first;
+    for(++it; it != str_to_experiment.cend(); ++it)
+        experiments += ", " + it->first;
+
+    std::cout << "Available experiments: " << experiments << std::endl;
+    exit(EXIT_SUCCESS);
 }
 
 

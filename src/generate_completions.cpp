@@ -3,6 +3,7 @@
 #include "parse_cli_args.h"
 #include "error.h"
 
+#include "experiments/experiments.h"
 #include "synth/synth.h"  // Note not synths.h
 
 #include "config/results_file.h"
@@ -33,6 +34,13 @@ void ArgParser::generate_completions() {
     if(all_flags.size() > 0)
         all_flags.pop_back();
 
+    // Generate list of all experiments
+    std::string all_experiments;
+    for(const auto &[key, value] : str_to_experiment)
+        all_experiments += key + " ";
+    if(all_experiments.size() > 0)
+        all_experiments.pop_back();
+
     // Generate list of all synth types
     std::string all_synths;
     for(const auto &[key, value] : parse_synth_string)
@@ -46,6 +54,7 @@ void ArgParser::generate_completions() {
        << "function _generate_digistring_compl() {\n"
        << "    local cur=${COMP_WORDS[COMP_CWORD]}\n"
        << "    local ALL_FLAGS=\"" << all_flags << "\"\n"
+       << "    local ALL_EXPERIMENTS=\"" << all_experiments << "\"\n"
        << "    local ALL_SYNTHS=\"" << all_synths << "\"\n"
        << "\n";
 
@@ -217,6 +226,11 @@ void ArgParser::generate_completions() {
 
                 case OptType::last_arg:
                     ss << indent(4) << "return 0;;\n";
+                    break;
+
+                case OptType::experiment:
+                    ss << indent(4) << "COMPREPLY=($(compgen -W \"$ALL_EXPERIMENTS\" -- $cur))\n"
+                       << indent(4) << "return 0;;\n";
                     break;
 
                 case OptType::opt_synth:

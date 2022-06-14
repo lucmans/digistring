@@ -1,7 +1,8 @@
 # This file is generated using Digistring's completions generator
 function _generate_digistring_compl() {
     local cur=${COMP_WORDS[COMP_CWORD]}
-    local ALL_FLAGS="-f -h -n -o -p -r -s --audio --audio_in --audio_out --file --gen-completions --help --output --over --perf --rsc --sync --synth --synths"
+    local ALL_FLAGS="-f -h -n -o -p -r -s --audio --audio_in --audio_out --experiment --experiments --file --gen-completions --help --output --over --perf --rsc --sync --synth --synths"
+    local ALL_EXPERIMENTS="optimize_xqifft qifft"
     local ALL_SYNTHS="sine sine_amped square"
 
     if (( $COMP_CWORD - 1 >= 1 )); then
@@ -99,6 +100,11 @@ function _generate_digistring_compl() {
                 else
                     COMPREPLY=(${cur})
                 fi
+                return 0;;
+            --experiment)
+                COMPREPLY=($(compgen -W "$ALL_EXPERIMENTS" -- $cur))
+                return 0;;
+            --experiments)
                 return 0;;
             --file)
                 COMPREPLY=($(compgen -A file -- $cur))

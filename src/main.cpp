@@ -7,6 +7,8 @@
 #include "quit.h"
 #include "error.h"
 
+#include "experiments/experiments.h"
+
 #include "config/audio.h"
 #include "config/transcription.h"
 #include "config/graphics.h"
@@ -23,6 +25,33 @@
 
 #include <sstream>  // Output formatting
 #include <algorithm>  // std::clamp(), std::min(), std::max()
+
+#include <functional>  // std::function
+
+
+void perform_experiment() {
+    try {
+        const std::function<void()> experiment_func = str_to_experiment.at(cli_args.experiment_string);
+        experiment_func();
+    }
+    catch(const std::out_of_range &e) {
+        error("Incorrect usage; experiment '" + cli_args.experiment_string + "' not known");
+
+        auto it = str_to_experiment.cbegin();
+        std::string experiments = it->first;
+        for(++it; it != str_to_experiment.cend(); ++it)
+            experiments += ", " + it->first;
+
+        hint("Available experiments: " + experiments);
+        exit(EXIT_FAILURE);
+    }
+    catch(const std::exception &e) {
+        error("Failed to call experiment function (" + STR(e.what()) + ")");
+        exit(EXIT_FAILURE);
+    }
+
+    exit(EXIT_SUCCESS);  // Redundant, as main also exits after calling perform_experiment()
+}
 
 
 void print_transcription_config() {
@@ -126,6 +155,12 @@ int main(int argc, char *argv[]) {
     }
 
     Cache::init_cache();
+
+    // Can't be done straight from parse_args(), as cache needs to be initialized
+    if(cli_args.do_experiment) {
+        perform_experiment();
+        exit(EXIT_SUCCESS);
+    }
 
     // Init SDL with only audio
     if(SDL_Init(SDL_INIT_AUDIO) < 0) {

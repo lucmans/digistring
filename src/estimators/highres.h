@@ -26,7 +26,7 @@ class HighRes : public Estimator {
 
         Estimators get_type() const override;
 
-        // Note that when modifying this algorithm, the same modifications have to be made to experiments/qifft.cpp
+        // Note that when modifying this algorithm, you should disable XQIFFT (enable LQIFFT) or find the new optimal XQIFFT exponent
         void perform(float *const input_buffer, NoteEvents &note_events) override;
 
 

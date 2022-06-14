@@ -51,6 +51,8 @@ Argument parameters in <> are required and in [] are optional.
 `--audio`: Print used audio driver and available audio devices.  
 `--audio_in <device name>`: Set the recording device to device name (as provided by Digistring at start-up).  
 `--audio_out <device name>`: Set the playback device to device name (as provided by Digistring at start-up).  
+`--experiment <experiment>`: Runs given experiment.  
+`--experiments`: Lists available experiments.  
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
 `--file <file>`: Use file as input.  
 `--gen-completions <file>`: Generate Bash completions to file (overwriting it).  

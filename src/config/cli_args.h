@@ -59,6 +59,10 @@ struct CLIArgs {
     // JSON output settings
     bool output_file = false;
     std::string output_filename;
+
+    // Experiment execute
+    bool do_experiment = false;
+    std::string experiment_string;
 };
 extern CLIArgs cli_args;
 
