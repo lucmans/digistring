@@ -88,7 +88,11 @@ struct NoteEvent {
     int length;  // Length of NoteEvent in number of samples
     int offset;  // Displacement of note start from beginning of frame in number of samples
 
-    constexpr NoteEvent(const Note &_note, const int _length, const int _offset) : note(_note), length(_length), offset(_offset) {};
+    // > 0.0
+    double confidence;
+
+    constexpr NoteEvent(const Note &_note, const int _length, const int _offset) : note(_note), length(_length), offset(_offset), confidence(-1.0) {};
+    constexpr NoteEvent(const Note &_note, const int _length, const int _offset, const double _confidence) : note(_note), length(_length), offset(_offset), confidence(_confidence) {};
     // constexpr NoteEvent(const Note &_note, const int _length, const int _offset) : note(_note), type(NoteEventType::note), length(_length), offset(_offset) {};
     // constexpr NoteEvent(const NoteEventType &_type, const int _length, const int _offset) : note(-1), type(_type), length(_length), offset(_offset) {
     //     if (type == NoteEventType::note) {

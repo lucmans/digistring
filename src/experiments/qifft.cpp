@@ -35,15 +35,15 @@ std::vector<double> generate_test_freqs() {
 }
 
 
-std::vector<std::pair<double, double>> make_range(const double range_min, const double range_max, const double step_size) {
+std::vector<std::pair<double, ErrorMeasures>> make_range(const double range_min, const double range_max, const double step_size) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
-    std::vector<std::pair<double, double>> exps;
+    std::vector<std::pair<double, ErrorMeasures>> exps;
     for(double e = range_min; e < range_max; e += step_size) {
         if(e == 0.0)
             warning("Skipping invalid exponent (value of 0.0)...");
         else
-            exps.push_back({e, 0.0});
+            exps.push_back({e, ErrorMeasures()});
     }
     #pragma GCC diagnostic pop
 
@@ -51,8 +51,20 @@ std::vector<std::pair<double, double>> make_range(const double range_min, const 
 }
 
 double iteratively_optimize_qxifft(const int frame_size, const int padding_size/*, const window_func*/) {
-    warning("Assuming frame size of " + STR(frame_size) + " samples with " + STR(padding_size) + " samples zero-padding"
-            ". You are responsible the optimization pitch estimation process matches the one the parameter is optimized for.");
+    warning("You are responsible the optimization pitch estimation process matches the one the parameter is optimized for");
+    if(padding_size > 0) {
+        info("Assuming frame size of " + STR(frame_size) + " samples with " + STR(padding_size) + " samples zero-padding\n"
+        "  - Frame time: " + STR(((double)frame_size / (double)SAMPLE_RATE) * 1000.0) + " ms\n"
+        "  - Fourier bin size: " + STR((double)SAMPLE_RATE / (double)frame_size) + " Hz\n"
+        "  - Frame size with zero padding: " + STR(frame_size + padding_size) + " samples\n"
+        "  - Interpolated bin size: " + STR((double)SAMPLE_RATE / (double)(frame_size + padding_size)) + " Hz\n");
+    }
+    else {
+        info("Assuming frame size of " + STR(frame_size) + " samples\n"
+        "  - Frame time: " + STR(((double)frame_size / (double)SAMPLE_RATE) * 1000.0) + " ms\n"
+        "  - Fourier bin size: " + STR((double)SAMPLE_RATE / (double)frame_size) + " Hz\n");
+    }
+
     const int n_cores = omp_get_num_procs();
     const int min_steps = 8;
 
@@ -64,7 +76,7 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
     ss << "Looking between " << min_range << " and " << max_range << " with a step size of " << step_size;
     info(ss.str());
 
-    std::vector<std::pair<double, double>> exps = make_range(min_range, max_range, step_size);
+    std::vector<std::pair<double, ErrorMeasures>> exps = make_range(min_range, max_range, step_size);
     if(exps.size() == 0) {
         warning("Range only contains 0.0");
         return 0.0;
@@ -96,10 +108,10 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
         }
 
         min_idx = 0;
-        std::cout << "exp " << exps[0].first << " -> mean squared error " << exps[0].second /*<< " Hz"*/ << std::endl;
+        std::cout << "exp " << exps[0].first << " -> " << OPTI_MEASURE_STR << " " << get_opti_measure(exps[0].second) << OPTI_MEASURE_UNIT_STR << std::endl;
         for(int i = 1; i < n_tasks; i++) {
-            std::cout << "exp " << exps[i].first << " -> mean squared error " << exps[i].second /*<< " Hz"*/ << std::endl;
-            if(exps[i].second < exps[min_idx].second)
+            std::cout << "exp " << exps[i].first << " -> " << OPTI_MEASURE_STR << " " << get_opti_measure(exps[i].second) << OPTI_MEASURE_UNIT_STR << std::endl;
+            if(get_opti_measure(exps[i].second) < get_opti_measure(exps[min_idx].second))
                 min_idx = i;
         }
         std::cout << std::endl;
@@ -130,7 +142,7 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
 
     if(min_idx != -1) {
         std::stringstream().swap(ss);  // Create new (empty) stream
-        ss << "Best found exponent is " << exps[min_idx].first << " with a mean squared error of " << exps[min_idx].second /*<< " Hz"*/;
+        ss << "Best found exponent is " << exps[min_idx].first << " with a " << OPTI_MEASURE_STR << " of " << get_opti_measure(exps[min_idx].second) << OPTI_MEASURE_UNIT_STR;
         info(ss.str());
     }
 
@@ -191,7 +203,7 @@ QIFFT::~QIFFT() {
 }
 
 
-double QIFFT::qifft_error(const std::function<double(double, double, double, double&)> interpolation_func) {
+ErrorMeasures QIFFT::qifft_error(const std::function<double(double, double, double, double&)> interpolation_func) {
     const std::vector<double> freqs = generate_test_freqs();
 
     double last_phase;
@@ -234,47 +246,44 @@ double QIFFT::qifft_error(const std::function<double(double, double, double, dou
         }
     }
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-variable"
     const double mean_error = total_error / (REPS_PER_FREQ * (double)freqs.size());
     const double mean_squared_error = total_squared_error / (REPS_PER_FREQ * (double)freqs.size());
-    #pragma GCC diagnostic pop
 
-    return mean_squared_error;
+    return ErrorMeasures(mean_error, mean_squared_error, max_error);
 }
 
-double QIFFT::no_qifft() {
+ErrorMeasures QIFFT::no_qifft() {
     return qifft_error([](const double peak, const double l, const double r, double &amp){amp = peak; return 0.0; amp = l+r;});
 }
 
 // Static casts are needed as interpolation funcs are overloaded
-double QIFFT::mqifft() {
+ErrorMeasures QIFFT::mqifft() {
     return qifft_error(static_cast<interpolation_func_t>(&interpolate_max));
 }
 
-double QIFFT::lqifft() {
+ErrorMeasures QIFFT::lqifft() {
     return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_log));
 }
 
-double QIFFT::lqifft2() {
+ErrorMeasures QIFFT::lqifft2() {
     return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_log2));
 }
 
-double QIFFT::lqifft10() {
+ErrorMeasures QIFFT::lqifft10() {
     return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_log10));
 }
 
-double QIFFT::dbqifft() {
+ErrorMeasures QIFFT::dbqifft() {
     return qifft_error(static_cast<interpolation_func_t>(&interpolate_max_db));
 }
 
 
-double QIFFT::xqifft_exp_error(const double exp) {
+ErrorMeasures QIFFT::xqifft_exp_error(const double exp) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
     if(exp == 0.0) {
         warning("Exponent can't be 0.0");
-        return -1.0;
+        return ErrorMeasures();
     }
     #pragma GCC diagnostic pop
 
@@ -320,22 +329,19 @@ double QIFFT::xqifft_exp_error(const double exp) {
         }
     }
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-variable"
     const double mean_error = total_error / (REPS_PER_FREQ * (double)freqs.size());
     const double mean_squared_error = total_squared_error / (REPS_PER_FREQ * (double)freqs.size());
-    #pragma GCC diagnostic pop
 
-    return mean_squared_error;
+    return ErrorMeasures(mean_error, mean_squared_error, max_error);
 }
 
 
 double QIFFT::xqifft_exp_test_range(const double check_min, const double check_max, const double check_step, const bool print /*= false*/) {
-    double out_error;
+    ErrorMeasures out_error;
     return xqifft_exp_test_range(check_min, check_max, check_step, out_error, print);
 }
 
-double QIFFT::xqifft_exp_test_range(const double check_min, const double check_max, const double check_step, double &out_error, const bool print /*= false*/) {
+double QIFFT::xqifft_exp_test_range(const double check_min, const double check_max, const double check_step, ErrorMeasures &out_error, const bool print /*= false*/) {
     if(check_min >= check_max) {
         warning("Upper bound is equal or lower than lower bound");
         return 0.0;
@@ -345,24 +351,24 @@ double QIFFT::xqifft_exp_test_range(const double check_min, const double check_m
         return 0.0;
     }
 
-    std::vector<std::pair<double, double>> exps = make_range(check_min, check_max, check_step);
+    std::vector<std::pair<double, ErrorMeasures>> exps = make_range(check_min, check_max, check_step);
     if(exps.size() == 0) {
         warning("Range only contains 0.0");
         return 0.0;
     }
 
-    for(auto &[exp, mean_squared_error] : exps) {
-        mean_squared_error = xqifft_exp_error(exp);
+    for(auto &[exp, error_measures] : exps) {
+        error_measures = xqifft_exp_error(exp);
 
         if(print)
-            std::cout << "exp " << exp << " -> mean squared error " << mean_squared_error << std::endl;
+            std::cout << "exp " << exp << " -> " << OPTI_MEASURE_STR << " " << get_opti_measure(error_measures) << OPTI_MEASURE_UNIT_STR << std::endl;
     }
 
     // Find best exponent
     int min_idx = 0;
     const int n_exps = exps.size();
     for(int i = 1; i < n_exps; i++)
-        if(exps[i].second < exps[min_idx].second)
+        if(get_opti_measure(exps[i].second) < get_opti_measure(exps[min_idx].second))
             min_idx = i;
 
     out_error = exps[min_idx].second;

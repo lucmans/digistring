@@ -58,12 +58,12 @@ void print_transcription_config() {
     std::stringstream ss;
     ss << "--- Transcription config ---\n";
 
-    ss << "  - Frame size: " << FRAME_SIZE << '\n'
+    ss << "  - Frame size: " << FRAME_SIZE << " samples\n"
        << "  - Frame time: " << ((double)FRAME_SIZE / (double)SAMPLE_RATE) * 1000.0 << " ms\n"
        << "  - Fourier bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE << " Hz\n";
 
     if(ZERO_PAD_FACTOR > 0.0) {
-        ss << "  - Frame size with zero padding: " << FRAME_SIZE_PADDED << '\n'
+        ss << "  - Frame size with zero padding: " << FRAME_SIZE_PADDED << " samples\n"
            << "  - Interpolated bin size: " << (double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED << " Hz\n";
     }
 
