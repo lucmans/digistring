@@ -495,19 +495,29 @@ void Graphics::render_clicked_location_info(int &offset) {
     if(mouse_x == -1)
         return;
 
-    const int clicked_freq = round(((double)mouse_x / (double)res_w) * max_display_frequency);
-    SDL_Texture *clicked_freq_number = create_txt_texture(renderer, std::to_string(clicked_freq), info_font, {0xff, 0xff, 0xff, 0xff});
+    const double clicked_freq = ((double)mouse_x / (double)res_w) * max_display_frequency;
+    const int rounded_clicked_freq = round(clicked_freq);
+    SDL_Texture *clicked_freq_number = create_txt_texture(renderer, std::to_string(rounded_clicked_freq), info_font, {0xff, 0xff, 0xff, 0xff});
+
+    const Note closest_note = Note(clicked_freq);
+    const std::string clicked_note_str = " (" + note_to_string(closest_note) + ")";
+    SDL_Texture *clicked_closest_note = create_txt_texture(renderer, clicked_note_str, info_font, {0xff, 0xff, 0xff, 0xff});
 
     int w, h;
     SDL_QueryTexture(clicked_freq_text, NULL, NULL, &w, &h);
     int w2;
     SDL_QueryTexture(clicked_freq_number, NULL, NULL, &w2, &h);
+    int w3;
+    SDL_QueryTexture(clicked_closest_note, NULL, NULL, &w3, &h);
 
-    SDL_Rect dst = {res_w - w - w2 - 1, h * offset, w, h};
+    SDL_Rect dst = {res_w - w - w2 - w3 - 1, h * offset, w, h};
     SDL_RenderCopy(renderer, clicked_freq_text, NULL, &dst);
-    dst = {res_w - w2 - 1, h * offset, w2, h};
+    dst = {res_w - w2 - w3 - 1, h * offset, w2, h};
     SDL_RenderCopy(renderer, clicked_freq_number, NULL, &dst);
+    dst = {res_w - w3 - 1, h * offset, w3, h};
+    SDL_RenderCopy(renderer, clicked_closest_note, NULL, &dst);
 
+    SDL_DestroyTexture(clicked_closest_note);
     SDL_DestroyTexture(clicked_freq_number);
 
     offset++;
