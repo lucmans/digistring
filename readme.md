@@ -96,6 +96,7 @@ Digistring includes a few tools:
 
 
 # TODO
+- Integer sample support for synths.
 - Tuned sine synth.
 - SampleGetter which uses Synth to generate samples.
 - Abstract away all SDL audio code into own Audio class to allow switching audio back-ends.

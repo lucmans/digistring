@@ -12,9 +12,10 @@ constexpr int SAMPLE_RATE = 192000;
 // constexpr int SAMPLE_RATE = 44100;
 
 constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_F32SYS;  // 32 bit floats
-// constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_S32SYS;  // 32 bit ints
+// constexpr SDL_AudioFormat AUDIO_FORMAT = AUDIO_S32SYS;  // 32 bit ints (synths currently do not support this!)
 // Check if audio format can be converted to float32 (AUDIO_F32SYS)
 static_assert(AUDIO_FORMAT != AUDIO_S32SYS || AUDIO_FORMAT != AUDIO_F32SYS, "Audio format has to be either int32 or float32");
+static_assert(sizeof(float) == 4, "Floats are not 32 bits, which is assumed for float samples");
 
 constexpr unsigned int SAMPLES_PER_BUFFER = 64;
 
