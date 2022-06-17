@@ -42,7 +42,7 @@ class ResultsFile {
 
 
     private:
-        std::fstream output_stream;
+        std::fstream json_file;
 
         int cur_indent;
         bool first_write_block;  // Prevents writing ",\n" on first writes of new block

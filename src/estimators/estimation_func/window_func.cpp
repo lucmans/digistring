@@ -167,6 +167,11 @@ bool dolph_chebyshev_window(double window[], const int size, const double attenu
 
         // Read the output file of the Python script
         std::fstream output_file(dolph_window_file);
+        if(!output_file.is_open()) {
+            warning("Failed to open Dolph-Chebyshev window file created by Python script");
+            return false;
+        }
+
         for(int i = 0; i < size; i++)
             output_file >> window[i];
 
@@ -408,6 +413,11 @@ bool dolph_chebyshev_window(float window[], const int size, const double attenua
 
         // Read the output file of the Python script
         std::fstream output_file(dolph_window_file);
+        if(!output_file.is_open()) {
+            warning("Failed to open Dolph-Chebyshev window file created by Python script");
+            return false;
+        }
+
         for(int i = 0; i < size; i++)
             output_file >> window[i];
 

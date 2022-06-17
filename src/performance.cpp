@@ -56,20 +56,18 @@ Performance::~Performance() {
 
     info("Writing Digistring's " + (subtask == "" ? "main" : subtask) + " performance statistics to '" + outfile + "'");
 
-    std::fstream output_stream(outfile, std::fstream::out);
-    if(!output_stream.is_open()) {
+    std::fstream perf_file(outfile, std::fstream::out);
+    if(!perf_file.is_open()) {
         error("Failed to create/open file '" + outfile + "'");
         exit(EXIT_FAILURE);
     }
 
     for(const auto &[desc, times] : durations) {
-        output_stream << desc << std::endl;  // << "  (" << times.size() << " timepoints)" << std::endl;
+        perf_file << desc << std::endl;  // << "  (" << times.size() << " timepoints)" << std::endl;
         for(const auto &t : times)
-            output_stream << t << ' ';
-        output_stream << std::endl << std::endl;
+            perf_file << t << ' ';
+        perf_file << std::endl << std::endl;
     }
-
-    output_stream.close();
 }
 
 

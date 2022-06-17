@@ -125,15 +125,18 @@ bool verify_rsc_dir() {
         return false;
     }
 
-    std::ifstream file(cli_args.rsc_dir + "verify");
-    std::string line;
-    file >> line;
-    if(line != "4c3f666590eeb398f4606555d3756350") {
-        error("Resource directory verification failed");
-        file.close();
+    std::ifstream verification_file(cli_args.rsc_dir + "verify");
+    if(!verification_file.is_open()) {
+        warning("Failed to open resource directory verification file");
         return false;
     }
-    file.close();
+
+    std::string line;
+    verification_file >> line;
+    if(line != "4c3f666590eeb398f4606555d3756350") {
+        error("Resource directory verification failed");
+        return false;
+    }
 
     return true;
 }

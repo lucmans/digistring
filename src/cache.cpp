@@ -136,6 +136,11 @@ bool Cache::load_dolph_window(double out[], const int size, const double attenua
         return false;
 
     std::fstream dolph_file(cache_dir + filename);
+    if(!dolph_file.is_open()) {
+        warning("Failed to open Dolph Chebyshev window cache file '" + filename + "' for reading");
+        return false;
+    }
+
     for(int i = 0; i < size; i++)
         dolph_file >> out[i];
 
@@ -151,6 +156,11 @@ bool Cache::load_dolph_window(float out[], const int size, const double attenuat
         return false;
 
     std::fstream dolph_file(cache_dir + filename);
+    if(!dolph_file.is_open()) {
+        warning("Failed to open Dolph Chebyshev window cache file '" + filename + "' for reading");
+        return false;
+    }
+
     for(int i = 0; i < size; i++)
         dolph_file >> out[i];
 

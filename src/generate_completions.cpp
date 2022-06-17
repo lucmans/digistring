@@ -314,6 +314,10 @@ void ArgParser::generate_completions() {
     }
 
     std::fstream out_file(filename, std::ios::out);
+    if(!out_file.is_open()) {
+        error("Failed to open completions file '" + STR(filename) + "' for writing");
+        exit(EXIT_FAILURE);
+    }
     out_file << ss.str();
 
     exit(EXIT_SUCCESS);
