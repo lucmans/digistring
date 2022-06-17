@@ -62,6 +62,7 @@ class ArgParser {
         void parse_resolution();
         void parse_rsc_dir();
         void parse_generate_sine();
+        void parse_slow();
         void parse_sync_with_audio();
         void parse_synth();
         void parse_synths();
@@ -72,7 +73,7 @@ class ArgParser {
 // The OptType determines what kind of tab complete to perform on arguments of flags
 // last_arg will prevent further completions to be given (useful for signalling no other flags are possible)
 enum class OptType {
-    dir, file, output_file, perf_file, completions_file, opt_decimal, integer, opt_integer, note, opt_note, last_arg,
+    dir, file, output_file, perf_file, completions_file, decimal, opt_decimal, integer, opt_integer, note, opt_note, last_arg,
     opt_synth, opt_left_right, audio_in_device, audio_out_device, midi_switch, experiment
 };
 

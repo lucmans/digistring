@@ -64,6 +64,7 @@ Argument parameters in <> are required and in [] are optional.
 `-r <w> <h>`: Run Digistring with given resolution.  
 `--rsc <path>`: Set alternative resource directory location.  
 `-s [f]`: Generate sine wave as input instead of using the recording device. Optionally, specify the frequency in hertz.  
+`--slow <factor>`: Slowdown pitch estimation by the given factor.  
 `--sync`: Run Digistring "real-time"; in other words, sync graphics etc. as if audio was playing back.  
 `--synth [synth_type] [volume]`: Generate sound based on note estimation (default synth is sine, default volume is 1.0).  
 `--synths`: List available synthesizers (`synth_type`s for `--synth`).
@@ -97,7 +98,6 @@ Digistring includes a few tools:
 # TODO
 - Tuned sine synth.
 - SampleGetter which uses Synth to generate samples.
-- Make SLOWDOWN a cli arg instead of compile time parameter.
 - Abstract away all SDL audio code into own Audio class to allow switching audio back-ends.
 - Make SampleGetter::WaveGenerator a baseclass and change current WaveGenerator to SineGenerator subclass.
 - Make SampleGetter and Estimator pointer in Program const (using factories to create them in constructor initializer list).

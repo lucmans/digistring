@@ -28,15 +28,6 @@ constexpr bool ALLOW_PLAYBACK_CHANGE = true;
 constexpr bool PRINT_AUDIO_UNDERRUNS = false;
 
 
-// Alters the number of retrieved samples and estimated note events after estimation
-// This tricks synthesizers and audio syncing by letting them think NoteEvents are longer by a factor of SLOWDOWN_FACTOR
-// Only useful during development and may have serious detriments for real-time usage and performing experiments; use with caution
-// To prevent unnecessarily large synth_buffers to be allocated at start-up, we reallocate a larger synth_buffer if needed runtime
-constexpr bool SLOWDOWN = false;
-constexpr double SLOWDOWN_FACTOR = 8.0;
-static_assert(SLOWDOWN_FACTOR > 1.0, "SLOWDOWN_FACTOR must be > 1.0");
-
-
 /* Note: Currently disabled! */
 // When reading samples from audio in, Digistring sleeps the time it takes to have enough samples ready from the audio driver
 // To prevent sleeping too long, which leads to more latency, we only sleep SLEEP_FACTOR times wait required time

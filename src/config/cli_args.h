@@ -63,18 +63,40 @@ struct CLIArgs {
     // Experiment execute
     bool do_experiment = false;
     std::string experiment_string;
+
+    // Slowdown settings
+    // Alters the number of retrieved samples and estimated note events after estimation
+    // This tricks synthesizers and audio syncing by letting them think NoteEvents are longer by a factor of slowdown_factor
+    // Only useful during development and may have serious detriments for real-time usage and performing experiments; use with caution
+    // To prevent unnecessarily large synth_buffers to be allocated at start-up, we reallocate a larger synth_buffer if needed runtime
+    bool do_slowdown = false;
+    double slowdown_factor;
 };
 extern CLIArgs cli_args;
 
 
 // Checks if combination of cli_args is valid
 inline bool verify_cli_args() {
-    if constexpr(SLOWDOWN) {
-        if(!cli_args.sync_with_audio && !cli_args.synth) {
-            error("Slowdown mode does nothing without syncing or synthesizing audio");
-            hint("Either disable SLOWDOWN in config/audio.h or pass --sync/--synth flag");
-            return false;
-        }
+    if(cli_args.do_slowdown && cli_args.output_file) {
+        error("Outputting results is prohibited during slowdown, as rounding errors may cause tied notes to separate");
+        return false;
+    }
+
+    if(cli_args.do_slowdown && cli_args.playback) {
+        error("Can't playback with slowdown");
+        return false;
+    }
+
+    if(cli_args.do_slowdown && !cli_args.sync_with_audio && !cli_args.synth) {
+        error("Slowdown mode does nothing without syncing or synthesizing audio");
+        hint("Either disable slowdown or pass --sync/--synth flag");
+        return false;
+    }
+
+    if(cli_args.playback && cli_args.synth && !cli_args.stereo_split) {
+        error("Can't playback input audio and synthesize audio at the same time without stereo splitting");
+        hint("To split playback and synthesis over stereo channels, pass 'left' or 'right' to playback");
+        return false;
     }
 
     if(cli_args.stereo_split && !cli_args.synth) {

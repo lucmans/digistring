@@ -70,7 +70,7 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
             exit(EXIT_FAILURE);
     }
     if(sample_getter->is_audio_recording_device()) {
-        if constexpr(SLOWDOWN) {
+        if(cli_args.do_slowdown) {
             error("Can't slowdown if SampleGetter is an audio recording device (SampleGetter is blocking)");
             exit(EXIT_FAILURE);
         }
@@ -197,7 +197,7 @@ void Program::main_loop() {
         if(cli_args.output_file)
             write_results(estimated_events, new_samples);
 
-        if constexpr(SLOWDOWN)
+        if(cli_args.do_slowdown)
             slowdown(estimated_events, new_samples);
 
         // Arg parser disallows both cli_args.playback and cli_args.synth to be true
@@ -267,12 +267,12 @@ void Program::playback_audio(const int new_samples) {
 
             playback_buffer_n_samples = new_samples;
             try {
-                debug("Reallocating playback buffer to accommodate SLOWDOWN");
+                debug("Reallocating playback buffer to accommodate for slowdown");
                 playback_buffer = new float[playback_buffer_n_samples];
             }
             catch(const std::bad_alloc &e) {
                 error("Failed to allocate new (larger) playback_buffer (" + STR(e.what()) + ")");
-                hint("SLOWDOWN_FACTOR may be too large, which causes the need for large reallocated synth buffers");
+                hint("Slowdown factor may be too large, which causes the need for large reallocated synth buffers");
                 exit(EXIT_FAILURE);
             }
         }
@@ -429,11 +429,11 @@ bool Program::update_graphics(const NoteEvents &note_events) {
 
 /*static*/ void Program::slowdown(NoteEvents &events, int &new_samples) {
     for(auto &event : events) {
-        event.offset = std::round((double)event.offset * SLOWDOWN_FACTOR);
-        event.length = std::round((double)event.length * SLOWDOWN_FACTOR);
+        event.offset = std::round((double)event.offset * cli_args.slowdown_factor);
+        event.length = std::round((double)event.length * cli_args.slowdown_factor);
     }
 
-    new_samples = std::round((double)new_samples * SLOWDOWN_FACTOR);
+    new_samples = std::round((double)new_samples * cli_args.slowdown_factor);
 }
 
 
@@ -443,19 +443,19 @@ void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
             warning("Audio underrun; no audio left to play");
 
     // new_samples may be larger due to artificial slowdown; overlapping input buffers may shorten it however
-    if constexpr(SLOWDOWN) {
+    if(cli_args.do_slowdown) {
         if(new_samples > synth_buffer_n_samples) {
             delete[] synth_buffer;
             synth_buffer = nullptr;  // In case Program is destroyed between delete[] and new float[]
 
             synth_buffer_n_samples = new_samples;
             try {
-                debug("Reallocating synth buffer to accommodate SLOWDOWN");
+                debug("Reallocating synth buffer to accommodate for slowdown");
                 synth_buffer = new float[synth_buffer_n_samples];
             }
             catch(const std::bad_alloc &e) {
                 error("Failed to allocate new (larger) synth_buffer (" + STR(e.what()) + ")");
-                hint("SLOWDOWN_FACTOR may be too large, which causes the need for large reallocated synth buffers");
+                hint("Slowdown factor may be too large, which causes the need for large reallocated synth buffers");
                 exit(EXIT_FAILURE);
             }
         }

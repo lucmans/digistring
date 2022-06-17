@@ -68,6 +68,7 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
         {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
         {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_decimal})},
+        {"--slow",              ParseObj(&ArgParser::parse_slow,                {OptType::decimal})},
         {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
         {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth, OptType::opt_decimal})},
         {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
@@ -95,6 +96,7 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     // {"--real-time",                 "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
     {"--rsc <path>",                "Set alternative resource directory location to path"},
     {"-s [f]",                      "Generate sine wave with frequency f (default is 1000.0 Hz) instead of using recording device"},
+    {"--slow <factor>",             "Slowdown pitch estimation by the given factor"},
     {"--sync",                      "Run Digistring \"real-time\"; in other words, sync graphics etc. as if audio was playing back"},
     {"--synth [synth] [volume]",    "Synthesize sound based on note estimation from audio input (default synth is sine, default volume is 1.0)"},
     {"--synths",                    "List available synthesizers"},
@@ -236,8 +238,6 @@ void ArgParser::parse_experiment() {
 
     cli_args.do_experiment = true;
     cli_args.experiment_string = exp_cstr;
-
-    // exit(EXIT_SUCCESS) is done in main()
 }
 
 
@@ -275,7 +275,7 @@ void ArgParser::parse_file() {
 
     const char *arg;
     if(!fetch_opt(arg)) {
-        error("No file given with the --file flag");
+        error("No file given with the '--file' flag");
         exit(EXIT_FAILURE);
     }
 
@@ -336,7 +336,7 @@ void ArgParser::parse_output_file() {
     const char *filename;
     if(!fetch_opt(filename)) {
         filename = DEFAULT_OUTPUT_FILENAME.c_str();
-        info("No file provided with output flag; using '" + STR(filename) + " instead");
+        info("No file provided with output flag; using '" + STR(filename) + "' instead");
     }
 
     // Original filename as std::string instead of char[] for easier manipulation
@@ -383,6 +383,7 @@ void ArgParser::parse_print_overtone() {
         error("Failed to parse note string '" + std::string(note_string) + "': " + e.what());
         exit(EXIT_FAILURE);
     }
+    // Getting here implies note was successfully initialized
 
     int n = 5;
     const char *n_string;
@@ -404,9 +405,9 @@ void ArgParser::parse_print_overtone() {
     if(fetch_opt(midi_cstring)) {
         const std::string midi_string = midi_cstring;
         if(midi_string == "midi_on")
-            print_overtones(*note, n, true);  // Getting here implies note was successfully initialized
+            print_overtones(*note, n, true);
         else if(midi_string == "midi_off")
-            print_overtones(*note, n, false);  // Getting here implies note was successfully initialized
+            print_overtones(*note, n, false);
         else {
             error("Invalid third argument passed... Either pass 'midi_on' or 'midi_off'");
             exit(EXIT_FAILURE);
@@ -415,7 +416,7 @@ void ArgParser::parse_print_overtone() {
     }
 
     // Do the default if midi column isn't explicitly switched
-    print_overtones(*note, n);  // Getting here implies note was successfully initialized
+    print_overtones(*note, n);
     exit(EXIT_SUCCESS);
 }
 
@@ -436,17 +437,6 @@ void ArgParser::parse_playback() {
             error("Invalid argument passed to playback flag; expected 'left' or 'right'");
             exit(EXIT_FAILURE);
         }
-    }
-
-    if(cli_args.synth && !cli_args.stereo_split) {
-        error("Can't playback input audio while synthesizing");
-        hint("To split playback and synthesis over stereo channels, pass 'left' or 'right' to playback");
-        exit(EXIT_FAILURE);
-    }
-
-    if constexpr(SLOWDOWN) {
-        error("Can't playback in slowdown mode");
-        exit(EXIT_FAILURE);
     }
 
     cli_args.playback = true;
@@ -564,6 +554,33 @@ void ArgParser::parse_generate_sine() {
 }
 
 
+void ArgParser::parse_slow() {
+    const char *arg;
+    if(!fetch_opt(arg))  // No more arguments, so use default value (set in config.h)
+        return;
+
+    double s;
+    try {
+        s = std::stod(arg);
+    }
+    catch(const std::out_of_range &e) {
+        error("Slowdown factor cannot be represented by a double");
+        exit(EXIT_FAILURE);
+    }
+    catch(const std::exception &e) {
+        error("Failed to parse given slowdown factor as a floating point number (" + STR(e.what()) + ")");
+        exit(EXIT_FAILURE);
+    }
+    if(s <= 1.0) {
+        error("Can't set slowdown factor <= 1.0");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.do_slowdown = true;
+    cli_args.slowdown_factor = s;
+}
+
+
 void ArgParser::parse_sync_with_audio() {
     // Program class may overwrite this value if SampleGetter is blocking
     cli_args.sync_with_audio = true;
@@ -571,12 +588,6 @@ void ArgParser::parse_sync_with_audio() {
 
 
 void ArgParser::parse_synth() {
-    if(cli_args.playback && !cli_args.stereo_split) {
-        error("Can't synthesize sound while playing back input");
-        hint("To split playback and synthesis over stereo channels, pass 'left' or 'right' to playback");
-        exit(EXIT_FAILURE);
-    }
-
     cli_args.synth = true;
 
     // Select right synth if specified
