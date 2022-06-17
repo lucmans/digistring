@@ -314,7 +314,7 @@ void Program::write_results(const NoteEvents &note_events, const int new_samples
     const int n_notes = note_events.size();
     if(n_notes == 0) {
         if constexpr(WRITE_SILENCE) {
-            results_file->write_double("note_start (samples)", start_frame_samples);
+            results_file->write_int("note_start (samples)", start_frame_samples);
             results_file->write_double("note_start (seconds)", start_frame_time);
             results_file->write_null("note_duration (samples)");
             results_file->write_null("note_duration (seconds)");
@@ -328,9 +328,9 @@ void Program::write_results(const NoteEvents &note_events, const int new_samples
 
     for(const auto &note_event : note_events) {
         const std::string note = note_to_string_ascii(note_event.note);
-        results_file->write_double("note_start (samples)", start_frame_samples + note_event.offset);
+        results_file->write_int("note_start (samples)", start_frame_samples + note_event.offset);
         results_file->write_double("note_start (seconds)", start_frame_time + ((double)note_event.offset / (double)SAMPLE_RATE));
-        results_file->write_double("note_duration (samples)", note_event.length);
+        results_file->write_int("note_duration (samples)", note_event.length);
         results_file->write_double("note_duration (seconds)", (double)note_event.length / (double)SAMPLE_RATE);
         results_file->write_string("note", note);
         results_file->write_double("frequency", note_event.note.freq);
