@@ -12,7 +12,7 @@ class SineAmped : public Synth {
         SineAmped();
         ~SineAmped() override;
 
-        void synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume);
+        void synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume = 1.0);
 
 
     private:

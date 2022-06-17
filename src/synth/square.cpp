@@ -17,7 +17,7 @@ Square::~Square() {
 }
 
 
-void Square::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume) {
+void Square::synthesize(const NoteEvents &note_events, float *const synth_buffer, const int n_samples, const double volume /*= 1.0*/) {
     const int n_events = note_events.size();
 
     // Output silence if there are no notes
@@ -44,7 +44,7 @@ void Square::synthesize(const NoteEvents &note_events, float *const synth_buffer
 
     // Write samples to buffer
     const Note &out_note = out_event.note;
-    const double phase_offset = (last_phase * ((double)SAMPLE_RATE / out_note.freq));
+    const double phase_offset = last_phase * ((double)SAMPLE_RATE / out_note.freq);
     for(int i = out_event.offset; i < out_event.offset + out_event.length; i++)
         if(sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE) >= 0)
             synth_buffer[i] = volume;
