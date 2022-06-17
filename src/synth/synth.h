@@ -3,6 +3,7 @@
 
 
 #include "note.h"
+#include "config/audio.h"
 
 #include <map>
 #include <string>
@@ -31,7 +32,7 @@ const std::map<const Synths, const std::string> synth_description = {
 
 class Synth {
     public:
-        Synth();
+        Synth(const int _sample_rate = SAMPLE_RATE);
         virtual ~Synth();
 
         virtual void synthesize(const NoteEvents &notes, float *const synth_buffer, const int n_samples, const double volume = 1.0) = 0;
@@ -42,6 +43,8 @@ class Synth {
 
     protected:
         double max_amp;
+
+        int sample_rate;
 };
 
 

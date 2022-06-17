@@ -2,7 +2,6 @@
 
 #include "note.h"
 #include "error.h"
-#include "config/audio.h"
 
 #include <cmath>
 #include <algorithm>  // std::fill_n()
@@ -28,10 +27,10 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
 
         // Finish sine from previous frame
         if(!prev_frame_silent) {
-            const double phase_offset = (last_phase * ((double)SAMPLE_RATE / prev_frame_freq));
+            const double phase_offset = (last_phase * ((double)sample_rate / prev_frame_freq));
             if(last_phase > 0.5) {
                 for(int i = 0; i < n_samples; i++) {
-                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)SAMPLE_RATE);
+                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)sample_rate);
                     if(next_sample > 0.0)
                         break;
 
@@ -40,7 +39,7 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
             }
             else /*if(last_phase < 0.5)*/ {
                 for(int i = 0; i < n_samples; i++) {
-                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)SAMPLE_RATE);
+                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)sample_rate);
                     if(next_sample < 0.0)
                         break;
 
@@ -77,11 +76,11 @@ void Sine::synthesize(const NoteEvents &note_events, float *const synth_buffer, 
 
     // Write samples to buffer
     const Note &out_note = out_event.note;
-    const double phase_offset = last_phase * ((double)SAMPLE_RATE / out_note.freq);
+    const double phase_offset = last_phase * ((double)sample_rate / out_note.freq);
     for(int i = out_event.offset; i < out_event.offset + out_event.length; i++)
-        synth_buffer[i] = volume * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
+        synth_buffer[i] = volume * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)sample_rate);
 
-    last_phase = fmod(last_phase + (out_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
+    last_phase = fmod(last_phase + (out_note.freq / ((double)sample_rate / (double)n_samples)), 1.0);
 
     // Fill silent part with zeros
     std::fill_n(synth_buffer, out_event.offset, 0.0);  // Start

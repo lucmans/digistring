@@ -2,7 +2,6 @@
 
 #include "note.h"
 #include "error.h"
-#include "config/audio.h"
 
 #include <cmath>
 #include <algorithm>  // std::fill_n()
@@ -44,14 +43,14 @@ void Square::synthesize(const NoteEvents &note_events, float *const synth_buffer
 
     // Write samples to buffer
     const Note &out_note = out_event.note;
-    const double phase_offset = last_phase * ((double)SAMPLE_RATE / out_note.freq);
+    const double phase_offset = last_phase * ((double)sample_rate / out_note.freq);
     for(int i = out_event.offset; i < out_event.offset + out_event.length; i++)
-        if(sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE) >= 0)
+        if(sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)sample_rate) >= 0)
             synth_buffer[i] = volume;
         else
             synth_buffer[i] = -volume;
 
-    last_phase = fmod(last_phase + (out_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
+    last_phase = fmod(last_phase + (out_note.freq / ((double)sample_rate / (double)n_samples)), 1.0);
 
     // Fill silent part with zeros
     std::fill_n(synth_buffer, out_event.offset, 0.0);  // Start

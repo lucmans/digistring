@@ -3,7 +3,6 @@
 #include "note.h"
 #include "error.h"
 
-#include "config/audio.h"
 #include "config/synth.h"
 
 #include <cmath>
@@ -33,10 +32,10 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
         if(!prev_frame_silent) {
             int i;  // DEBUG
 
-            const double phase_offset = (last_phase * ((double)SAMPLE_RATE / prev_frame_freq));
+            const double phase_offset = (last_phase * ((double)sample_rate / prev_frame_freq));
             if(last_phase > 0.5) {
                 for(i = 0; i < n_samples; i++) {
-                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)SAMPLE_RATE);
+                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)sample_rate);
                     if(next_sample > 0.0)
                         break;
 
@@ -45,7 +44,7 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
             }
             else /*if(last_phase < 0.5)*/ {
                 for(i = 0; i < n_samples; i++) {
-                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)SAMPLE_RATE);
+                    const double next_sample = sinf((2.0 * M_PI * ((double)i + phase_offset) * prev_frame_freq) / (double)sample_rate);
                     if(next_sample < 0.0)
                         break;
 
@@ -91,13 +90,13 @@ void SineAmped::synthesize(const NoteEvents &note_events, float *const synth_buf
 
     // Write samples to buffer
     const double amp_mod = out_note.amp / max_amp;  // Target synthesized amplitude based on input note amplitude
-    const double phase_offset = last_phase * ((double)SAMPLE_RATE / out_note.freq);
+    const double phase_offset = last_phase * ((double)sample_rate / out_note.freq);
     for(int i = out_event.offset; i < out_event.offset + out_event.length; i++) {
         const double amp_i = (double)(i - out_event.offset) * ((amp_mod - prev_frame_amp) / (double)out_event.length);  // Linearly interpolate between the output amplitude of the previous frame and the current frame to prevent clicks in audio
-        synth_buffer[i] = volume * (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)SAMPLE_RATE);
+        synth_buffer[i] = volume * (prev_frame_amp + amp_i) * sinf((2.0 * M_PI * ((double)i + phase_offset) * out_note.freq) / (double)sample_rate);
     }
 
-    last_phase = fmod(last_phase + (out_note.freq / ((double)SAMPLE_RATE / (double)n_samples)), 1.0);
+    last_phase = fmod(last_phase + (out_note.freq / ((double)sample_rate / (double)n_samples)), 1.0);
 
     // Fill silent part with zeros
     std::fill_n(synth_buffer, out_event.offset, 0.0);  // Start
