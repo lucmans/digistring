@@ -181,8 +181,12 @@ void init_playback_device(SDL_AudioDeviceID &out_dev) {
     const char *out_dev_str = (cli_args.out_dev_name == "" ? NULL : cli_args.out_dev_name.c_str());
     out_dev = SDL_OpenAudioDevice(out_dev_str, PLAYBACK, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
     if(out_dev == 0) {
-        error("Failed to open audio output\n" + STR(SDL_GetError()));
-        hint("Audio settings might not be realistic");
+        const std::string sdl_error = SDL_GetError();
+        error("Failed to open playback device\n" + sdl_error);
+        if(sdl_error.substr(0, 14) != "No such device")
+            hint("Audio settings might not be realistic");
+        else
+            hint("Try copy-pasting the name as provided by Digistring with the single quotes");
         exit(EXIT_FAILURE);
     }
 
@@ -230,8 +234,12 @@ void init_recording_device(SDL_AudioDeviceID &in_dev) {
     const char *in_dev_str = (cli_args.in_dev_name == "" ? NULL : cli_args.in_dev_name.c_str());
     in_dev = SDL_OpenAudioDevice(in_dev_str, RECORDING, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
     if(in_dev == 0) {
-        error("Failed to open audio input\n" + STR(SDL_GetError()));
-        hint("Audio settings might not be realistic");
+        const std::string sdl_error = SDL_GetError();
+        error("Failed to open recording device\n" + sdl_error);
+        if(sdl_error.substr(0, 14) != "No such device")
+            hint("Audio settings might not be realistic");
+        else
+            hint("Try copy-pasting the name as provided by Digistring with the single quotes");
         exit(EXIT_FAILURE);
     }
 
