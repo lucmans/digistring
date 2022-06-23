@@ -3,6 +3,7 @@
 #include "square.h"
 #include "sine.h"
 #include "sine_amped.h"
+#include "sine_poly.h"
 
 #include "error.h"
 
@@ -17,6 +18,9 @@ Synth *synth_factory(const Synths &synth_type) {
 
         case Synths::sine_amped:
             return new SineAmped();
+
+        case Synths::sine_poly:
+            return new SinePoly();
 
         default:
             error("Synth factory doesn't recognize synth type");

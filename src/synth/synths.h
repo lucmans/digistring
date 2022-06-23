@@ -9,6 +9,7 @@
 #include "square.h"
 #include "sine.h"
 #include "sine_amped.h"
+#include "sine_poly.h"
 
 
 Synth *synth_factory(const Synths &synth_type);

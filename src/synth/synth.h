@@ -13,20 +13,22 @@
 
 // Different synth types
 enum class Synths {
-    square, sine, sine_amped
+    square, sine, sine_amped, sine_poly
 };
 
 // For selecting a synth using CLI args
 const std::map<const std::string, const Synths> parse_synth_string = {
     {"square", Synths::square},
     {"sine", Synths::sine},
-    {"sine_amped", Synths::sine_amped}
+    {"sine_amped", Synths::sine_amped},
+    {"sine_poly", Synths::sine_poly}
 };
 
 const std::map<const Synths, const std::string> synth_description = {
     {Synths::square, "Simple square wave synth"},
     {Synths::sine, "Simple sine wave synth"},
-    {Synths::sine_amped, "Sine wave synth with variable amplitude"}
+    {Synths::sine_amped, "Sine wave synth with variable amplitude"},
+    {Synths::sine_poly, "Polyphonic sine wave synth"}
 };
 
 

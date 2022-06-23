@@ -71,6 +71,10 @@ struct CLIArgs {
     // To prevent unnecessarily large synth_buffers to be allocated at start-up, we reallocate a larger synth_buffer if needed runtime
     bool do_slowdown = false;
     double slowdown_factor;
+
+    // Playing back a note event file through an arbitrary synth
+    bool do_play_note_event_file = false;
+    std::string note_event_file;
 };
 extern CLIArgs cli_args;
 
