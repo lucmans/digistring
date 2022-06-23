@@ -7,6 +7,7 @@
 #include "quit.h"
 #include "error.h"
 
+#include "play_note_event_file.h"
 #include "experiments/experiments.h"
 
 #include "config/audio.h"
@@ -172,7 +173,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Init audio devices
-    const bool playing_back = cli_args.playback || cli_args.synth;
+    const bool playing_back = cli_args.playback || cli_args.synth || cli_args.do_play_note_event_file;
     const bool recording = cli_args.audio_input_method == SampleGetters::audio_in;  // TODO: Condition
 
     if(playing_back || recording) {
@@ -184,6 +185,11 @@ int main(int argc, char *argv[]) {
     if(playing_back) {
         print_playback_devices();
         init_playback_device(out_dev);
+    }
+
+    if(cli_args.do_play_note_event_file) {
+        play_note_event_file(cli_args.note_event_file, out_dev);
+        exit(EXIT_SUCCESS);
     }
 
     SDL_AudioDeviceID in_dev;

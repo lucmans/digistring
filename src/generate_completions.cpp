@@ -250,6 +250,11 @@ void ArgParser::generate_completions() {
                        << indent(4) << "return 0;;\n";
                     break;
 
+                case OptType::synth:
+                    ss << indent(4) << "COMPREPLY=($(compgen -W \"$ALL_SYNTHS\" -- $cur))\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
                 case OptType::opt_synth:
                     ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
                        << indent(4) << "    COMPREPLY=($(compgen -W \"$ALL_SYNTHS -\" -- $cur))\n"
@@ -278,6 +283,18 @@ void ArgParser::generate_completions() {
                        << indent(4) << "    OLD_IFS=\"$IFS\"\n"
                        << indent(4) << "    IFS=$'\\n'\n"
                        << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a playback device name (as printed by Digistring at start-up)${IFS}...\" -- \"\"))\n"
+                       << indent(4) << "    IFS=\"$OLD_IFS\"\n"
+                       << indent(4) << "else\n"
+                       << indent(4) << "    COMPREPLY=(${cur})\n"
+                       << indent(4) << "fi\n"
+                       << indent(4) << "return 0;;\n";
+                    break;
+
+                case OptType::opt_audio_out_device:
+                    ss << indent(4) << "if [[ ${#cur} == 0 ]]; then\n"
+                       << indent(4) << "    OLD_IFS=\"$IFS\"\n"
+                       << indent(4) << "    IFS=$'\\n'\n"
+                       << indent(4) << "    COMPREPLY=($(compgen -W \"Please enter a playback device name (as printed by Digistring at start-up) or nothing for default playback device${IFS}...\" -- \"\"))\n"
                        << indent(4) << "    IFS=\"$OLD_IFS\"\n"
                        << indent(4) << "else\n"
                        << indent(4) << "    COMPREPLY=(${cur})\n"

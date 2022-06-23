@@ -48,30 +48,31 @@ bool flag_ordering(const std::string lhs, const std::string rhs) {
 // const std::map<const std::string, const ParseObj> ArgParser::flag_to_func = {
 const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::flag_to_func = {
     {
-        {"--audio",             ParseObj(&ArgParser::parse_audio,               {OptType::last_arg})},
-        {"--audio_in",          ParseObj(&ArgParser::parse_audio_in,            {OptType::audio_in_device})},
-        {"--audio_out",         ParseObj(&ArgParser::parse_audio_out,           {OptType::audio_out_device})},
-        {"--experiment",        ParseObj(&ArgParser::parse_experiment,          {OptType::experiment})},
-        {"--experiments",       ParseObj(&ArgParser::parse_experiments,         {OptType::last_arg})},
-        {"-f",                  ParseObj(&ArgParser::parse_fullscreen,          {})},
-        {"--file",              ParseObj(&ArgParser::parse_file,                {OptType::file})},
-        {"--gen-completions",   ParseObj(&ArgParser::generate_completions,      {OptType::completions_file, OptType::last_arg})},
-        {"-h",                  ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
-        {"--help",              ParseObj(&ArgParser::parse_help,                {OptType::last_arg})},
-        {"-n",                  ParseObj(&ArgParser::parse_generate_note,       {OptType::opt_note})},
-        {"-o",                  ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-        {"--output",            ParseObj(&ArgParser::parse_output_file,         {OptType::output_file})},
-        {"--over",              ParseObj(&ArgParser::parse_print_overtone,      {OptType::note, OptType::opt_integer, OptType::midi_switch, OptType::last_arg})},
-        {"-p",                  ParseObj(&ArgParser::parse_playback,            {OptType::opt_left_right})},
-        {"--perf",              ParseObj(&ArgParser::parse_print_performance,   {OptType::perf_file})},
-        {"-r",                  ParseObj(&ArgParser::parse_resolution,          {OptType::integer, OptType::integer})},
-        // {"--real-time",         ParseObj(&ArgParser::parse_sync_with_audio,     {})},
-        {"--rsc",               ParseObj(&ArgParser::parse_rsc_dir,             {OptType::dir})},
-        {"-s",                  ParseObj(&ArgParser::parse_generate_sine,       {OptType::opt_decimal})},
-        {"--slow",              ParseObj(&ArgParser::parse_slow,                {OptType::decimal})},
-        {"--sync",              ParseObj(&ArgParser::parse_sync_with_audio,     {})},
-        {"--synth",             ParseObj(&ArgParser::parse_synth,               {OptType::opt_synth, OptType::opt_decimal})},
-        {"--synths",            ParseObj(&ArgParser::parse_synths,              {OptType::last_arg})},
+        {"--audio",                 ParseObj(&ArgParser::parse_audio,                 {OptType::last_arg})},
+        {"--audio_in",              ParseObj(&ArgParser::parse_audio_in,              {OptType::audio_in_device})},
+        {"--audio_out",             ParseObj(&ArgParser::parse_audio_out,             {OptType::audio_out_device})},
+        {"--experiment",            ParseObj(&ArgParser::parse_experiment,            {OptType::experiment})},
+        {"--experiments",           ParseObj(&ArgParser::parse_experiments,           {OptType::last_arg})},
+        {"-f",                      ParseObj(&ArgParser::parse_fullscreen,            {})},
+        {"--file",                  ParseObj(&ArgParser::parse_file,                  {OptType::file})},
+        {"--gen-completions",       ParseObj(&ArgParser::generate_completions,        {OptType::completions_file, OptType::last_arg})},
+        {"-h",                      ParseObj(&ArgParser::parse_help,                  {OptType::last_arg})},
+        {"--help",                  ParseObj(&ArgParser::parse_help,                  {OptType::last_arg})},
+        {"-n",                      ParseObj(&ArgParser::parse_generate_note,         {OptType::opt_note})},
+        {"-o",                      ParseObj(&ArgParser::parse_output_file,           {OptType::output_file})},
+        {"--output",                ParseObj(&ArgParser::parse_output_file,           {OptType::output_file})},
+        {"--over",                  ParseObj(&ArgParser::parse_print_overtone,        {OptType::note, OptType::opt_integer, OptType::midi_switch, OptType::last_arg})},
+        {"-p",                      ParseObj(&ArgParser::parse_playback,              {OptType::opt_left_right})},
+        {"--play_note_event_file",  ParseObj(&ArgParser::parse_play_note_event_file,  {OptType::file, OptType::synth, OptType::opt_audio_out_device, OptType::last_arg})},
+        {"--perf",                  ParseObj(&ArgParser::parse_print_performance,     {OptType::perf_file})},
+        {"-r",                      ParseObj(&ArgParser::parse_resolution,            {OptType::integer, OptType::integer})},
+        // {"--real-time",             ParseObj(&ArgParser::parse_sync_with_audio,     {})},
+        {"--rsc",                   ParseObj(&ArgParser::parse_rsc_dir,               {OptType::dir})},
+        {"-s",                      ParseObj(&ArgParser::parse_generate_sine,         {OptType::opt_decimal})},
+        {"--slow",                  ParseObj(&ArgParser::parse_slow,                  {OptType::decimal})},
+        {"--sync",                  ParseObj(&ArgParser::parse_sync_with_audio,       {})},
+        {"--synth",                 ParseObj(&ArgParser::parse_synth,                 {OptType::opt_synth, OptType::opt_decimal})},
+        {"--synths",                ParseObj(&ArgParser::parse_synths,                {OptType::last_arg})},
     },
     flag_ordering
 };
@@ -440,6 +441,36 @@ void ArgParser::parse_playback() {
     }
 
     cli_args.playback = true;
+}
+
+
+void ArgParser::parse_play_note_event_file() {
+    const char *note_event_file;
+    if(!fetch_opt(note_event_file)) {
+        error("No Digistring MIDI file provided");
+        exit(EXIT_FAILURE);
+    }
+
+    cli_args.do_play_note_event_file = true;
+    cli_args.note_event_file = note_event_file;
+
+    // Select right synth if specified
+    const char *synth_string;
+    if(!fetch_opt(synth_string)) {
+        error("No synth provided");
+        exit(EXIT_FAILURE);
+    }
+    try {
+        cli_args.synth_type = parse_synth_string.at(synth_string);
+    }
+    catch(const std::out_of_range &e) {
+        error("Unknown synth type '" + std::string(synth_string) + "'");
+        exit(EXIT_FAILURE);
+    }
+
+    const char *out_dev_arg;
+    if(fetch_opt(out_dev_arg))
+        cli_args.out_dev_name = out_dev_arg;
 }
 
 

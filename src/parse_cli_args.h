@@ -58,6 +58,7 @@ class ArgParser {
         void parse_output_file();
         void parse_print_overtone();
         void parse_playback();
+        void parse_play_note_event_file();
         void parse_print_performance();
         void parse_resolution();
         void parse_rsc_dir();
@@ -74,7 +75,7 @@ class ArgParser {
 // last_arg will prevent further completions to be given (useful for signalling no other flags are possible)
 enum class OptType {
     dir, file, output_file, perf_file, completions_file, decimal, opt_decimal, integer, opt_integer, note, opt_note, last_arg,
-    opt_synth, opt_left_right, audio_in_device, audio_out_device, midi_switch, experiment
+    synth, opt_synth, opt_left_right, audio_in_device, audio_out_device, opt_audio_out_device, midi_switch, experiment
 };
 
 // Struct holding the parse function and OptTypes
