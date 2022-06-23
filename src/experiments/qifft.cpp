@@ -21,7 +21,7 @@
 const int REPS_PER_FREQ = 8;
 
 
-// Needed because there interpolation funcs are overloaded version
+// Needed because the interpolation functions have overloaded versions
 typedef double(*interpolation_func_t)(double, double, double, double&);
 
 
@@ -38,6 +38,11 @@ std::vector<double> generate_test_freqs() {
 std::vector<std::pair<double, ErrorMeasures>> make_range(const double range_min, const double range_max, const double step_size) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
+    if(range_min + step_size == range_min) {
+        warning("Floating point precision limit reached");
+        return std::vector<std::pair<double, ErrorMeasures>>();
+    }
+
     std::vector<std::pair<double, ErrorMeasures>> exps;
     for(double e = range_min; e < range_max; e += step_size) {
         if(e == 0.0)
@@ -136,8 +141,11 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
             step_size = (max_range - min_range) / std::max(n_cores, min_steps);
         }
 
-        exps.clear();
-        exps = make_range(min_range, max_range, step_size);
+        std::vector<std::pair<double, ErrorMeasures>> new_range = make_range(min_range, max_range, step_size);
+        if(new_range.size() == 0)  // Floating point precision limit reached
+            break;
+
+        exps = std::move(new_range);
     }
 
     if(min_idx != -1) {
@@ -183,7 +191,11 @@ QIFFT::QIFFT(const int _frame_size, const int _padding_size/*, const window_func
         error("Failed to allocate window function buffer");
         exit(EXIT_FAILURE);
     }
-    dolph_chebyshev_window(window_func, frame_size, 50.0, true);
+    // hann_window(window_func, frame_size);
+    if(!dolph_chebyshev_window(window_func, frame_size, 50.0, true)) {
+        error("Failed to generate Dolph Chebyshev window");
+        exit(EXIT_FAILURE);
+    }
 
     try {
         norms = new double[in_size];
@@ -256,7 +268,7 @@ ErrorMeasures QIFFT::no_qifft() {
     return qifft_error([](const double peak, const double l, const double r, double &amp){amp = peak; return 0.0; amp = l+r;});
 }
 
-// Static casts are needed as interpolation funcs are overloaded
+// Static casts are needed as interpolation functions are overloaded
 ErrorMeasures QIFFT::mqifft() {
     return qifft_error(static_cast<interpolation_func_t>(&interpolate_max));
 }
@@ -353,7 +365,7 @@ double QIFFT::xqifft_exp_test_range(const double check_min, const double check_m
 
     std::vector<std::pair<double, ErrorMeasures>> exps = make_range(check_min, check_max, check_step);
     if(exps.size() == 0) {
-        warning("Range only contains 0.0");
+        warning("Range only contains 0.0 or floating point precision limit reached");
         return 0.0;
     }
 
