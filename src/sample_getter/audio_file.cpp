@@ -78,6 +78,16 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         }
 
         const int32_t *const sample_buffer = (int32_t*)read_buffer;
+
+        // Check if samples are 24-bit or 32-bit
+        bool bit32 = false;
+        for(int i = 0; i < wav_buffer_n_samples; i++) {
+            if((sample_buffer[i] & 0b11111111) != 0b00000000)
+                bit32 = true;
+        }
+        if(bit32)
+            warning("File uses 32 bit samples, lossless conversion");
+
         for(int i = 0; i < wav_buffer_n_samples; i++) {
             // | can be interchanged with +
             // const int32_t new_sample = (read_buffer[(i * 4) + 0]    << 0)
@@ -87,20 +97,15 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
 
             const int32_t new_sample = sample_buffer[i];
 
-            // Volatile, so it doesn't get optimized away
-            volatile double d_sample = (double)new_sample / (double)(std::numeric_limits<int32_t>::max());
-            volatile float f_sample = (float)d_sample;
-            wav_buffer[i] = f_sample;
-
-            // TODO: Maybe check if new_sample > float mantissa limit
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wfloat-equal"
-            static bool shown = false;
-            if(!shown && f_sample != d_sample) {
-                warning("Lossy conversion of input file");
-                shown = true;
+            if(bit32) {
+                const double d_sample = (double)new_sample / (double)(std::numeric_limits<int32_t>::max());
+                wav_buffer[i] = (float)d_sample;
             }
-            #pragma GCC diagnostic pop
+            else {
+                // SDL Makes 8 least significant bits zero when converting from 24 bit files
+                const double d_sample = (double)(new_sample >> 8) / (double)((1 << 23) - 1);
+                wav_buffer[i] = (float)d_sample;
+            }
         }
 
         // SDL based conversion
@@ -132,20 +137,8 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         for(int i = 0; i < wav_buffer_n_samples; i++) {
             const int16_t new_sample = sample_buffer[i];
 
-            // Volatile, so it doesn't get optimized away
-            volatile double d_sample = (double)new_sample / (double)(std::numeric_limits<int16_t>::max());
-            volatile float f_sample = (float)d_sample;
-            wav_buffer[i] = f_sample;
-
-            // TODO: Maybe check if new_sample > float mantissa limit
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wfloat-equal"
-            static bool shown = false;
-            if(!shown && f_sample != d_sample) {
-                warning("Lossy conversion of input file");
-                shown = true;
-            }
-            #pragma GCC diagnostic pop
+            const double d_sample = (double)new_sample / (double)(std::numeric_limits<int16_t>::max());
+            wav_buffer[i] = (float)d_sample;
         }
 
         // SDL based conversion
