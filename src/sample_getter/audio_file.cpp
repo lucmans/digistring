@@ -11,6 +11,7 @@
 #include <string>
 #include <algorithm>  // std::max(), std::clamp(), std::fill_n()
 #include <cstring>  // memcpy()
+#include <limits>
 
 #include <sstream>  // This and iomanip are for double->string formatting
 #include <iomanip>
@@ -87,7 +88,7 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
             const int32_t new_sample = sample_buffer[i];
 
             // Volatile, so it doesn't get optimized away
-            volatile double d_sample = (double)new_sample / (double)(1 << 31);
+            volatile double d_sample = (double)new_sample / (double)(std::numeric_limits<int32_t>::max());
             volatile float f_sample = (float)d_sample;
             wav_buffer[i] = f_sample;
 
@@ -105,6 +106,51 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
         // SDL based conversion
         /*SDL_AudioCVT cvt;
         SDL_BuildAudioCVT(&cvt, AUDIO_S32SYS, 1, SAMPLE_RATE, AUDIO_F32SYS, 1, SAMPLE_RATE);
+        SDL_assert(cvt.needed);
+        cvt.len = read_buffer_bytes;
+        cvt.buf = (Uint8*)SDL_malloc(cvt.len * cvt.len_mult);
+        memcpy(cvt.buf, read_buffer, read_buffer_bytes);
+        SDL_ConvertAudio(&cvt);*/
+    }
+    else if(wav_spec.format == AUDIO_S16SYS) {
+        if(read_buffer_bytes % sizeof(int16_t) != 0) {
+            error("WAV file '" + file + "' has a non 2 byte integer sample");
+            exit(EXIT_FAILURE);
+        }
+
+        wav_buffer_n_samples = read_buffer_bytes / sizeof(int16_t);
+        try {
+            wav_buffer = new float[wav_buffer_n_samples];
+        }
+        catch(const std::bad_alloc &e) {
+            error("Failed to allocate WAV file buffer; WAV file too big (" + STR(e.what()) + ")");
+            hint("Try a splitting the WAV file into smaller files");
+            exit(EXIT_FAILURE);
+        }
+
+        const int16_t *const sample_buffer = (int16_t*)read_buffer;
+        for(int i = 0; i < wav_buffer_n_samples; i++) {
+            const int16_t new_sample = sample_buffer[i];
+
+            // Volatile, so it doesn't get optimized away
+            volatile double d_sample = (double)new_sample / (double)(std::numeric_limits<int16_t>::max());
+            volatile float f_sample = (float)d_sample;
+            wav_buffer[i] = f_sample;
+
+            // TODO: Maybe check if new_sample > float mantissa limit
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wfloat-equal"
+            static bool shown = false;
+            if(!shown && f_sample != d_sample) {
+                warning("Lossy conversion of input file");
+                shown = true;
+            }
+            #pragma GCC diagnostic pop
+        }
+
+        // SDL based conversion
+        /*SDL_AudioCVT cvt;
+        SDL_BuildAudioCVT(&cvt, AUDIO_S16SYS, 1, SAMPLE_RATE, AUDIO_F32SYS, 1, SAMPLE_RATE);
         SDL_assert(cvt.needed);
         cvt.len = read_buffer_bytes;
         cvt.buf = (Uint8*)SDL_malloc(cvt.len * cvt.len_mult);
