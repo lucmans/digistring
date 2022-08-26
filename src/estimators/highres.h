@@ -56,7 +56,7 @@ class HighResGraphics : public EstimatorGraphics {
                     cur_plot = 0;
                     __attribute__ ((fallthrough));
                 case 0:
-                    spectrogram.render(renderer, dst, graphics_data, spectrum, envelope, peak_frequencies);
+                    spectrogram.render(renderer, dst, graphics_data, spectrum, envelope, peak_frequencies, note_peaks);
                     break;
 
                 case 1:
@@ -77,6 +77,7 @@ class HighResGraphics : public EstimatorGraphics {
         Spectrum &get_spectrum() {return spectrum;};
         Spectrum &get_envelope() {return envelope;};
         std::vector<double> &get_peaks() {return peak_frequencies;};
+        std::vector<double> &get_note_peaks() {return note_peaks;};
         std::vector<float> &get_wave_samples() {return wave_samples;};
 
 
@@ -90,6 +91,7 @@ class HighResGraphics : public EstimatorGraphics {
         Spectrum spectrum;
         Spectrum envelope;
         std::vector<double> peak_frequencies;
+        std::vector<double> note_peaks;
         std::vector<float> wave_samples;
 };
 

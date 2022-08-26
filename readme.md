@@ -1,6 +1,7 @@
-Digistring is a program that converts notes played on a guitar to a digital representation in real-time, as well as a framework to aid development and research of real-time pitch estimation methods.  
-Note that Digistring is still under heavy development and the head of master may not always be stable.  
+Digistring converts notes played on a guitar to a digital representation in real-time. Additionally, is serves as a framework to aid development and research of real-time pitch estimation methods.  
 The thesis accompanying this project can be found in the thesis branch.
+
+TODO: Summary of Digistring's features
 
 
 # Build instructions
@@ -40,12 +41,6 @@ Digistring comes with tab completion, which can be used in the current session b
 Sending `SIGINT` or `SIGTERM` once will queue shut-down and gracefully exit as soon as possible.  
 Sending `SIGINT` or `SIGTERM` a second time will immediately stop Digistring.
 
-## Configuration
-Most of Digistring's configuration is done compile time to optimize performance and minimize latency. The default configuration is optimized for real-time usage (e.g. connecting a guitar to the audio input of your computer). The configuration files can be found in `src/config/`.  
-`audio.h`: Audio driver configuration, such as sample rate, samples per buffer and sample format. Also contains the setting to enable slowdown mode.  
-`transcription.h`: Contains all parameters which control pitch estimation. This includes overlapping input frames configuration.  
-`graphics.h`: GUI configuration. Most important is headless mode, which ensures no graphics code is compiled into Digistring. This is important, as graphics is only useful for research/debugging and adds much CPU and RAM overhead. Headless mode is useful for practical usage (real-time sound synthesis based on guitar input) and experimental usage (running performance measurements).
-
 ## Command line arguments
 Argument parameters in <> are required and in [] are optional.  
 `--audio`: Print used audio driver and available audio devices.  
@@ -83,20 +78,32 @@ Left mouse button: Display the frequency and relative amplitude corresponding to
 `p`: Change plot type.  
 `r`: Reset loudest recorded value.  
 `i`: Toggle showing info in top-right corner of the window.  
-`t`: Clear SDL audio playback buffer (samples sent to OS are still played).  
+`t`: Clear SDL's audio playback buffer (samples sent to OS are still played).  
+`y`: Clear SDL's audio recording buffer (samples sent to OS are still played).  
 `q`/`esc`: Quit Digistring.
+
+## Configuration
+Most of Digistring's configuration is done compile time to optimize performance and minimize latency. The default configuration is optimized for real-time usage (e.g. connecting a guitar to the audio input of your computer). The configuration files can be found in `src/config/`.  
+`audio.h`: Audio driver configuration, such as sample rate, samples per buffer and sample format. Also contains the setting to enable slowdown mode.  
+`transcription.h`: Contains all parameters which control pitch estimation. This includes overlapping input frames configuration.  
+`graphics.h`: GUI configuration. Most important is headless mode, which ensures no graphics code is compiled into Digistring. This is important, as graphics is only useful for research/debugging and adds much CPU and RAM overhead. Headless mode is useful for practical usage (real-time sound synthesis based on guitar input) and experimental usage (running performance measurements).
 
 
 # Tools
 Digistring includes a few tools:  
+- `benchmarks`: Benchmarks which verify some optimizations/performance choices.
+- `delayed_playback`: Allows playback of input audio with arbitrary delay. Can be used to verify validity of real-time constrains.
 - `dolph_chebyshev_window`: A Python program which calculates the Dolph Chebyshev window. Is used directly by Digistring.
-- `float_vs_double`: Tests if single precision (`float`) or double precision (`double`) floating point calculations are faster.
 - `generate_report`: Generates a performance report based on Digistring's output compared to ground truth annotation.
 - `patch_tools`: A few tools which help with checking, applying and creating patches.
+- `performance_plot`: Generates plots of Digistring's performance measurements.
 
 
 # TODO
+- MIDI synthesizer, which output MIDI events (instead of having a separate MIDI branch).
+- Ability to export audio input as wav.
 - Integer sample support for synths.
+- Clear SDL's audio input buffer while --sync/--synth.
 - Tuned sine synth.
 - SampleGetter which uses Synth to generate samples.
 - Abstract away all SDL audio code into own Audio class to allow switching audio back-ends.

@@ -49,13 +49,14 @@ HighRes::HighRes(float *&input_buffer, int &buffer_size) : perf("HighRes") {
         exit(EXIT_FAILURE);
     }
 
-    // Pre-calculate window function
-    if(!dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION, true)) {
-        // dolph_chebyshev_window() already prints error
-        warning("Failed to get Dolph Chebyshev window; using Blackman Nuttall window instead...");
+    // // Pre-calculate window function
+    // if(!dolph_chebyshev_window(window_func, FRAME_SIZE, DEFAULT_ATTENUATION, true)) {
+    //     // dolph_chebyshev_window() already prints error
+    //     warning("Failed to get Dolph Chebyshev window; using Blackman Nuttall window instead...");
 
-        blackman_nuttall_window(window_func, FRAME_SIZE);
-    }
+        // blackman_nuttall_window(window_func, FRAME_SIZE);
+        hann_window(window_func, FRAME_SIZE);
+    // }
 
     // Pre-calculate Gaussian for envelope computation
     gaussian_envelope(NULL, NULL, 0);
@@ -100,6 +101,7 @@ void HighRes::interpolate_peaks(NoteSet &noteset, const double norms[(FRAME_SIZE
         }
 
         double amp;
+        // const double offset = interpolate_max_exp(norms[peak], norms[peak - 1], norms[peak + 1], 0.19952623149688797, amp);
         const double offset = interpolate_max_log(norms[peak], norms[peak - 1], norms[peak + 1], amp);
         const double freq = ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED) * (peak + offset);
         noteset.push_back(Note(freq, amp));
@@ -123,23 +125,23 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Apply window function to minimize spectral leakage
     for(int i = 0; i < FRAME_SIZE; i++)
         input_buffer[i] *= window_func[i];
-    perf.push_time_point("Applied window function");
+    perf.push_time_point("1 Applied window function");
 
     // Do the actual transform
     fftwf_execute(p);
-    perf.push_time_point("Executed FFT");
+    perf.push_time_point("2 Executed FFT");
 
     // Calculate amplitude of every frequency component
     double norms[(FRAME_SIZE_PADDED / 2) + 1];
     double power, max_norm;
     calc_norms(out, norms, (FRAME_SIZE_PADDED / 2) + 1, max_norm, power);
-    perf.push_time_point("Calculated norms");
+    perf.push_time_point("3 Calculated norms");
 
     /* Peak picking */
     // Compute Gaussian envelope
     double envelope[(FRAME_SIZE_PADDED / 2) + 1];
     gaussian_envelope(norms, envelope, (FRAME_SIZE_PADDED / 2) + 1);
-    perf.push_time_point("Calculated Gaussian envelope");
+    perf.push_time_point("4 Calculated Gaussian envelope");
 
     // TODO: Convex envelope
     // Start from highest/lowest peaks, then advance both left/right to next highest peak until no peaks left
@@ -150,7 +152,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
         envelope_peaks(norms, envelope, (FRAME_SIZE_PADDED / 2) + 1, peaks, max_norm);
         // all_max(norms, (FRAME_SIZE_PADDED / 2) + 1, peaks, max_norm);
         // all_max(norms, (FRAME_SIZE_PADDED / 2) + 1, peaks);
-    perf.push_time_point("Selected peaks");
+    perf.push_time_point("5 Picked peaks");
 
     // // Find peaks on min-dy
     // std::vector<int> peaks;
@@ -160,20 +162,25 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
     // Interpolate peak locations
     NoteSet i_peaks;
     interpolate_peaks(i_peaks, norms, peaks);
-    perf.push_time_point("Interpolated peaks");
+    perf.push_time_point("6 Interpolated peaks");
 
     // Extract played note from the peaks
     NoteSet noteset;  // Noteset, so polyphony can easily be supported
+    NoteSet peakset;
     // get_loudest_peak(noteset, i_peaks);
     // get_lowest_peak(noteset, i_peaks);
-    get_most_overtones(noteset, i_peaks);
+    // get_most_overtones(noteset, i_peaks);
+    if constexpr(!HEADLESS)
+        get_most_overtones(noteset, i_peaks, peakset);
+    else
+        get_most_overtones(noteset, i_peaks);
     // get_most_overtone_power(noteset, i_peaks);
-    perf.push_time_point("Created noteset");
+    perf.push_time_point("7 Selected note");
 
     // Add note to output note_events if not filtered
     if(noteset.size() > 0) {
         bool add_note = true;
-        if constexpr(LOW_HIGH_FILTER) {
+        if constexpr(RANGE_FILTER) {
             if(noteset[0].midi_number < LOWEST_NOTE.midi_number || noteset[0].midi_number > HIGHEST_NOTE.midi_number)
                 add_note = false;
         }
@@ -187,7 +194,7 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
             note_events.push_back(NoteEvent(noteset[0], FRAME_SIZE, 0));
     }
     prev_power = power;
-    perf.push_time_point("Filtered notes");
+    // perf.push_time_point("8 Filtered notes");
 
 
     // Graphics
@@ -210,11 +217,18 @@ void HighRes::perform(float *const input_buffer, NoteEvents &note_events) {
         spectrum.sort();
         envelope_spectrum.sort();
 
-
+        // All peaks
         std::vector<double> &f_peaks = highres_graphics->get_peaks();
         f_peaks.clear();
-        for(int peak_bin : peaks)
-            f_peaks.push_back(peak_bin * ((double)SAMPLE_RATE / (double)FRAME_SIZE_PADDED));
+        for(const auto &f : i_peaks)
+            f_peaks.push_back(f.freq);
         std::sort(f_peaks.begin(), f_peaks.end());
+
+        // Matched peaks
+        std::vector<double> &n_peaks = highres_graphics->get_note_peaks();
+        n_peaks.clear();
+        for(const auto &f : peakset)
+            n_peaks.push_back(f.freq);
+        std::sort(n_peaks.begin(), n_peaks.end());
     }
 }

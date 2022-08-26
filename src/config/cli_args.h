@@ -35,7 +35,7 @@ struct CLIArgs {
     // Play recorded audio or synthesize audio based on estimated note
     bool playback = false;
     bool synth = false;
-    Synths synth_type = Synths::sine;
+    Synths synth_type = Synths::sine_amped;
     double volume = 0.7;
     // Playback both separated over stereo options
     bool stereo_split = false;  // If true, implies cli_args.playback is true

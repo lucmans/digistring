@@ -2,6 +2,8 @@
 
 #include "config/transcription.h"
 
+#include <omp.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -24,6 +26,10 @@ int precalc_gaussian() {
 void gaussian_envelope(const double norms[], double envelope[], const int n_norms) {
     static int precalc = precalc_gaussian();
 
+    // Only use half of total cores, as using all cores may cause latency spikes on systems running other software
+    const int n_cores = omp_get_num_procs() / 2;
+
+    #pragma omp parallel for num_threads(n_cores)
     for(int i = 0; i < n_norms; i++) {
         double sum = 0.0, weights = 0.0;
         for(int j = std::max(-MID, -i); j <= std::min(MID, (n_norms - 1) - i); j++) {

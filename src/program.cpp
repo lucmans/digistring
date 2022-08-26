@@ -597,6 +597,11 @@ void Program::handle_sdl_events() {
                             SDL_ClearQueuedAudio(*out_dev);
                         break;
 
+                    case SDLK_y:
+                        if(cli_args.playback)
+                            SDL_ClearQueuedAudio(*in_dev);
+                        break;
+
                     case SDLK_p:
                         estimator->next_plot_type();
                         break;

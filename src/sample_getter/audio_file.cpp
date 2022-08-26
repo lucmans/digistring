@@ -102,7 +102,7 @@ AudioFile::AudioFile(const int input_buffer_size, const std::string &file) : Sam
                 wav_buffer[i] = (float)d_sample;
             }
             else {
-                // SDL Makes 8 least significant bits zero when converting from 24 bit files
+                // SDL makes 8 least significant bits zero when converting from 24 bit files
                 const double d_sample = (double)(new_sample >> 8) / (double)((1 << 23) - 1);
                 wav_buffer[i] = (float)d_sample;
             }

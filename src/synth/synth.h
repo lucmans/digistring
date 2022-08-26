@@ -28,7 +28,7 @@ const std::map<const Synths, const std::string> synth_description = {
     {Synths::square, "Simple square wave synth"},
     {Synths::sine, "Simple sine wave synth"},
     {Synths::sine_amped, "Sine wave synth with variable amplitude"},
-    {Synths::sine_poly, "Polyphonic sine wave synth"}
+    {Synths::sine_poly, "Polyphonic sine wave synth (WIP)"}
 };
 
 

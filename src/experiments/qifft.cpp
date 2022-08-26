@@ -59,15 +59,15 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
     warning("You are responsible the optimization pitch estimation process matches the one the parameter is optimized for");
     if(padding_size > 0) {
         info("Assuming frame size of " + STR(frame_size) + " samples with " + STR(padding_size) + " samples zero-padding\n"
-        "  - Frame time: " + STR(((double)frame_size / (double)SAMPLE_RATE) * 1000.0) + " ms\n"
-        "  - Fourier bin size: " + STR((double)SAMPLE_RATE / (double)frame_size) + " Hz\n"
-        "  - Frame size with zero padding: " + STR(frame_size + padding_size) + " samples\n"
-        "  - Interpolated bin size: " + STR((double)SAMPLE_RATE / (double)(frame_size + padding_size)) + " Hz\n");
+             "  - Frame time: " + STR(((double)frame_size / (double)SAMPLE_RATE) * 1000.0) + " ms\n"
+             "  - Fourier bin size: " + STR((double)SAMPLE_RATE / (double)frame_size) + " Hz\n"
+             "  - Frame size with zero padding: " + STR(frame_size + padding_size) + " samples\n"
+             "  - Interpolated bin size: " + STR((double)SAMPLE_RATE / (double)(frame_size + padding_size)) + " Hz\n");
     }
     else {
         info("Assuming frame size of " + STR(frame_size) + " samples\n"
-        "  - Frame time: " + STR(((double)frame_size / (double)SAMPLE_RATE) * 1000.0) + " ms\n"
-        "  - Fourier bin size: " + STR((double)SAMPLE_RATE / (double)frame_size) + " Hz\n");
+             "  - Frame time: " + STR(((double)frame_size / (double)SAMPLE_RATE) * 1000.0) + " ms\n"
+             "  - Fourier bin size: " + STR((double)SAMPLE_RATE / (double)frame_size) + " Hz\n");
     }
 
     const int n_cores = omp_get_num_procs();
@@ -80,6 +80,7 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
     std::stringstream ss;
     ss << "Looking between " << min_range << " and " << max_range << " with a step size of " << step_size;
     info(ss.str());
+    info("Optimizing on " + OPTI_MEASURE_STR);
 
     std::vector<std::pair<double, ErrorMeasures>> exps = make_range(min_range, max_range, step_size);
     if(exps.size() == 0) {
@@ -150,7 +151,11 @@ double iteratively_optimize_qxifft(const int frame_size, const int padding_size/
 
     if(min_idx != -1) {
         std::stringstream().swap(ss);  // Create new (empty) stream
-        ss << "Best found exponent is " << exps[min_idx].first << " with a " << OPTI_MEASURE_STR << " of " << get_opti_measure(exps[min_idx].second) << OPTI_MEASURE_UNIT_STR;
+        // ss << "Best found exponent is " << exps[min_idx].first << " with a " << OPTI_MEASURE_STR << " of " << get_opti_measure(exps[min_idx].second) << OPTI_MEASURE_UNIT_STR;
+        ss << "Best found exponent is " << exps[min_idx].first << " with a:\n"
+           << "  - Mean squared error of " << exps[min_idx].second.mean_squared_error << '\n'
+           << "  - Mean error of " << exps[min_idx].second.mean_error << " Hz" << '\n'
+           << "  - Max error of " << exps[min_idx].second.max_error << " Hz" << std::endl;
         info(ss.str());
     }
 
@@ -191,11 +196,13 @@ QIFFT::QIFFT(const int _frame_size, const int _padding_size/*, const window_func
         error("Failed to allocate window function buffer");
         exit(EXIT_FAILURE);
     }
+    hann_window(window_func, frame_size);
+    // blackman_nuttall_window(window_func, frame_size);
     // hann_window(window_func, frame_size);
-    if(!dolph_chebyshev_window(window_func, frame_size, 50.0, true)) {
-        error("Failed to generate Dolph Chebyshev window");
-        exit(EXIT_FAILURE);
-    }
+    // if(!dolph_chebyshev_window(window_func, frame_size, 50.0, true)) {
+    //     error("Failed to generate Dolph Chebyshev window");
+    //     exit(EXIT_FAILURE);
+    // }
 
     try {
         norms = new double[in_size];
