@@ -258,7 +258,7 @@ void Program::resize(const int w, const int h) {
 void Program::playback_audio(const int new_samples) {
     if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
-            warning("Audio underrun; no audio left to play");
+            warning("Audio output buffer underrun; no audio left to play");
 
     if(cli_args.stereo_split) {
         if(new_samples > playback_buffer_n_samples) {
@@ -440,7 +440,7 @@ bool Program::update_graphics(const NoteEvents &note_events) {
 void Program::synthesize_audio(const NoteEvents &notes, const int new_samples) {
     if constexpr(PRINT_AUDIO_UNDERRUNS)
         if(SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) == 0)
-            warning("Audio underrun; no audio left to play");
+            warning("Audio output buffer underrun; no audio left to play");
 
     // new_samples may be larger due to artificial slowdown; overlapping input buffers may shorten it however
     if(cli_args.do_slowdown) {
@@ -506,7 +506,7 @@ void Program::sync_with_audio(const int new_samples) {
     if(cli_args.playback || cli_args.synth) {
         // DEBUG: If the while() below works correctly, the out buffer should never be filled faster than it is played
         if(cli_args.audio_input_method == SampleGetters::audio_in && SDL_GetQueuedAudioSize(*out_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)input_buffer_n_samples * 1.9) {
-            warning("Audio overrun (too much audio to play); clearing buffer...");
+            warning("Audio output buffer overrun (too much audio to play); clearing buffer...");
             SDL_ClearQueuedAudio(*out_dev);
         }
 
@@ -593,13 +593,17 @@ void Program::handle_sdl_events() {
                         break;
 
                     case SDLK_t:
-                        if(cli_args.playback)
+                        // if(cli_args.playback) {
+                            debug("Cleared audio out buffer");
                             SDL_ClearQueuedAudio(*out_dev);
+                        // }
                         break;
 
                     case SDLK_y:
-                        if(cli_args.playback)
+                        // if(cli_args.playback) {
+                            debug("Cleared audio in buffer");
                             SDL_ClearQueuedAudio(*in_dev);
+                        // }
                         break;
 
                     case SDLK_p:

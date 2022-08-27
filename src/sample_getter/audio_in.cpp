@@ -235,6 +235,12 @@ int AudioIn::get_frame(float *const in, const int n_samples) {
         calc_and_paste_nonblocking_overlap(overlap_in, overlap_n_samples, SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8);
 
 
+    // Detect audio overrun
+    if(SDL_GetQueuedAudioSize(*in_dev) / (SDL_AUDIO_BITSIZE(AUDIO_FORMAT) / 8) > (unsigned int)n_samples * 1.9) {
+        warning("Audio input buffer overrun; clearing input buffer");
+        SDL_ClearQueuedAudio(*in_dev);
+    }
+
     // read_increment(overlap_in, overlap_n_samples);
     if constexpr(AUDIO_FORMAT == AUDIO_F32SYS)
         read_frame_float32_audio_device(overlap_in, overlap_n_samples);

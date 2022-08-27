@@ -103,7 +103,6 @@ Digistring includes a few tools:
 - MIDI synthesizer, which output MIDI events (instead of having a separate MIDI branch).
 - Ability to export audio input as wav.
 - Integer sample support for synths.
-- Clear SDL's audio input buffer while --sync/--synth.
 - Tuned sine synth.
 - SampleGetter which uses Synth to generate samples.
 - Abstract away all SDL audio code into own Audio class to allow switching audio back-ends.
