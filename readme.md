@@ -1,7 +1,10 @@
-Digistring converts notes played on a guitar to a digital representation in real-time. Additionally, is serves as a framework to aid development and research of real-time pitch estimation methods.  
-The thesis accompanying this project can be found in the thesis branch.
+Digistring converts notes played on a guitar to a digital representation in real-time. Additionally, is serves as a framework to aid development and research of real-time pitch estimation methods. Even though Digistring is optimized for guitars, it also works with many other instruments and singing.  
+The thesis accompanying this project can be found in the [thesis repository](https://github.com/lucmans/digistring-thesis).  
+Demo files to run through Digistring, along with video files showing the playback of a demo file, can be found in the [demo repository](https://github.com/lucmans/digistring-demo).
 
-TODO: Summary of Digistring's features
+Digistring's main feature is real-time pitch estimation and sound synthesis bases on the estimation. By default, it listens to the audio input of the computer. Then, by passing the `--synth` flag, Digistring will produce sound based on the estimations. Furthermore, by passing the `--midi` flag, Digistring will emit MIDI events (note: currently, the alsa_midi_out branch has to be used and the `--midi` flag is implicit). Some synthesizer plug-ins can directly detect these MIDI events, while others require the MIDI events to be routed to the plug-in. The latter can be done using Pipewire or Jack.
+
+To use Digistring as a framework, refer to the documentation provided in the `docs` directory.
 
 
 # Build instructions
