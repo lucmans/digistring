@@ -2,6 +2,7 @@
 
 #include "graphics.h"
 #include "results_file.h"
+#include "midi_out.h"
 #include "performance.h"
 #include "quit.h"
 #include "error.h"
@@ -119,10 +120,16 @@ Program::Program(Graphics *const _g, SDL_AudioDeviceID *const _in, SDL_AudioDevi
     if(cli_args.output_file)
         results_file = new ResultsFile(cli_args.output_filename);
 
+    if(cli_args.midi_out)
+        midi_out = new MidiOut();
+
     note_change_time = std::chrono::duration<double>(NOTE_TIME + 1);
 }
 
 Program::~Program() {
+    if(cli_args.midi_out)
+        delete midi_out;
+
     if(cli_args.output_file)
         delete results_file;
 
@@ -205,6 +212,9 @@ void Program::main_loop() {
             synthesize_audio(estimated_events, new_samples);
             perf.push_time_point("Synthesized audio");
         }
+
+        if(cli_args.midi_out)
+            midi_out->send(estimated_events);
 
         if(cli_args.stereo_split)
             play_split_audio(new_samples);

@@ -2,14 +2,14 @@ Digistring converts notes played on a guitar to a digital representation in real
 The thesis accompanying this project can be found in the [thesis repository](https://github.com/lucmans/digistring-thesis).  
 Demo files to run through Digistring, along with video files showing the playback of a demo file, can be found in the [demo repository](https://github.com/lucmans/digistring-demo).
 
-Digistring's main feature is real-time pitch estimation and sound synthesis bases on the estimation. By default, it listens to the audio input of the computer. Then, by passing the `--synth` flag, Digistring will produce sound based on the estimations. Furthermore, by passing the `--midi` flag, Digistring will emit MIDI events (note: currently, the alsa_midi_out branch has to be used and the `--midi` flag is implicit). Some synthesizer plug-ins can directly detect these MIDI events, while others require the MIDI events to be routed to the plug-in. The latter can be done using Pipewire or Jack.
+Digistring's main feature is real-time pitch estimation and sound synthesis bases on the estimation. By default, it listens to the audio input of the computer. Then, by passing the `--synth` flag, Digistring will produce sound based on the estimations. Furthermore, by passing the `--midi` flag, Digistring will emit MIDI events. Some synthesizer plug-ins can directly detect these MIDI events, while others require the MIDI events to be routed to the plug-in. The latter can be done using Pipewire or Jack.
 
 To use Digistring as a framework, refer to the documentation provided in the `docs` directory.
 
 
 # Build instructions
 ## Requirements
-Digistring only supports Linux. It uses g++ and Make for building. It depends on SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform.  
+Digistring only supports Linux. It uses g++ and Make for building. It depends on SDL2 for the GUI and audio input/output and FFTW3 for performing the Fourier transform. Furthermore, it optionally uses ALSA to output MIDI events; see the compile time config in the makefile to remove this optional dependency.  
 The build requirements of the individual tools can be found in the tool's respective readme.  
 Optionally, in order to use the Dolph Chebyshev window function, Digistring requires Python3 and SciPy.
 
@@ -54,6 +54,7 @@ Argument parameters in <> are required and in [] are optional.
 `-f`: Run in fullscreen. Also set the fullscreen resolution using the '-r' option.  
 `--file <file>`: Use file as input.  
 `--gen-completions <file>`: Generate Bash completions to file (overwriting it).  
+`--midi`: Output MIDI events.  
 `-n [note]`: Generate note (default is A4).  
 `-o | --output [file]`: Write estimation results as JSON to file (default filename is output.json).  
 `--over <note> [n] [midi]`: Print n (default is 5) overtones of given note; optionally toggle midi number column by passing "midi_on" or "midi_off" (default to "midi_off").  
@@ -103,7 +104,6 @@ Digistring includes a few tools:
 
 
 # TODO
-- MIDI synthesizer, which output MIDI events (instead of having a separate MIDI branch).
 - Ability to export audio input as wav.
 - Integer sample support for synths.
 - Tuned sine synth.

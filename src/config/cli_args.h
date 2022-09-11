@@ -60,6 +60,8 @@ struct CLIArgs {
     bool output_file = false;
     std::string output_filename;
 
+    bool midi_out = false;
+
     // Experiment execute
     bool do_experiment = false;
     std::string experiment_string;

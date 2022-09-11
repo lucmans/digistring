@@ -4,6 +4,7 @@
 
 #include "graphics.h"
 #include "results_file.h"
+#include "midi_out.h"
 
 #include "note.h"
 #include "estimators/estimators.h"
@@ -55,6 +56,8 @@ class Program {
 
         // Output results file
         ResultsFile *results_file;
+
+        MidiOut *midi_out;
 
         // Arpeggiator (easter egg)
         bool plus_held_down, minus_held_down;

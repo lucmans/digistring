@@ -18,4 +18,8 @@ constexpr double D_SYNTH_VOLUME = 0.025;
 constexpr int SYNTH_BUFFER_SIZE = 16384;
 
 
+/* MIDI settings */
+const double MAX_VOLUME = 110.0;
+
+
 #endif  // DIGISTRING_CONFIG_SYNTH_H

@@ -14,10 +14,12 @@ DEPFLAGS = -MT $@ -MMD -MF $(patsubst obj/%.o, dep/%.d, $@)
 WARNINGS = -Wall -Wextra -Wshadow -pedantic -Wstrict-aliasing -Wfloat-equal #-Wfloat-conversion #-Wconversion #-Warith-conversion #-Wold-style-cast
 OPTIMIZATIONS = -O3 #-march=native -mtune=native -mfma -mavx2 -ftree-vectorize -ffast-math
 LIBS = -Llib/ -lSDL2 -lSDL2_ttf -lfftw3f -lm
+LIBS += `pkg-config --cflags --libs alsa`  # ALSA
 INCL = -Isrc/ -Ilib/include/
 CORES = 20
 
 # Compile time config; run "make force" after change
+# -DNO_ALSA_MIDI: Compile Digistring without the ALSA dependency, disabling MIDI output
 # -DNO_COLORS: Don't output escape sequences used for coloring in terminal
 # -DINFO_SOURCE_LOC: Print the source location of info messages
 # -DMSG_PRINT_TIME: Print time since program start in logging messages

@@ -58,6 +58,7 @@ const std::map<const std::string, const ParseObj, compare_func_t> ArgParser::fla
         {"--gen-completions",       ParseObj(&ArgParser::generate_completions,        {OptType::completions_file, OptType::last_arg})},
         {"-h",                      ParseObj(&ArgParser::parse_help,                  {OptType::last_arg})},
         {"--help",                  ParseObj(&ArgParser::parse_help,                  {OptType::last_arg})},
+        {"--midi",                  ParseObj(&ArgParser::parse_midi_out,              {})},
         {"-n",                      ParseObj(&ArgParser::parse_generate_note,         {OptType::opt_note})},
         {"-o",                      ParseObj(&ArgParser::parse_output_file,           {OptType::output_file})},
         {"--output",                ParseObj(&ArgParser::parse_output_file,           {OptType::output_file})},
@@ -88,6 +89,7 @@ const std::pair<const std::string, const std::string> help_strings[] = {
     {"--file <file>",               "Play samples from given file"},
     {"--gen-completions <file>",    "Generate Bash completions to file (overwriting it) (default filename is completions.sh)"},
     {"-h | --help",                 "Print command line argument information. Optionally pass 'readme' for readme formatting"},
+    {"--midi",                      "Output MIDI events"},
     {"-n [note]",                   "Generate note (default is A4)"},
     {"-o | --output [file]",        "Write estimation results as JSON to file (default filename is " + DEFAULT_OUTPUT_FILENAME + ")"},
     {"--over <note> [n] [midi]",    "Print n (default is 5) overtones of given note; optionally toggle midi number column by passing \"midi_on\" or \"midi_off\" (default to midi_off)"},
@@ -282,6 +284,7 @@ void ArgParser::parse_file() {
 
     if(!std::filesystem::exists(arg)) {
         error("Given file does not exist");
+        // debug("'" + STR(arg) + "'");
         exit(EXIT_FAILURE);
     }
 
@@ -330,6 +333,17 @@ void ArgParser::parse_generate_note() {
         error("Failed to parse note string '" + STR(note_string) + "': " + e.what());
         exit(EXIT_FAILURE);
     }
+}
+
+
+void ArgParser::parse_midi_out() {
+    #ifdef NO_ALSA_MIDI
+        error("Failed to enable MIDI output; ALSA support not compiled in");
+        hint("Compile Digistring with ALSA MIDI support (see 'COMPILE_CONFIG' in the makefile)");
+        exit(EXIT_FAILURE);
+    #else
+        cli_args.midi_out = true;
+    #endif
 }
 
 
